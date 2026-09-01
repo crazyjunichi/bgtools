@@ -66,7 +66,9 @@ export function EquipmentList({ hand, onCycle }: Props) {
       <span className="shrink-0 text-sm font-semibold tracking-wide text-violet-200">
         道具牌 · 点击切换状态
       </span>
-      <div className="flex min-h-0 flex-1 flex-col gap-2.5">
+      {/* 竖屏时本区只分到约一半屏高，5 张卡的硬下限可能刚好装不下 —— 允许框内滚，
+          总比被 Split 外层的 overflow-hidden 裁掉第 5 张好（页面级仍不翻页） */}
+      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto wide:overflow-visible">
         {hand.map((card, i) => {
           const equip = findEquipment(card.equipId)
           return (
@@ -78,7 +80,8 @@ export function EquipmentList({ hand, onCycle }: Props) {
                 buzz()
                 onCycle(i)
               }}
-              className={`flex min-h-20 flex-1 items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-transform duration-75 active:scale-95 ${TONE[card.state]}`}
+              // 竖屏下限降到 64px（仍高于 56px 触控下限），5 张才塞得进半屏
+              className={`flex min-h-16 flex-1 items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-transform duration-75 active:scale-95 wide:min-h-20 ${TONE[card.state]}`}
             >
               {/* 已用态整卡已经 opacity-45，图标不再单独压暗，否则叠加后糊掉 */}
               <span className="shrink-0 text-3xl">{equip?.icon ?? '❔'}</span>

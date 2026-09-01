@@ -25,7 +25,8 @@ export default defineConfig({
         theme_color: '#0b0f17',
         background_color: '#0b0f17',
         display: 'standalone',
-        orientation: 'any',
+        // 桌上平放的主场景是横屏；装成 PWA 后 Android 会据此锁屏，iOS 忽略此字段
+        orientation: 'landscape',
         // base 为相对路径，start_url/scope 也必须相对
         start_url: '.',
         scope: './',

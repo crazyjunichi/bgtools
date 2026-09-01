@@ -1,6 +1,14 @@
 @import 'tailwindcss';
 
 /*
+ * 布局的唯一朝向判据。不许再用宽度断点（lg: 等）判横竖屏：
+ * 安卓平板横屏的 CSS 视口宽常只有 800–962px，iPad 分屏后更窄，
+ * 用 ≥1024px 判定会把横屏平板整批误判成竖屏。
+ * 判据集中在这一处，将来要加宽度下限也只改这一行。
+ */
+@custom-variant wide (@media (orientation: landscape));
+
+/*
  * 深色单一主题。运行场景是平板平放桌面、多人从不同角度斜视、视距 50-70cm，
  * 所有取值的下限是"倾斜 45° 看仍能分辨"，而非仅满足 WCAG AA。
  *
@@ -32,10 +40,12 @@
   /* 结果数字用等宽，避免投掷动画时数字宽度跳动 */
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
 
-  /* 关键数字跟视口高走：桌上平板从 10" 到 13" 都有，固定 px 在大屏上偏小。
+  /* 关键数字跟视口短边走：桌上平板从 10" 到 13" 都有，固定 px 在大屏上偏小。
+     用 vmin 而非 vh —— 横屏时 vmin === vh（表现不变），竖屏时自动改按宽度取值，
+     否则 820×1180 下 9vh = 106px 会把数字撑出容器。
      这是默认档位，不是上限 —— 内容少的工具可以在自己目录里放大 */
-  --text-data: clamp(2.5rem, 9vh, 5.5rem);
-  --text-data-sm: clamp(1.5rem, 4.5vh, 3rem);
+  --text-data: clamp(2.5rem, 9vmin, 5.5rem);
+  --text-data-sm: clamp(1.5rem, 4.5vmin, 3rem);
 }
 
 @layer base {

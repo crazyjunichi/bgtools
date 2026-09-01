@@ -59,8 +59,9 @@ export function WireGrid({ wires, onCycle }: Props) {
       </div>
 
       {/* 格子填满可用高度而非固定 aspect：一屏不翻页优先于正方形。
-          分栏后本区只剩约 510px 宽，4 列比 6 列更接近方形，编号不会孤零零挂在瘦长格子中间 */}
-      <div className="grid min-h-0 flex-1 grid-cols-4 grid-rows-3 gap-2.5">
+          横屏分栏后本区只剩约 510px 宽，4×3 比 6×2 更接近方形，编号不会孤零零挂在瘦长格子中间；
+          竖屏本区拿到整屏宽（≈820px）但高度只剩一半，6×2 才不会把格子拉成竖条 */}
+      <div className="grid min-h-0 flex-1 grid-cols-6 grid-rows-2 gap-2.5 wide:grid-cols-4 wide:grid-rows-3">
         {wires.map((state, i) => (
           <button
             key={i}

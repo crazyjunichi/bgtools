@@ -1,3 +1,4 @@
+import { Split } from '../../shared/components/Split'
 import { ToolLayout } from '../../shared/components/ToolLayout'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
 import { EquipmentList } from './EquipmentList'
@@ -40,11 +41,11 @@ export default function BombBustersPage() {
         </>
       }
     >
-      {/* 拆弹与道具并排：道具吃满右侧栏宽，描述才能整行读完 */}
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[3fr_2fr]">
+      {/* 横屏并排（道具吃满右侧栏宽，描述才能整行读完）；竖屏自动改成拆弹在上、道具在下 */}
+      <Split ratio="majorFirst">
         <WireGrid wires={wires} onCycle={cycleWire} />
         <EquipmentList hand={hand} onCycle={cycleEquip} />
-      </div>
+      </Split>
     </ToolLayout>
   )
 }

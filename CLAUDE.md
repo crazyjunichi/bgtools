@@ -43,7 +43,9 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 
 **平板横屏、平放在桌面中央、多人斜视、视距 50–70cm。** 完整规范与取值依据见 [docs/DESIGN.md](docs/DESIGN.md)，以下是不许违反的部分：
 
-- **一屏放完，页面级不滚动**。[App.tsx](src/App.tsx) 外壳是 `h-dvh overflow-hidden`，工具页统一套 [ToolLayout](src/shared/components/ToolLayout.tsx)（左控制栏 + 右主显示区）。次要列表可以在自己的框里 `overflow-y-auto`，页面不许翻页
+- **一屏放完，页面级不滚动**。[App.tsx](src/App.tsx) 外壳是 `h-dvh overflow-hidden`，工具页统一套 [ToolLayout](src/shared/components/ToolLayout.tsx)（横屏左控制栏 + 右主显示区；竖屏自动变主显示在上 + 控制栏贴底，仍不滚）。次要列表可以在自己的框里 `overflow-y-auto`，页面不许翻页
+- **横竖屏判据只用 `wide` variant**（`orientation: landscape`，定义在 [src/index.css](src/index.css)）。**禁止用宽度断点（`lg:` / `max-lg:`）判横竖屏** —— 安卓平板横屏 CSS 宽常不足 1024px，会被整批误判成竖屏。主显示区放两块信息时用 [Split](src/shared/components/Split.tsx)（横屏并排 / 竖屏上下），不要自己写朝向类
+- **关键数字的视口单位一律 `vmin`，不用 `vh`**：横屏下二者等价，竖屏下 `vh` 会把数字撑爆容器
 - **返回/全屏/通用小工具入口由 [AppHeader](src/AppHeader.tsx) 统一提供**，工具页里不要自己画返回键、全屏键或标题栏。它在工具页 3 秒后自动收起（`absolute` overlay，不占布局高度），轻点屏幕顶部热区唤出 —— 所以工具页最顶部别放需要精准点击的控件
 - 触控目标 **≥ 56px**（`size-14` / `min-h-14`，即 `btn-base` 默认值），次要按钮不低于 `min-h-12`
 - 最小字号 `text-xs`（12px，仅限角标/图例），标签说明用 `text-sm` 起

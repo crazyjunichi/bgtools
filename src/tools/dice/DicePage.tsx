@@ -99,15 +99,16 @@ export default function DicePage() {
           </button>
 
           {history.length > 0 && (
-            <section className="flex min-h-0 flex-1 flex-col gap-2 max-lg:flex-none">
+            <section className="flex min-h-0 flex-none flex-col gap-2 wide:flex-1">
               <div className="flex items-center justify-between">
                 <span className="section-label">历史记录</span>
                 <ConfirmButton onConfirm={clearHistory} className="!min-h-12 !px-4 !text-sm">
                   清空
                 </ConfirmButton>
               </div>
-              {/* 历史是次要信息，允许在自己的框里滚，页面级仍然不翻页 */}
-              <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto rounded-2xl border border-line bg-surface max-lg:max-h-64">
+              {/* 历史是次要信息，允许在自己的框里滚，页面级仍然不翻页。
+                  竖屏时控制栏在底部只有 45dvh，给历史限高 256px，别把投掷按钮顶出可视区 */}
+              <ul className="max-h-64 min-h-0 flex-1 divide-y divide-line overflow-y-auto rounded-2xl border border-line bg-surface wide:max-h-none">
                 {history.map((h) => (
                   <li key={h.id} className="flex items-center gap-3 px-4 py-3 text-sm">
                     <span className="w-14 shrink-0 font-mono text-text-dim">

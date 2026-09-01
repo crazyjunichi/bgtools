@@ -6,7 +6,7 @@
 
 | 事实 | 推出的约束 |
 |---|---|
-| 平板**横屏**、**平放**在桌面中央 | 布局横向双栏，不做竖屏优先；屏幕是斜视的，不是正视 |
+| 平板**横屏**、**平放**在桌面中央 | 横屏是主场景（横向双栏），但**竖屏是一等布局**（主显示在上 + 控制栏贴底，同样不滚动）—— 前端锁不住所有平台的朝向；屏幕是斜视的，不是正视 |
 | 多人从不同角度看，视距 **50–70cm** | 最小正文 14px；关键数字跟视口高走；对比度下限按"倾斜 45° 仍可分辨"而非 WCAG AA |
 | 手在桌面上斜着点 | 触控目标 **56px** 起（不是 44px） |
 | 游戏进行中没人愿意滚屏找信息 | **一屏放完，页面级不滚动**；只允许次要列表在自己的框里滚 |
@@ -72,12 +72,14 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 | 标签、说明 | `text-sm`（14px） |
 | 列表正文、按钮 | `text-base`（16px） |
 | section 标题 | `section-label` utility |
-| 主数据（默认档） | `text-data` = `clamp(2.5rem, 9vh, 5.5rem)` |
-| 次级数据（默认档） | `text-data-sm` = `clamp(1.5rem, 4.5vh, 3rem)` |
+| 主数据（默认档） | `text-data` = `clamp(2.5rem, 9vmin, 5.5rem)` |
+| 次级数据（默认档） | `text-data-sm` = `clamp(1.5rem, 4.5vmin, 3rem)` |
 | 触控目标 | `size-14` / `min-h-14`（56px）起；次要按钮不低于 `min-h-12` |
 | 卡片内距 | `p-5`（`card` utility 已含） |
 
-数字用 `vh` 而非固定 px：桌上平板从 10" 到 13" 都有，固定 px 在大屏上会显得偏小。所有会变化的数字必须加 `font-mono tabular-nums`，否则动画时宽度会跳。
+数字用视口单位而非固定 px：桌上平板从 10" 到 13" 都有，固定 px 在大屏上会显得偏小。
+
+单位必须是 **`vmin` 而不是 `vh`**：横屏下 `vmin === vh`（表现与原来完全一致），竖屏下自动改按宽度算 —— 否则 820×1180 竖屏里 `18vh` = 212px 的生命数字会把卡片撑爆。所有会变化的数字必须加 `font-mono tabular-nums`，否则动画时宽度会跳。
 
 **两档数据字号是默认值，不是上限。** 数字该多大取决于工具自己的信息密度：同屏元素多的工具整体压小，元素少的应该把焦点数字放大到容器装得下的最大值 —— 不要为了统一 token 而缩小信息。需要更激进字号的工具，在**自己目录里**用 `clamp()` 定一组常量、附上按最窄视口算出的上限依据，别往 `@theme` 加全局档位（一个工具的密度不该强加给其他工具）。
 
@@ -109,7 +111,11 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
   | 顶栏与工具内浮层 | `z-20` | [AppHeader](../src/AppHeader.tsx)、[SettingsPopover](../src/tools/bomb-busters/SettingsPopover.tsx) |
   | 通用小工具 dialog | `z-30` | [QuickDialog](../src/quick/QuickDialog.tsx)（要压住顶栏） |
   | 打断性提醒 | `z-40` | [TimerAlarm](../src/quick/timer/TimerAlarm.tsx)（dialog 开着时到时也要在最上层） |
-- 工具页统一套 [ToolLayout](../src/shared/components/ToolLayout.tsx)：左控制栏（`minmax(17rem, 24%)`）+ 右主显示区，`lg`（≥1024px，含 iPad mini 横屏）双栏，窄屏/竖屏退化单列可滚
+- 工具页统一套 [ToolLayout](../src/shared/components/ToolLayout.tsx)，它一个人承担朝向切换，**工具页不写朝向代码也能在竖屏可用**：
+  - 横屏（`wide`）：左控制栏（`minmax(17rem, 24%)`）+ 右主显示区
+  - 竖屏：`grid-rows-[1fr_auto]`，主显示区在上、控制栏贴底（拇指够得到），控制栏限 `max-h-[45dvh]` 且只在自己框里滚，页面级仍不滚动。DOM 顺序保持"控制在前"（Tab / 读屏顺序），视觉换序靠 `order-*`
+- **朝向判据只有 `wide` variant**（`@custom-variant wide (@media (orientation: landscape))`，定义在 [index.css](../src/index.css)）。**不许用宽度断点判横竖屏**：安卓平板横屏的 CSS 视口宽常只有 800–962px，iPad 分屏后更窄，旧代码的 `lg`（≥1024px）会把这批横屏平板整批误判成竖屏，这是"横屏还是竖屏布局"这个 bug 的根因。首页宫格的 `sm:` / `lg:` 是**列数密度**不是朝向，不在此约束内
+- 主显示区要放两块信息时用 [Split](../src/shared/components/Split.tsx)（横屏并排、竖屏上下等分），别自己写朝向类。`ratio` 只描述横屏的宽度比 —— 竖屏一律等分，因为横向挤压只是变窄仍可读，纵向挤压会直接切掉整行
 - 左栏放参数与破坏性操作，右栏放**全桌要看的那块信息**
 - 次要列表（历史记录等）在自己的框里 `overflow-y-auto` —— 局部滚动不算翻页
 - 两种撑满可用空间的手法，按需选：
@@ -130,17 +136,19 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 
 ## 7. 新增工具时的自检
 
-1. iPad 横屏 **1180×820** 下页面级无滚动条；**820×1180** 竖屏回退仍可用
+1. 三种视口下页面级都无滚动条：iPad 横屏 **1180×820**、安卓平板横屏 **962×601**（旧宽度断点在这挂掉过）、竖屏 **820×1180**（主显示在上、控制栏贴底，不是单列长滚）
 2. 没有 `slate-*` 系列颜色、没有小于 `text-xs` 的字号（`grep` 一遍）
 3. 破坏性操作走 [ConfirmButton](../src/shared/components/ConfirmButton.tsx)，且同屏内 rose 只出现在破坏性语义上
-4. 关键数字跟视口高走（默认档 `text-data` / `text-data-sm`，或工具自己目录里的 `clamp()` 常量）+ `font-mono tabular-nums`
+4. 关键数字跟视口**短边**走（默认档 `text-data` / `text-data-sm`，或工具自己目录里的 `clamp()` 常量，单位一律 `vmin` 不用 `vh`）+ `font-mono tabular-nums`
 5. 多态控件有非颜色编码
 6. 长时间盯屏的工具调 [useWakeLock](../src/shared/hooks/useWakeLock.ts)
 7. 没有自己画返回/全屏/标题栏；页面最顶部 16px 内没有需要精准点击的控件（那是顶栏唤出热区）
+8. 横竖屏判断只用 `wide` variant：`grep -n "lg:\|max-lg:" src` 一遍，布局类里不该再有宽度断点
 
 ## 8. 已知取舍
 
-- **竖屏只是回退**，不做强制横屏提示（前端无法真正锁屏，提示反而挡住内容）
+- **锁横屏只能尽力而为，所以竖屏必须是一等布局**。能做的两半都做了：PWA manifest `orientation: 'landscape'`（[vite.config.ts](../vite.config.ts)，装成 PWA 的 Android 生效）+ 进全屏后 `screen.orientation.lock('landscape')`（[useFullscreen](../src/shared/hooks/useFullscreen.ts)，Android Chrome 生效）。**iOS Safari 两条都拿不到**，全靠 `catch` 静默兜住。仍然不做「请旋转设备」提示 —— 挡内容，而且竖屏现在本来就能用
+- **竖屏控制栏允许框内滚**：竖屏底栏只有 45dvh，控制项多的工具（骰子的历史记录）会在栏内滚。页面级不滚这条底线没破，但比横屏多一次滚动动作
 - **矩形格子优于正方形**：拆弹网格在高度受限时拉成矩形，是为了不翻页
 - **首页允许滚动**：工具变多后宫格会超一屏，首页翻页比工具页翻页可接受
 - **顶栏自动隐藏**：换回约 57px 高度（820px 屏的 7%），代价是返回键不常显、要学一次唤出动作 —— 用一次性文字提示 + 全宽热区补偿。不做「点任意处唤出」，那会跟工具本身的点按抢事件
