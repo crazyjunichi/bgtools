@@ -1,0 +1,54 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink: #0b0f17;
+  --color-surface: #151b26;
+  --color-surface-2: #1e2635;
+  --color-line: #2a3547;
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    sans-serif;
+  /* 结果数字用等宽，避免投掷动画时数字宽度跳动 */
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-ink);
+    color-scheme: dark;
+    /* 消除移动端 300ms 点击延迟，同时保留手势缩放 */
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-ink font-sans text-slate-100 antialiased;
+    /* 工具型界面，误选文本比选中文本更常见 */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  button {
+    @apply cursor-pointer select-none;
+  }
+
+  /* 输入类元素恢复可选中 */
+  input,
+  textarea {
+    user-select: text;
+  }
+}
+
+@utility safe-t {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility safe-b {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility safe-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
