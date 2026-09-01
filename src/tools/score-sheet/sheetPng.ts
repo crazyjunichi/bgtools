@@ -65,7 +65,8 @@ const F_FOOT = `400 14px ${SANS}`
 /** 圆角矩形。`roundRect` 在旧 Safari 上不存在，缺了要退成直角而不是抛异常 */
 function rrect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath()
-  if ('roundRect' in ctx) ctx.roundRect(x, y, w, h, r)
+  // 不能用 `'roundRect' in ctx`：lib.dom 里它是必有成员，`in` 会把 else 分支收窄成 never
+  if (typeof ctx.roundRect === 'function') ctx.roundRect(x, y, w, h, r)
   else ctx.rect(x, y, w, h)
 }
 

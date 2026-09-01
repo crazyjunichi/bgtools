@@ -137,14 +137,17 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 
 ## 验收
 
-改完跑这一条，干净就算完成：
+改完跑这两条，干净就算完成：
 
 ```bash
-npm run lint    # oxlint，零 warning
+npm run lint         # oxlint，零 warning
+npm run typecheck    # tsc -b，冷跑约 2.4s
 ```
+
+`typecheck` 是必跑的，因为**另外两样东西都看不见类型**：oxlint 没有 TS 程序，Vite dev 用 esbuild 只剥类型不检查。纯类型层面的错（narrowing 收窄成 `never` 之类）运行时行为完全正确，只有 `tsc` 会报 —— 少了它就只能等构建时才发现。收尾时跑一次即可，别每改一个文件跑一遍。
 
 改了样式或布局的，再走一遍 [docs/DESIGN.md](docs/DESIGN.md) 第 7 节的自检清单（1180×820 无滚动条、无 `slate-*`、无小于 12px 字号）。
 
-**`npm run build` 不要在会话里跑**（含 `tsc -b`）：它十几秒起，而且常被别处正在写的半成品文件拦住，报出来的错往往不是本次改动的。类型错误我在 dev 里当场就看到了。
+**`npm run build` 仍然不要在会话里跑**：慢的是 `vite build` 那一半，`typecheck` 已经覆盖了它的 `tsc -b`。若 `typecheck` 报的错在别处正在写的半成品文件里，说明就好，不要去改。
 
 **也不要起 dev server**（`npm run dev`、`preview` 等常驻进程），由我自己跑。

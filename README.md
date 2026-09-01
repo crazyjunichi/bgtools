@@ -14,6 +14,7 @@ npm run dev      # 开发服务
 npm run build    # 类型检查 + 产物构建到 dist/
 npm run preview  # 预览产物（可验证 PWA / Service Worker）
 npm run lint     # oxlint
+npm run typecheck # tsc -b，只做类型检查不出产物
 ```
 
 产物 `base: './'`，`dist/` 可直接部署到任意静态托管的任意子目录。
