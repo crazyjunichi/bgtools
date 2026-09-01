@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
+import { Overlay } from '../../shared/components/Overlay'
 import { PLAYER_SOLID } from '../../shared/players/colors'
-import { ScoreOverlay } from './ScoreOverlay'
-import { fmtDelta, totalOf, type Round, type SeatView } from './store'
-import { tone } from './tone'
+import type { SeatView } from '../../shared/players/seats'
+import { tone } from '../../shared/tone'
+import { fmtDelta, totalOf, type Round } from './store'
 
 type Props = {
   seats: SeatView[]
@@ -32,7 +33,7 @@ export function ScoreHistory({ seats, rounds, draft, onClose }: Props) {
   const drafted = Object.values(draft).some((v) => v !== 0)
 
   return (
-    <ScoreOverlay
+    <Overlay
       title={<span className="text-lg font-bold">{t('tools.score.history.title')}</span>}
       maxWidth="max-w-5xl"
       onClose={onClose}
@@ -123,6 +124,6 @@ export function ScoreHistory({ seats, rounds, draft, onClose }: Props) {
       <p className="text-center text-xs text-text-dim">
         {t('tools.score.history.hint', { n: rounds.length })}
       </p>
-    </ScoreOverlay>
+    </Overlay>
   )
 }

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
+import { Overlay } from '../../shared/components/Overlay'
 import { IconRepeat } from '../../shared/icons'
-import { ScoreOverlay } from './ScoreOverlay'
 
 type Props = {
   onNewGame: () => void
@@ -16,7 +16,7 @@ export function ScoreSettings({ onNewGame, onClose }: Props) {
   const { t } = useTranslation()
 
   return (
-    <ScoreOverlay
+    <Overlay
       title={<span className="text-lg font-bold">{t('tools.score.settings.title')}</span>}
       onClose={onClose}
     >
@@ -31,6 +31,6 @@ export function ScoreSettings({ onNewGame, onClose }: Props) {
         <IconRepeat className="size-6 short:size-5" aria-hidden />
         {t('tools.score.settings.newGame')}
       </ConfirmButton>
-    </ScoreOverlay>
+    </Overlay>
   )
 }

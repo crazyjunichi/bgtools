@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IconClose } from '../../shared/icons'
+import { IconClose } from '../icons'
 
 type Props = {
   /** 标题区内容，通常是带玩家色的席位名 */
@@ -15,14 +15,17 @@ type Props = {
 }
 
 /**
- * 计分板浮层的公共外壳 —— 调分（[SeatSheet]）、换人（[SeatPicker]）、
- * 局面（[ScoreSettings]）、完整记录（[ScoreHistory]）共用。
+ * 工具页浮层的公共外壳 —— 多轮计分的调分（[SeatSheet](../../tools/score/SeatSheet.tsx)）、
+ * 完整记录，计分纸的模板/条目编辑，以及共用的换人面板（[SeatPicker](../players/SeatPicker.tsx)）。
  *
- * 用 fixed 遮罩而非 absolute 气泡：主界面的卡片网格自己 overflow-y-auto，气泡会被裁掉或跟着滚。
+ * **它不是 quick 的 [QuickDialog](../../quick/QuickDialog.tsx)**：那个由顶栏状态驱动、跨页面常驻；
+ * 这个是工具页内部的局部浮层，开关由工具页自己的 state 管。
+ *
+ * 用 fixed 遮罩而非 absolute 气泡：工具主区自己 overflow-y-auto，气泡会被裁掉或跟着滚。
  * 遮罩关闭走 onClick 而非 onPointerDown：pointerdown 里卸载浮层后，触屏抬手补发的兼容 click
- * 会按抬手坐标重新 hit-test，穿透到底下的卡片上，顺手就把别人的分改了。
+ * 会按抬手坐标重新 hit-test，穿透到底下的格子上，顺手就把别人的分改了。
  */
-export function ScoreOverlay({ title, maxWidth = 'max-w-md', onClose, children }: Props) {
+export function Overlay({ title, maxWidth = 'max-w-md', onClose, children }: Props) {
   const { t } = useTranslation()
 
   useEffect(() => {

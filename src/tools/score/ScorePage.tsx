@@ -2,17 +2,18 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
+import { SeatPicker } from '../../shared/players/SeatPicker'
+import { resolveSeat, takenPlayerIds } from '../../shared/players/seats'
 import { usePlayersStore } from '../../shared/players/store'
 import { ScoreBar } from './ScoreBar'
 import { ScoreGrid } from './ScoreGrid'
 import { ScoreHistory } from './ScoreHistory'
 import { ScoreSettings } from './ScoreSettings'
-import { SeatPicker } from './SeatPicker'
 import { SeatSheet } from './SeatSheet'
-import { resolveSeat, totalOf, useScoreStore } from './store'
+import { totalOf, useScoreStore } from './store'
 
 /** 同一时刻只开一个浮层：调分 → 需要时切到换人；局面与完整记录各算一种 */
-type Overlay =
+type Panel =
   | { kind: 'score' | 'pick'; seatId: string }
   | { kind: 'settings' }
   | { kind: 'history' }
@@ -30,6 +31,7 @@ export default function ScorePage() {
     addSeat,
     removeSeat,
     bindPlayer,
+    renameSeat,
     bump,
     setDelta,
     nextRound,
@@ -38,7 +40,7 @@ export default function ScorePage() {
   } = useScoreStore()
   const players = usePlayersStore((s) => s.players)
 
-  const [overlay, setOverlay] = useState<Overlay | null>(null)
+  const [overlay, setOverlay] = useState<Panel | null>(null)
 
   const views = seats.map((s) => resolveSeat(s, players))
   // 席位被移除后浮层自然消失，不必用 effect 回写 overlay
@@ -47,7 +49,7 @@ export default function ScorePage() {
       ? views.find((v) => v.id === overlay.seatId)
       : undefined
 
-  const taken = new Set(seats.map((s) => s.playerId).filter((id): id is string => id !== null))
+  const taken = takenPlayerIds(seats)
   const scoredCount = seats.filter((s) => (draft[s.id] ?? 0) !== 0).length
 
   return (
@@ -113,6 +115,7 @@ export default function ScorePage() {
           onBump={(amount) => bump(active.id, amount)}
           onSetDelta={(delta) => setDelta(active.id, delta)}
           onEditSeat={() => setOverlay({ kind: 'pick', seatId: active.id })}
+          onRemove={() => removeSeat(active.id)}
           onClose={() => setOverlay(null)}
         />
       )}
@@ -123,7 +126,10 @@ export default function ScorePage() {
           players={players}
           taken={taken}
           onPick={(player) => bindPlayer(active.id, player)}
+          onRenameSeat={(name) => renameSeat(active.id, name)}
           onRemove={() => removeSeat(active.id)}
+          removeText={t('tools.score.sheet.remove')}
+          confirmRemoveText={t('tools.score.sheet.confirmRemove')}
           onClose={() => setOverlay(null)}
         />
       )}

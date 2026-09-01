@@ -1,15 +1,28 @@
+import { lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Stepper } from '../../shared/components/Stepper'
 import { buzz } from '../../shared/haptics'
 import { QUICK_DICE_TYPES, QUICK_MAX_COUNT, useQuickDiceStore } from './store'
 
 /**
- * 顶栏快捷骰子。刻意不做滚动动画 —— 在别的工具中途弹出来，要的是立刻出数。
+ * three.js 是全项目唯一的大依赖（~170KB gzip），不能进首屏包 —— 它只服务
+ * 一个装饰用的画布。quick registry 那条"静态 import 不懒加载"针对的是很小的
+ * 组件，这里是例外；dialog 一打开就预取，按到「投掷」时早已到位
+ */
+const DiceCanvas = lazy(() => import('./DiceCanvas').then((m) => ({ default: m.DiceCanvas })))
+
+/**
+ * 顶栏快捷骰子。数字读数不等动画 —— 在别的工具中途弹出来，要的是立刻出数，
+ * 3D 骰子只是同时在上方把这个结果转出来，两者读的是同一个 crypto 结果。
  * 身份色沿用骰子工具的 amber，建立"琥珀色 = 骰子"的认知一致。
  */
 export function QuickDice() {
   const { t } = useTranslation()
   const { sides, count, last, setSides, setCount, roll } = useQuickDiceStore()
+
+  useEffect(() => {
+    void import('./DiceCanvas')
+  }, [])
 
   const handleRoll = () => {
     roll()
@@ -60,31 +73,40 @@ export function QuickDice() {
         </button>
       </div>
 
-      {/* 弹性块：下限跟 vmin 走，平板横屏算出来仍是 224px（与原 min-h-56 一致），
-          手机横屏收到 ~133px、竖屏 ~148px。用 vh 会在竖屏取长边，那是指针表盘爆宽的原因 */}
-      <div className="order-1 flex min-h-[min(14rem,38vmin)] min-w-0 flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 p-4 short:p-2 wide:order-2">
+      {/* 结果区。内部再分「弹性的 3D 画布 + 刚性的数字读数」，下限按预算反推：
+          读数最挤的一档是 4 颗（横屏 88px 两行 + 总和 56px ≈ 212px），
+          416px 才能给画布留下 ~156px；用 vmin 而非 vh，竖屏取长边会把整块撑爆 */}
+      <div className="order-1 flex min-h-[min(26rem,58vmin)] min-w-0 flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 p-4 short:gap-1 short:p-2 wide:order-2">
         {last === null ? (
           <span className="text-sm text-text-dim">{t('quick.dice.hint')}</span>
-        ) : last.length === 1 ? (
-          <span className="font-mono text-data font-bold tabular-nums text-amber-300">
-            {last[0]}
-          </span>
         ) : (
           <>
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1">
-              {last.map((v, i) => (
-                <span
-                  key={i}
-                  className="font-mono text-data-sm font-bold tabular-nums text-amber-300"
-                >
-                  {v}
+            {/* fallback 撑住同样的空间，加载完不会让下方读数跳一下；
+                没有 WebGL 时 DiceCanvas 返回 null，这块空间跟着收掉 */}
+            <Suspense fallback={<div className="min-h-0 w-full flex-1" />}>
+              <DiceCanvas sides={sides} values={last} className="min-h-0 w-full flex-1" />
+            </Suspense>
+            {/* leading-none 是预算的前提：88px 的字默认行盒会多吃 17px */}
+            <div className="flex shrink-0 flex-col items-center gap-2 short:gap-1">
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                {last.map((v, i) => (
+                  <span
+                    key={i}
+                    className="font-mono text-data font-bold leading-none tabular-nums text-amber-300"
+                  >
+                    {v}
+                  </span>
+                ))}
+              </div>
+              {last.length > 1 && (
+                <span className="flex items-baseline gap-2">
+                  <span className="section-label">{t('common.total')}</span>
+                  <span className="font-mono text-data-md font-bold leading-none tabular-nums text-text">
+                    {total}
+                  </span>
                 </span>
-              ))}
+              )}
             </div>
-            <span className="text-sm text-text-muted">
-              {t('common.total')}{' '}
-              <span className="font-mono font-bold tabular-nums text-text">{total}</span>
-            </span>
           </>
         )}
       </div>

@@ -11,7 +11,11 @@
  * 改这些值前先按最窄尺寸重算，别只看 iPad Pro。
  */
 export const DATA_FONT = {
-  /** 生命：整屏唯一焦点，左栏 232px 宽只放它一个数 */
+  /**
+   * 生命：整屏唯一焦点，左栏（`panelWidth="narrow"`，≥208px）只放它一个数。
+   * 上限校核：card 的 p-5 后剩 168px，等宽单个数字 0.6em + "/6" 的 text-3xl ≈ 36px，
+   * 18vmin @820 = 148px → 88 + 36 = 124px，仍留余量（生命上限 6，永远是一位数）
+   */
   lives: { fontSize: 'clamp(4rem, 18vmin, 10rem)', lineHeight: 1 },
   /** 拆弹编号：受最窄格子宽度约束 */
   wire: { fontSize: 'clamp(2rem, 9.5vmin, 6rem)', lineHeight: 1 },

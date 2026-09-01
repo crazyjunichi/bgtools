@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ConfirmButton } from '../../shared/components/ConfirmButton'
+import { Overlay } from '../../shared/components/Overlay'
 import { buzz } from '../../shared/haptics'
-import { IconEdit } from '../../shared/icons'
+import { IconDelete } from '../../shared/icons'
 import { PLAYER_SOLID } from '../../shared/players/colors'
-import { ScoreOverlay } from './ScoreOverlay'
-import type { SeatView } from './store'
+import type { SeatView } from '../../shared/players/seats'
 
 type Props = {
   seat: SeatView
@@ -14,8 +15,10 @@ type Props = {
   total: number
   onBump: (amount: number) => void
   onSetDelta: (delta: number) => void
-  /** 切到换人 / 移除面板（同一个浮层位置换内容，不叠两层） */
+  /** 切到换人面板（同一个浮层位置换内容，不叠两层） */
   onEditSeat: () => void
+  /** 连这一列的历史分数一起删，所以走二次确认 */
+  onRemove: () => void
   onClose: () => void
 }
 
@@ -45,6 +48,7 @@ export function SeatSheet({
   onBump,
   onSetDelta,
   onEditSeat,
+  onRemove,
   onClose,
 }: Props) {
   const { t } = useTranslation()
@@ -67,27 +71,36 @@ export function SeatSheet({
   }
 
   return (
-    <ScoreOverlay
+    <Overlay
       onClose={onClose}
       title={
         <div className="flex min-w-0 items-center gap-2">
-          {/* 换人/移除藏在笔后面：低频，且移除会连历史一起删，不该和调分键并排 */}
+          {/* 移除会连历史一起删，所以只给一个图标位、必须点两次；武装后自己撑开文字，名字让位 */}
+          <ConfirmButton
+            onConfirm={() => {
+              onRemove()
+              onClose()
+            }}
+            confirmText={t('tools.score.sheet.confirmRemove')}
+            className="shrink-0 !min-h-12 !px-3 !text-sm short:!min-h-11"
+          >
+            <IconDelete className="size-5" aria-hidden />
+            <span className="sr-only">{t('tools.score.sheet.remove')}</span>
+          </ConfirmButton>
+          {/*
+           * 改谁的分是这里最关键的防错点，所以名字用整块实心玩家色铺满剩余宽度，不缩成小色点。
+           * 它同时就是换人入口 —— 要换的正是这个名字，指到它本身比另起一个笔图标更直接。
+           */}
           <button
             type="button"
             onClick={onEditSeat}
-            aria-label={t('tools.score.sheet.editSeat')}
-            className="btn-quiet w-12 shrink-0 !min-h-12 short:w-11 short:!min-h-11"
-          >
-            <IconEdit className="size-5" aria-hidden />
-          </button>
-          {/* 改谁的分是这里最关键的防错点，所以名字用整块实心玩家色，不缩成小色点 */}
-          <span
-            className={`flex min-w-0 items-center rounded-xl px-3 py-2 text-lg font-bold ${
+            aria-label={t('tools.score.sheet.editSeat', { name: seat.name })}
+            className={`flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-xl px-3 text-lg font-bold short:min-h-11 ${
               PLAYER_SOLID[seat.color]
             }`}
           >
             <span className="truncate">{seat.name}</span>
-          </span>
+          </button>
         </div>
       }
     >
@@ -140,6 +153,6 @@ export function SeatSheet({
           </button>
         ))}
       </div>
-    </ScoreOverlay>
+    </Overlay>
   )
 }

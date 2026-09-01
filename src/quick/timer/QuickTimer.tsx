@@ -4,9 +4,15 @@ import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Stepper } from '../../shared/components/Stepper'
 import { buzz } from '../../shared/haptics'
 import { IconClose, IconPause, IconPlay } from '../../shared/icons'
-import { formatMS, MAX_SEC, MIN_SEC, PRESETS, STEP_SEC, useQuickTimerStore } from './store'
-
-const TICK_MS = 250
+import {
+  formatMS,
+  MAX_SEC,
+  MIN_SEC,
+  PRESETS,
+  STEP_SEC,
+  TICK_MS,
+  useQuickTimerStore,
+} from './store'
 
 /**
  * 顶栏快捷计时器。这里只负责显示与操作 —— 到时判定在常驻的 QuickLayer 里，

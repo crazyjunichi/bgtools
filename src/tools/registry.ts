@@ -1,6 +1,7 @@
 import { bombBustersMeta } from './bomb-busters/meta'
-import { diceMeta } from './dice/meta'
+import { scoreSheetMeta } from './score-sheet/meta'
 import { scoreMeta } from './score/meta'
+import { touchPickMeta } from './touch-pick/meta'
 import type { ToolEntry } from './types'
 
 /**
@@ -9,9 +10,10 @@ import type { ToolEntry } from './types'
  * 首页入口和路由都会自动出现。
  */
 export const tools: ToolEntry[] = [
-  { ...diceMeta, load: () => import('./dice/DicePage') },
   { ...scoreMeta, load: () => import('./score/ScorePage') },
+  { ...scoreSheetMeta, load: () => import('./score-sheet/ScoreSheetPage') },
   { ...bombBustersMeta, load: () => import('./bomb-busters/BombBustersPage') },
+  { ...touchPickMeta, load: () => import('./touch-pick/TouchPickPage') },
 ]
 
 export function findTool(pathname: string): ToolEntry | undefined {

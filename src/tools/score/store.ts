@@ -1,20 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import i18n from '../../shared/i18n'
-import { PLAYER_COLORS, type PlayerColor } from '../../shared/players/colors'
-import { findPlayer, type Player } from '../../shared/players/store'
-
-export type Seat = {
-  id: string
-  /** 关联的全局名单玩家；null = 临时席位 */
-  playerId: string | null
-  /**
-   * 名字/颜色快照。名单是真源，但那个人被删掉后席位靠快照继续显示 ——
-   * 桌上正在计分时，删个名单条目不该让一整列分数跟着蒸发。
-   */
-  name: string
-  color: PlayerColor
-}
+import { bindSeat, makeSeat, type Seat } from '../../shared/players/seats'
+import type { Player } from '../../shared/players/store'
 
 export type Round = {
   id: string
@@ -44,6 +31,8 @@ type ScoreState = {
   addSeat: () => void
   removeSeat: (seatId: string) => void
   bindPlayer: (seatId: string, player: Player | null) => void
+  /** 只改临时席位的快照名。绑定了名单玩家的列由 [SeatPicker] 直接改名单，不到这里 */
+  renameSeat: (seatId: string, name: string) => void
   bump: (seatId: string, amount: number) => void
   /**
    * 直接改写当前轮的得分（不是总分）—— 桌上报的永远是"这轮得几分"。
@@ -54,29 +43,6 @@ type ScoreState = {
   undo: () => void
   /** 新一局：清分数与历史，席位留着（换个游戏通常还是这桌人） */
   newGame: () => void
-}
-
-/**
- * 同色允许重复，这里只是新增时的默认值：优先挑本桌还没用的色。
- * 调色板用尽后按席位序轮转 —— 全都回落到第一色会让后来的人彼此分不开，
- * 而表头本来就同时出名字，同色不是唯一编码。
- */
-function firstFreeColor(seats: Seat[]): PlayerColor {
-  const used = new Set(seats.map((s) => s.color))
-  return (
-    PLAYER_COLORS.find((c) => !used.has(c.id))?.id ??
-    PLAYER_COLORS[seats.length % PLAYER_COLORS.length].id
-  )
-}
-
-function makeSeat(seats: Seat[]): Seat {
-  return {
-    id: newId(),
-    playerId: null,
-    // 临时席位的名字是快照数据，存的是当下语言的字面量，与全局名单同一套默认名
-    name: i18n.t('players.defaultName', { n: seats.length + 1 }),
-    color: firstFreeColor(seats),
-  }
 }
 
 function without(deltas: Record<string, number>, seatId: string): Record<string, number> {
@@ -110,16 +76,10 @@ export const useScoreStore = create<ScoreState>()(
       },
 
       bindPlayer: (seatId, player) =>
-        set({
-          seats: get().seats.map((s) =>
-            s.id !== seatId
-              ? s
-              : player
-                ? { ...s, playerId: player.id, name: player.name, color: player.color }
-                : // 解除关联：名字颜色留着当快照，就地变回临时席位
-                  { ...s, playerId: null },
-          ),
-        }),
+        set({ seats: get().seats.map((s) => (s.id === seatId ? bindSeat(s, player) : s)) }),
+
+      renameSeat: (seatId, name) =>
+        set({ seats: get().seats.map((s) => (s.id === seatId ? { ...s, name } : s)) }),
 
       bump: (seatId, amount) => {
         if (!amount) return
@@ -165,7 +125,7 @@ export function totalOf(rounds: Round[], draft: Record<string, number>, seatId: 
 }
 
 /**
- * 增减量一律带符号。表格里另有冷暖色辅助（见 [ScoreTable] 的 `TONE`），
+ * 增减量一律带符号。表格里另有冷暖色辅助（见 [shared/tone.ts](../../shared/tone.ts)），
  * 但**符号始终是主编码** —— 色觉差异或强光下颜色可能完全失效。
  * 减号用 U+2212 而非连字符：与 [Stepper] 一致，等宽字体下宽度也才对得上。
  */
@@ -178,15 +138,4 @@ export function signed(v: number): string {
 /** 表格格子里 0 和缺键都显示 ·：满屏的 0 会糊成噪声，反而看不见真正动过的格子 */
 export function fmtDelta(v: number | undefined): string {
   return v ? signed(v) : '·'
-}
-
-export type SeatView = Seat & { linked: boolean }
-
-/**
- * 名单是真源：人还在就以名单为准（在顶栏 👥 改名/换色立刻反映到表头），
- * 被删了就退回快照并按临时席位对待 —— 不写回 store，避免渲染期产生副作用。
- */
-export function resolveSeat(seat: Seat, players: Player[]): SeatView {
-  const p = seat.playerId ? findPlayer(players, seat.playerId) : undefined
-  return p ? { ...seat, name: p.name, color: p.color, linked: true } : { ...seat, linked: false }
 }

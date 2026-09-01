@@ -9,7 +9,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 - **Tailwind 4 无配置文件**：主题在 [src/index.css](src/index.css) 的 `@theme` 里，不要创建 `tailwind.config.js` 或 `postcss.config.js`
 - **hash 路由**（`createHashRouter`）：为了静态托管免配 rewrite，不要改成 BrowserRouter
 - **`base: './'`**：产物路径必须保持相对，新增静态资源引用不要写绝对路径 `/xxx`
-- **纯本地、无后端**：状态一律 localStorage，不引入网络请求
+- **纯本地、无后端**：不引入网络请求。存储分两级，见下方「持久化」一节
 
 ## 新增工具的机械流程
 
@@ -24,6 +24,20 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 - `id` 即路由 path，用 kebab-case
 - persist 的 `name` 统一 `bgtools:<id>` 前缀，`partialize` 只存该持久化的字段（`last`、`rolling` 这类瞬时状态不存）
 - `meta.icon` 用 emoji（工具身份是**内容标识**，彩色轮廓斜视下更好认）；**功能按钮的图标走 [shared/icons.ts](src/shared/icons.ts)**，见下方「图标」一节
+
+## 持久化：两级，按「会不会无界增长」分
+
+| | 载体 | 判据 |
+|---|---|---|
+| 当前局面（模板 / 席位 / 格子 / 名单 / quick 状态） | zustand `persist` → localStorage，name `bgtools:<id>` | 小、高频写、**需要同步首帧**（异步读会让界面先闪一下空） |
+| 会无界增长的存档（历史局记录） | IndexedDB，走 [shared/idb.ts](src/shared/idb.ts) | 大、低频写、**可懒加载**（只在打开历史浮层时读盘） |
+
+默认落第一级。第二级只在数据「一晚攒好几条、永远不删」时才用，理由是硬的：
+
+- localStorage 的 5MB 是**整个域名共享**的，现在已经有七个 `bgtools:*` key 在分
+- zustand `persist` 是**全量写回**：存档进了某个 store，就等于每按一下数字键都把所有历史一起 `JSON.stringify`（同步阻塞主线程）。所以**存档必须独立一个不带 persist 的 store**（[score-sheet/games.ts](src/tools/score-sheet/games.ts) 是范例），IDB 自己就是持久层
+- 新增一种存档要在 [idb.ts](src/shared/idb.ts) 的 `STORES` 加一行并 bump `VERSION`（`onupgradeneeded` 一个版本只跑一次，分散到各业务模块去建必然漏）
+- **IDB 打不开是正常分支，不是崩点**：隐私模式会直接禁掉它。上层 catch 成 `status: 'unavailable'` → 那一块功能关掉 + 一句说明，其余照用
 
 ## 通用小工具（quick）
 
@@ -115,7 +129,7 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 
 ## 随机数
 
-任何随机（骰子、抽签、洗牌、首位玩家）必须用 `crypto.getRandomValues` + 拒绝采样，参考 [dice/store.ts](src/tools/dice/store.ts) 的 `rollDie`。**不要用 `Math.random`** —— 桌游场景下公平性会被玩家当场质疑。例外：纯视觉动画的假值可以用 `Math.random`。
+任何随机（骰子、抽签、洗牌、首位玩家）必须用 `crypto.getRandomValues` + 拒绝采样，参考 [shared/random.ts](src/shared/random.ts) 的 `rollDie`。**不要用 `Math.random`** —— 桌游场景下公平性会被玩家当场质疑。例外：纯视觉动画的假值可以用 `Math.random`。
 
 ## 共享层
 
@@ -123,13 +137,14 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 
 ## 验收
 
-改完必须两条都干净，才算完成：
+改完跑这一条，干净就算完成：
 
 ```bash
-npm run build   # 含 tsc -b，类型错误会拦住
 npm run lint    # oxlint，零 warning
 ```
 
 改了样式或布局的，再走一遍 [docs/DESIGN.md](docs/DESIGN.md) 第 7 节的自检清单（1180×820 无滚动条、无 `slate-*`、无小于 12px 字号）。
 
-**不要在会话里起 dev server**（`npm run dev`、`preview` 等常驻进程），由我自己跑。
+**`npm run build` 不要在会话里跑**（含 `tsc -b`）：它十几秒起，而且常被别处正在写的半成品文件拦住，报出来的错往往不是本次改动的。类型错误我在 dev 里当场就看到了。
+
+**也不要起 dev server**（`npm run dev`、`preview` 等常驻进程），由我自己跑。

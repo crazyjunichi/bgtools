@@ -20,31 +20,47 @@
 export {
   AlarmClock as IconAlarm,
   ArrowLeft as IconBack,
+  /** 数字键盘的退格。lucide 的 `Delete` 画的正是键帽上那个 ⌫，与 IconDelete（垃圾桶）不同 */
+  Delete as IconBackspace,
   Check as IconCheck,
   X as IconClose,
   Compass as IconCompass,
   Crown as IconCrown,
+  /** 导出为 CSV。用表格而非文档字形，才和 IconImage 一眼区分得开 */
+  Sheet as IconCsv,
   Trash2 as IconDelete,
   Dices as IconDice,
   Pencil as IconEdit,
+  /** 「整格清空」，与退格区分：退格删一位，橡皮擦整格 */
+  Eraser as IconEraser,
   Minimize as IconExitFull,
   Maximize as IconFullscreen,
+  Boxes as IconGroups,
   History as IconHistory,
+  /** 导出为图片 */
+  Image as IconImage,
   Lock as IconLocked,
   Target as IconLogo,
   Minus as IconMinus,
   ChevronDown as IconMoveDown,
   ChevronUp as IconMoveUp,
   Bomb as IconNewGame,
+  ListOrdered as IconOrder,
   Pause as IconPause,
   Play as IconPlay,
   UserPlus as IconPlayerAdd,
   Users as IconPlayers,
   Plus as IconPlus,
+  LayoutGrid as IconQuickMenu,
   RefreshCw as IconRepeat,
   RotateCcw as IconReset,
+  /** 存到本地文件 */
+  Download as IconSave,
+  Search as IconSearch,
   ChevronRight as IconSelected,
   Settings as IconSettings,
+  /** 系统分享面板 */
+  Share2 as IconShare,
   Timer as IconTimer,
   CircleHelp as IconUnknown,
 } from 'lucide-react'

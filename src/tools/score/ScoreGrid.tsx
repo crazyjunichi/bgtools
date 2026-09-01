@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { IconCrown } from '../../shared/icons'
 import { PLAYER_SOLID } from '../../shared/players/colors'
-import { signed, totalOf, type Round, type SeatView } from './store'
-import { tone } from './tone'
+import type { SeatView } from '../../shared/players/seats'
+import { tone } from '../../shared/tone'
+import { signed, totalOf, type Round } from './store'
 
 type Props = {
   seats: SeatView[]

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { QuickBar } from './quick/QuickBar'
+import { useQuickUI } from './quick/store'
 import { useFullscreen } from './shared/hooks/useFullscreen'
 import { IconBack, IconExitFull, IconFullscreen, IconLogo } from './shared/icons'
 import type { ToolEntry } from './tools/types'
@@ -38,6 +39,7 @@ type Props = { tool?: ToolEntry }
 export function AppHeader({ tool }: Props) {
   const { t } = useTranslation()
   const { isFullscreen, toggle, supported } = useFullscreen()
+  const quickOpen = useQuickUI((s) => s.open)
   const [visible, setVisible] = useState(true)
   const [seenHint, setSeenHint] = useState(readSeenHint)
   const timer = useRef<number>(0)
@@ -58,14 +60,26 @@ export function AppHeader({ tool }: Props) {
 
   useEffect(() => {
     if (!tool) return
+    // 面板开着就别再倒计时。关掉后本 effect 重跑并自动重新计时，
+    // 所以 QuickBar 不必再回调 arm
+    if (quickOpen !== null) {
+      window.clearTimeout(timer.current)
+      return
+    }
     arm()
     return () => window.clearTimeout(timer.current)
-  }, [tool, arm])
+  }, [tool, arm, quickOpen])
 
   const show = () => {
     setVisible(true)
     arm()
   }
+
+  /*
+   * tile 面板非模态、且按顶栏尺寸定位，顶栏滑走它就悬空 —— 开着期间顶栏必须留在原地。
+   * 这里在渲染期派生而不是在 effect 里 setVisible(true)：后者会触发级联渲染。
+   */
+  const shown = visible || quickOpen !== null
 
   return (
     <>
@@ -75,7 +89,7 @@ export function AppHeader({ tool }: Props) {
         className={`safe-t safe-x border-b border-line ${
           tool
             ? `absolute inset-x-0 top-0 z-20 bg-ink/95 backdrop-blur transition-transform duration-200 wide:static wide:z-auto wide:h-full wide:shrink-0 wide:border-r wide:border-b-0 wide:bg-ink wide:backdrop-blur-none ${
-                visible
+                shown
                   ? 'translate-y-0'
                   : 'pointer-events-none -translate-y-full wide:pointer-events-auto wide:translate-y-0'
               }`
@@ -106,8 +120,8 @@ export function AppHeader({ tool }: Props) {
           <h1 className={`flex-1 truncate text-lg font-semibold ${tool ? 'wide:sr-only' : ''}`}>
             {tool ? `${tool.icon} ${t(tool.nameKey)}` : t('app.title')}
           </h1>
-          {/* 骰子/计时器这类通用小工具的入口：任何工具页里都要能随手用一下 */}
-          <QuickBar onOpen={tool ? arm : undefined} />
+          {/* 小工具的 tile 面板入口 + 正在跑的计时器芯片 */}
+          <QuickBar />
           {supported && (
             <button
               type="button"
@@ -129,7 +143,7 @@ export function AppHeader({ tool }: Props) {
       </header>
 
       {/* 收起后留一条全宽 16px 热区 + 小把手：平板平放时顶边够不着精准目标，热区要好命中 */}
-      {tool && !visible && (
+      {tool && !shown && (
         <button
           type="button"
           /*
@@ -147,7 +161,7 @@ export function AppHeader({ tool }: Props) {
         </button>
       )}
 
-      {tool && visible && !seenHint && (
+      {tool && shown && !seenHint && (
         <p className="pointer-events-none absolute inset-x-0 top-16 z-20 text-center text-sm text-text-dim wide:hidden">
           {t('header.hint')}
         </p>

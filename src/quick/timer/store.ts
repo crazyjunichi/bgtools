@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export const PRESETS = [30, 60, 120, 300] as const
+/** 显示刷新与到时判定共用一档：到时误差上限就是这个值，250ms 肉眼看不出 */
+export const TICK_MS = 250
 // 下限跟 STEP_SEC 对齐，否则步进出来的值全是 35 / 65 这种零头
 export const MIN_SEC = 30
 export const MAX_SEC = 3600

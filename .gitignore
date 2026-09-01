@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code 的本机权限设置（项目级 skills 要进版本库，这个不要）
+.claude/settings.local.json
+
+# 图标/封面挑图时的暖场目录（icon-fetch / bgg-cover skill 会往这里写）
+.tmp-icons
+.tmp-bgg

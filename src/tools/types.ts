@@ -17,6 +17,13 @@ export type ToolMeta = {
    * 功能按钮的图标走 [shared/icons.ts](../shared/icons.ts)。
    */
   icon: string
+  /**
+   * 可选的封面图，相对 `public/`（如 `covers/bomb-busters.png`）。
+   * 只给"桌上真有这盒游戏"的工具配：跟实物一致，第一眼就认得。
+   * 缺省或加载失败都退回 `icon` —— emoji 是永远在的那一层，不许删。
+   * 抓图流程见 .claude/skills/bgg-cover。
+   */
+  cover?: string
   /** 宫格卡片的强调色（Tailwind 类名片段，如 'amber'） */
   accent: 'amber' | 'emerald' | 'sky' | 'violet' | 'rose'
 }

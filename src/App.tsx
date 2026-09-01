@@ -40,8 +40,9 @@ export default function App() {
         <Outlet />
       </main>
 
-      {/* 故意不给 key：换页也不能重挂载，否则正在跑的计时会被打断 */}
-      <QuickLayer />
+      {/* 故意不给 key：换页也不能重挂载，否则正在跑的计时会被打断。
+          sidebar 只影响 tile 面板的定位（工具页横屏顶栏在左侧），不参与挂载身份 */}
+      <QuickLayer sidebar={!!tool} />
     </div>
   )
 }

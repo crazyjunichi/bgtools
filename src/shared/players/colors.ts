@@ -42,6 +42,9 @@ export function colorLabelKey(color: PlayerColor): I18nKey | undefined {
 // 两处必要的破例，都在 black 上：深底上「黑」只能靠**近黑底 + 亮描边**成形，
 // 所以它的实心档是白字（text-ink 在 zinc-950 上等于看不见），淡底档也不能用 /15。
 
+/** `--color-ink`。canvas 那张表要字面量，抄两遍不如提一个常量 */
+const INK = '#0a0a0a'
+
 /** 实心态：选中的玩家、需要一眼认人的胶囊 */
 export const PLAYER_SOLID: Record<PlayerColor, string> = {
   red: 'bg-red-400 text-ink',
@@ -80,6 +83,34 @@ export const PLAYER_SOFT: Record<PlayerColor, string> = {
   white: 'border-zinc-300/60 bg-zinc-300/15 text-zinc-100',
   gray: 'border-zinc-400/60 bg-zinc-400/15 text-zinc-300',
   black: 'border-zinc-400/60 bg-zinc-950 text-zinc-200',
+}
+
+/**
+ * canvas 专用的实心档取值。**不是新增颜色** —— 十六个色相仍是上面那批，
+ * 只是换了个载体：`<canvas>` 拿不到 Tailwind 类名，而 Tailwind 4 的色板全是 `oklch()`，
+ * `fillStyle` 不认时是**静默失败**（保留上一次的颜色），画出来的图会张冠李戴。
+ *
+ * 值 = `PLAYER_SOLID` 那一档（-400，`black` 是 zinc-950）的 oklch 换算成 sRGB，
+ * 源值见 `node_modules/tailwindcss/theme.css`，改版本时按那里重算。
+ * `fg` 与 `PLAYER_SOLID` 的文字色一致，`ring` 只有「黑」有 —— 深底上的近黑块只能靠亮描边成形。
+ */
+export const PLAYER_HEX: Record<PlayerColor, { bg: string; fg: string; ring?: string }> = {
+  red: { bg: '#ff6467', fg: INK }, // oklch(70.4% 0.191 22.216)
+  orange: { bg: '#ff8904', fg: INK }, // oklch(75% 0.183 55.934)
+  yellow: { bg: '#fdc700', fg: INK }, // oklch(85.2% 0.199 91.936)
+  lime: { bg: '#9ae600', fg: INK }, // oklch(84.1% 0.238 128.85)
+  green: { bg: '#05df72', fg: INK }, // oklch(79.2% 0.209 151.711)
+  teal: { bg: '#00d5be', fg: INK }, // oklch(77.7% 0.152 181.912)
+  cyan: { bg: '#00d3f2', fg: INK }, // oklch(78.9% 0.154 211.53)
+  blue: { bg: '#51a2ff', fg: INK }, // oklch(70.7% 0.165 254.624)
+  indigo: { bg: '#7c86ff', fg: INK }, // oklch(67.3% 0.182 276.935)
+  violet: { bg: '#a684ff', fg: INK }, // oklch(70.2% 0.183 293.541)
+  fuchsia: { bg: '#ed6aff', fg: INK }, // oklch(74% 0.238 322.16)
+  pink: { bg: '#fb64b6', fg: INK }, // oklch(71.8% 0.202 349.761)
+  brown: { bg: '#c79a6b', fg: INK }, // index.css 的 @theme 自定义，本来就是 hex
+  white: { bg: '#f4f4f5', fg: INK }, // zinc-100
+  gray: { bg: '#9f9fa9', fg: INK }, // zinc-400
+  black: { bg: '#09090b', fg: '#f5f5f5', ring: '#9f9fa9' }, // zinc-950 + text + zinc-400
 }
 
 /** 色点：列表行前的小圆点，只需要底色 */
