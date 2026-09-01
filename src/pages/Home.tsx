@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { tools } from '../tools/registry'
 import type { ToolMeta } from '../tools/types'
@@ -13,6 +14,8 @@ const ACCENT: Record<ToolMeta['accent'], string> = {
 }
 
 export default function Home() {
+  const { t } = useTranslation()
+
   return (
     <div className="mx-auto h-full max-w-5xl overflow-y-auto">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -25,8 +28,8 @@ export default function Home() {
             }`}
           >
             <span className="text-4xl">{tool.icon}</span>
-            <span className="text-lg font-semibold text-text">{tool.name}</span>
-            <span className="text-sm leading-relaxed text-text-muted">{tool.desc}</span>
+            <span className="text-lg font-semibold text-text">{t(tool.nameKey)}</span>
+            <span className="text-sm leading-relaxed text-text-muted">{t(tool.descKey)}</span>
           </Link>
         ))}
       </div>

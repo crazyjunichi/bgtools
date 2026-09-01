@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { buzz } from '../haptics'
 
 type Props = {
   onConfirm: () => void
   children: React.ReactNode
+  /** 缺省是 common.confirm。默认值不写在参数上：那要在组件内才拿得到 t() */
   confirmText?: string
   className?: string
   /** 禁用时同时撤掉已武装状态，免得解禁后还留着一个"再点就执行"的按钮 */
@@ -13,13 +15,8 @@ type Props = {
 const RESET_DELAY = 2500
 
 /** 二次确认按钮。清零/重置类操作在桌上极易误触，必须点两次 */
-export function ConfirmButton({
-  onConfirm,
-  children,
-  confirmText = '确认？',
-  className,
-  disabled,
-}: Props) {
+export function ConfirmButton({ onConfirm, children, confirmText, className, disabled }: Props) {
+  const { t } = useTranslation()
   const [armed, setArmed] = useState(false)
   const timer = useRef<number>(0)
 
@@ -48,7 +45,7 @@ export function ConfirmButton({
         armed && !disabled ? 'bg-rose-600 font-bold text-white' : 'bg-surface-2 text-text'
       } ${className ?? ''}`}
     >
-      {armed && !disabled ? confirmText : children}
+      {armed && !disabled ? (confirmText ?? t('common.confirm')) : children}
     </button>
   )
 }

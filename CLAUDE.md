@@ -14,7 +14,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 ## 新增工具的机械流程
 
 1. 建 `src/tools/<id>/`
-2. `meta.ts` 导出 `ToolMeta`（见 [src/tools/types.ts](src/tools/types.ts)）
+2. `meta.ts` 导出 `ToolMeta`（见 [src/tools/types.ts](src/tools/types.ts)）：`nameKey` / `descKey` 填 `tools.<id>.{name,desc}`，并在**两个** locale 里补上这两条
 3. 页面组件 **default export**，状态放同目录 `store.ts`
 4. 在 [src/tools/registry.ts](src/tools/registry.ts) 追加一行 `{ ...xxxMeta, load: () => import('./xxx/XxxPage') }`
 
@@ -29,7 +29,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 
 骰子、计时器这类**任何游戏都可能临时用一下**的东西不进首页宫格，而是常驻顶栏图标，点开是居中 dialog，用完关掉、状态保留。
 
-新增一个：建 `src/quick/<id>/`（组件 + `store.ts`），在 [src/quick/registry.ts](src/quick/registry.ts) 追加一行。顶栏按钮自动出现。
+新增一个：建 `src/quick/<id>/`（组件 + `store.ts`），在 [src/quick/registry.ts](src/quick/registry.ts) 追加一行（`nameKey` 填 `quick.<id>.name`，两个 locale 补上）。顶栏按钮自动出现。
 
 不许违反的三条：
 
@@ -41,11 +41,11 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 
 ### 横竖屏布局：判据，不是模板
 
-quick 的形态无法预设（现有四个恰好都是「窄栏 + 主区」，但下一个可能是纯列表、单个大按钮或三块并列），所以这里给推导规则而不是骨架组件。两条不变量：**dialog 自身不滚**（[QuickDialog](src/quick/QuickDialog.tsx) 的 `overflow-y-auto` 只是兜底，不算进预算）、**触控目标不随朝向变化**（常态 56 / 矮屏 44）。
+quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区」，设置面板只有一排按钮，下一个可能是纯列表或三块并列），所以这里给推导规则而不是骨架组件。两条不变量：**dialog 自身不滚**（[QuickDialog](src/quick/QuickDialog.tsx) 的 `overflow-y-auto` 只是兜底，不算进预算）、**触控目标不随朝向变化**（常态 56 / 矮屏 44）。
 
-- **A. 先把每块内容标成「刚性」或「弹性」，这是所有布局决策的唯一输入。** 刚性 = 高度由触控目标和文字行数决定，压了就点不到（按钮组、输入框、[Stepper](src/shared/components/Stepper.tsx)、颜色网格）；弹性 = 任意缩放不失功能（大数字、表盘、可滚列表、留白）。**结构角色推不出伸缩性**：骰子的「控制栏」刚性、「显示区」弹性，而 [QuickPlayers](src/quick/players/QuickPlayers.tsx) 正好相反 —— 右侧编辑区 340px 纯刚性，唯一的弹性块是左栏那个可滚列表。红线：**每个 quick 至少要有一块弹性块**吸收余量，全刚性的内容放不进 dialog，那是工具页而不是 quick
+- **A. 先把每块内容标成「刚性」或「弹性」，这是所有布局决策的唯一输入。** 刚性 = 高度由触控目标和文字行数决定，压了就点不到（按钮组、输入框、[Stepper](src/shared/components/Stepper.tsx)、颜色网格）；弹性 = 任意缩放不失功能（大数字、表盘、可滚列表、留白）。**结构角色推不出伸缩性**：骰子的「控制栏」刚性、「显示区」弹性，而 [QuickPlayers](src/quick/players/QuickPlayers.tsx) 正好相反 —— 右侧编辑区（操作条 + 输入框 + 16 色板，竖屏堆起来 ≈468px）纯刚性，唯一的弹性块是左栏那个可滚列表。**刚性块装不下时给它自己一个 `overflow-y-auto` 框，不许缩格子**（色板行高下限锁 `minmax(3.5rem,1fr)`：有余量就拉伸，没余量就在框里滚，触控目标不动）。红线：**每个 quick 至少要有一块弹性块**吸收余量，全刚性的内容放不进 dialog，那是工具页而不是 quick。**唯一例外是内容总高远低于 D 的预算**（如 [QuickSettings](src/quick/settings/QuickSettings.tsx) 约 220px）—— 这种不设显式高度、走内容自然高度即可，横竖屏都没有余量要分配，硬塞一块弹性块只会撑出空白
 - **B. 朝向只决定排列轴，不决定尺寸。** `flex-col wide:flex-row`，尺寸交给 flex 算：刚性块 `shrink-0` + 自然尺寸，弹性块 `flex-1 min-h-0`（横屏另加 `min-w-0`）。固定尺寸**必须带 `wide:` 前缀** —— `wide:w-56` 合法（横屏下宽度是主轴，不约束会被 grid 内容拉宽），裸 `w-56` 违规（竖屏下它把块钉成 224px 窄柱，右边全是空白）。块数不限于 2；竖屏谁排在下由「谁该贴拇指」决定，用 `order-*`，DOM 顺序保持刚性块在前（Tab 顺序更自然）
-- **C. 视口单位必须匹配被约束的维度，同时受限就取短边。** 宽高同时受限的东西（正方形表盘、等比图形）**只能用 `vmin`** —— 指针表盘原来写 `min(18rem,42vh)`，竖屏 `vh` 取长边算出 288px，顶着 `shrink-0` 硬塞进 78px 的容器就溢出了。反过来，**只受高度约束的东西用 `vh` 才对**（[QuickPlayers](src/quick/players/QuickPlayers.tsx) 的 `h-[min(40rem,64vh)]`：容器高度就该跟视口高走，换 `vmin` 竖屏会取宽度把内容压得毫无必要地矮）。判断方法是问一句「这个值变大，会不会把某个方向挤爆」，两个方向都会就用 `vmin`
+- **C. 视口单位必须匹配被约束的维度，同时受限就取短边。** 宽高同时受限的东西（正方形表盘、等比图形）**只能用 `vmin`** —— 指针表盘原来写 `min(18rem,42vh)`，竖屏 `vh` 取长边算出 288px，顶着 `shrink-0` 硬塞进 78px 的容器就溢出了。反过来，**只受高度约束的东西用 `vh` 才对**（[QuickPlayers](src/quick/players/QuickPlayers.tsx) 的 `h-[min(48rem,72vh)]`：容器高度就该跟视口高走，换 `vmin` 竖屏会取宽度把内容压得毫无必要地矮）。判断方法是问一句「这个值变大，会不会把某个方向挤爆」，两个方向都会就用 `vmin`
 - **D. 预算自检是硬性的。** 可用高 = 视口高 − dialog 固定开销（常态 **136px** = 遮罩 32 + `card` 40 + 标题行 48 + gap 16；`short` 档 **88px** = 16 + 24 + 40 + 8）。**竖屏堆叠时各块高度相加、横屏并排时取各块最大值** —— 别把这两种算法搞混（同一组内容横屏 206px 就够、竖屏要 494px）。刚性块高度和 + 弹性块下限和 ≤ 可用高；超了就降弹性块下限，不许改成让 dialog 滚。降不下去（弹性块被挤到不可用）说明命中了 A 的红线，该动结构而不是继续调数值
 - **E. 内层要显式高度就自己给，别写 `h-full`。** [QuickDialog](src/quick/QuickDialog.tsx) 的面板高度由内容决定（`max-h-full` 只是上限），内层 `h-full` 没有锚点会塌缩。需要确定高度的（如 QuickPlayers 里要让列表撑满剩余空间）直接给 `h-[min(<rem>,<n>vh)]`，值按 D 的预算反推
 
@@ -56,7 +56,8 @@ quick 的形态无法预设（现有四个恰好都是「窄栏 + 主区」，�
 - 唯一真源是 [shared/players/store.ts](src/shared/players/store.ts)（persist `bgtools:players`），数组顺序即**座位顺序**。它**故意不放在 `src/quick/players/` 下** —— quick 的「状态与工具页完全独立」惯例只管临时工具，名单的全部价值就在被各工具读到；quick 目录里只留编辑 UI（[QuickPlayers](src/quick/players/QuickPlayers.tsx)，顶栏 👥）
 - 工具要用名单：读 `usePlayersStore`，选人用 [PlayerSelect](src/shared/players/PlayerSelect.tsx)（回传 id 数组，已按座位排序），显示用 [PlayerChip](src/shared/players/PlayerChip.tsx)。**不要在工具里再实现一套增删改**，引导用户去顶栏 👥
 - 名字有不变式：**永不为空**（store 的 `rename` 把空值回填成 `玩家N`），消费方不必处理空串
-- 颜色只用 [colors.ts](src/shared/players/colors.ts) 的 `PLAYER_SOLID` / `PLAYER_SOFT` / `PLAYER_DOT` 三张显式映射表，8 色刻意避开 rose / emerald / sky / amber 四个语义色。**同色允许被两个玩家共用**，所以任何露出玩家色的地方必须同时出名字或中文色名 —— 颜色不许是唯一识别编码
+- **人数不设上限、名单也没有「重置」**：`add()` 永不失败（返回新 id），UI 里不要显示 `N/上限`，也不要再加一键恢复默认（误触代价太大，删除是逐个删的）
+- 颜色只用 [colors.ts](src/shared/players/colors.ts) 的 `PLAYER_SOLID` / `PLAYER_SOFT` / `PLAYER_DOT` 三张显式映射表，16 色刻意避开 rose / emerald / sky / amber 四个语义色，末尾四格是中性/大地色（棕白灰黑，棕在 `@theme` 自定义）。**这已是上限，不要再加色**，依据见 [docs/DESIGN.md](docs/DESIGN.md) §2。**同色允许被两个玩家共用**（超过 16 人必然重复），所以任何露出玩家色的地方必须同时出名字或色名 —— 颜色不许是唯一识别编码。文字色由这三张表给，**调用点不许在 `PLAYER_SOLID` 后面再补 `text-*`**（会覆盖掉「黑」唯一的白字）
 - `src/shared/players/` 是 shared 层「两个工具用到才上提」原则的一处**有意例外**：它本身就是跨工具契约，不是某个工具的私有组件
 
 ## 运行场景基线（每个工具都要满足）
@@ -76,6 +77,18 @@ quick 的形态无法预设（现有四个恰好都是「窄栏 + 主区」，�
 - 需要长时间盯屏的工具必须调 [useWakeLock](src/shared/hooks/useWakeLock.ts)
 - 贴边布局用 `safe-t` / `safe-b` / `safe-x` utility 避让刘海
 - 深色单一主题，不做主题切换
+
+## 文案与 i18n
+
+界面语言 **简体中文 + English**。真源是 [locales/zh.ts](src/shared/i18n/locales/zh.ts)，[en.ts](src/shared/i18n/locales/en.ts) 受 `Resources` 类型约束与它同构 —— 缺 key / 多 key / 拼错都在 `tsc` 阶段报错，这是刻意的。切换入口在顶栏 ⚙（[QuickSettings](src/quick/settings/QuickSettings.tsx)）。
+
+- **业务文件里不许出现界面中文字面量**，`aria-label` / `placeholder` / `confirmText` 一样算。新增文案必须同时写两个 locale
+- key 分层与目录对齐：`common`（跨处复用）· `header` / `stepper` 这类共享组件 · `quick.<id>.*` · `tools.<id>.*` · `players.*`。**第二处用到才上提到 `common`**，同 shared 层的规矩
+- **组件内用 `useTranslation()`，模块顶层 / store 层用 `i18n.t()`**（见 [players/store.ts](src/shared/players/store.ts) 的 `defaultName`）。后者拿到的是**求值那一刻**的语言，只适合"存进 localStorage 的快照名"这类本就不该跟着语言变的值
+- **纯数据常量存 key 不存文案**：`ToolMeta.nameKey`、`QuickTool.nameKey`、`Equipment.nameKey`、`PLAYER_COLORS[].labelKey`，字段类型标 `I18nKey`（[i18n/types.ts](src/shared/i18n/types.ts)），消费方在渲染期 `t()` —— 这才是"切语言时已渲染的一切跟着变"的原因。**key 写完整字面量，禁止拼接**（`` `tools.${id}.name` `` 同时丢掉类型校验和全局搜索）
+- **插值参数不叫 `count`** —— 那是 i18next 的复数保留名，会让它去找 `xxx_one` / `xxx_other` 变体。数量统一 `{{n}}`，多个数字用具名参数（`{{total}}` / `{{delta}}`）。目前全项目不用复数变体，有复数需求的地方下限都 ≥ 2
+- 英文普遍比中文宽 1.5–2 倍，而布局是按中文长度调的。**撑破了先压英文措辞，不动布局**（`quick.players.add` 因此是 `Add` 而不是 `Add player`）
+- 已知限制，不要试图修：[index.html](index.html) 的 `<title>` / `lang` 只是首帧默认值（运行时由 [App.tsx](src/App.tsx) 的 effect 接管），[vite.config.ts](vite.config.ts) 的 PWA manifest 是构建期静态的
 
 ## 样式约束
 

@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
+import type { I18nKey } from '../../shared/i18n/types'
 import type { DefuseState } from './store'
 import { DATA_FONT } from './typography'
 
@@ -26,34 +28,42 @@ const TONE: Record<DefuseState, string> = {
 /** 不只靠颜色区分三态：半拆多一条半高填充 + ½，全拆退场 + ✓ + 删除线 */
 const MARK: Record<DefuseState, string> = { 0: '', 1: '½', 2: '✓' }
 
-const LABEL: Record<DefuseState, string> = { 0: '未拆过', 1: '拆了一半', 2: '全部拆完' }
+const LABEL_KEY: Record<DefuseState, I18nKey> = {
+  0: 'tools.bombBusters.wires.state.intact',
+  1: 'tools.bombBusters.wires.state.half',
+  2: 'tools.bombBusters.wires.state.done',
+}
 
 /**
  * 有色外壳把拆弹区圈成一块 sky 领地，和右侧 violet 的道具区分开 ——
  * 两块信息都裸放在同一深底上时会连成一片，隔着桌子找不到边界。
  */
 export function WireGrid({ wires, onCycle }: Props) {
+  const { t } = useTranslation()
+
   return (
     <section className="flex min-h-0 flex-1 flex-col gap-2 rounded-3xl border-2 border-sky-500/40 bg-sky-950/40 p-3">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        <span className="text-sm font-semibold tracking-wide text-sky-200">拆弹状态</span>
+        <span className="text-sm font-semibold tracking-wide text-sky-200">
+          {t('tools.bombBusters.wires.title')}
+        </span>
         <div className="flex items-center gap-4 text-xs text-sky-100/80">
           <span className="flex items-center gap-1.5">
             <span className="size-3 rounded-sm border border-sky-400 bg-sky-500/40" />
-            未拆
+            {t('tools.bombBusters.wires.legend.intact')}
           </span>
           {/* 图例色块跟格子一样按填充量给：半格 / 满格，颜色之外还有一层量的编码 */}
           <span className="flex items-center gap-1.5">
             <span className="flex size-3 flex-col justify-end rounded-sm border border-amber-400">
               <span className="h-1/2 bg-amber-400" />
             </span>
-            一半
+            {t('tools.bombBusters.wires.legend.half')}
           </span>
           {/* 色块不跟着格子压暗（图例本来就小，压暗就看不见了），
               用删除线对应格子里的删除线 */}
           <span className="flex items-center gap-1.5">
             <span className="size-3 rounded-sm border border-emerald-400 bg-emerald-500" />
-            <span className="line-through">全拆</span>
+            <span className="line-through">{t('tools.bombBusters.wires.legend.done')}</span>
           </span>
         </div>
       </div>
@@ -66,7 +76,7 @@ export function WireGrid({ wires, onCycle }: Props) {
           <button
             key={i}
             type="button"
-            aria-label={`数字 ${i + 1}：${LABEL[state]}`}
+            aria-label={t('tools.bombBusters.wires.cell', { n: i + 1, state: t(LABEL_KEY[state]) })}
             onClick={() => {
               buzz()
               onCycle(i)

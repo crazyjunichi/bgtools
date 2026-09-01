@@ -1,20 +1,24 @@
 import type { ComponentType } from 'react'
+import type { I18nKey } from '../shared/i18n/types'
 import {
   IconCompass,
   IconDice,
   IconPlayers,
+  IconSettings,
   IconTimer,
   type LucideIcon,
 } from '../shared/icons'
 import { QuickDice } from './dice/QuickDice'
 import { QuickPlayers } from './players/QuickPlayers'
 import { QuickPointer } from './pointer/QuickPointer'
+import { QuickSettings } from './settings/QuickSettings'
 import { QuickTimer } from './timer/QuickTimer'
 
 /** 所有游戏都可能临时要用的小工具，入口常驻顶栏，点开是 dialog */
 export type QuickTool = {
   id: string
-  name: string
+  /** 存 key 而不存文案：本表在模块顶层求值，切语言时要跟着变 */
+  nameKey: I18nKey
   /** 顶栏是功能入口而非内容，所以走 shared/icons 而不是 emoji */
   icon: LucideIcon
   Component: ComponentType
@@ -27,9 +31,23 @@ export type QuickTool = {
  * 静态 import 不懒加载：组件都很小，懒加载只会让弹出瞬间闪一下 Suspense。
  */
 export const quickTools: QuickTool[] = [
-  { id: 'dice', name: '快速骰子', icon: IconDice, Component: QuickDice, wide: true },
-  { id: 'timer', name: '计时器', icon: IconTimer, Component: QuickTimer, wide: true },
-  { id: 'pointer', name: '随机指针', icon: IconCompass, Component: QuickPointer, wide: true },
+  { id: 'dice', nameKey: 'quick.dice.name', icon: IconDice, Component: QuickDice, wide: true },
+  { id: 'timer', nameKey: 'quick.timer.name', icon: IconTimer, Component: QuickTimer, wide: true },
+  {
+    id: 'pointer',
+    nameKey: 'quick.pointer.name',
+    icon: IconCompass,
+    Component: QuickPointer,
+    wide: true,
+  },
   // 名单不是"临时用一下"，但入口性质相同：任何工具页里都要能随手改，且不占版面
-  { id: 'players', name: '玩家名单', icon: IconPlayers, Component: QuickPlayers, wide: true },
+  {
+    id: 'players',
+    nameKey: 'quick.players.name',
+    icon: IconPlayers,
+    Component: QuickPlayers,
+    wide: true,
+  },
+  // 全局设置排最后：不是"用一下"的工具，而是改完就走的配置项
+  { id: 'settings', nameKey: 'quick.settings.name', icon: IconSettings, Component: QuickSettings },
 ]

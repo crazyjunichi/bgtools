@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
 import { SPIN_MS, useQuickPointerStore } from './store'
 
@@ -17,6 +18,7 @@ const SPIN_EASING = 'cubic-bezier(0.08, 0.3, 0.42, 0.72)'
  * 身份色用 violet：amber 已被快速骰子占、sky 归计时器，且不与语义色冲突。
  */
 export function QuickPointer() {
+  const { t } = useTranslation()
   const { angle, spin } = useQuickPointerStore()
   const [spinning, setSpinning] = useState(false)
   const timer = useRef(0)
@@ -58,7 +60,11 @@ export function QuickPointer() {
             <span className="font-mono text-data-sm font-bold tabular-nums text-text-dim">--</span>
           )}
           <span className="text-center text-sm text-text-muted">
-            {spinning ? '旋转中…' : landed ? `≈ ${hour} 点方向` : '点指针或按钮开始'}
+            {spinning
+              ? t('quick.pointer.spinning')
+              : landed
+                ? t('quick.pointer.oclock', { hour })
+                : t('quick.pointer.hint')}
           </span>
         </div>
 
@@ -68,7 +74,7 @@ export function QuickPointer() {
           disabled={spinning}
           className="btn-base mt-auto min-h-16 w-full bg-violet-400 text-xl font-bold text-ink short:min-h-12 short:text-base"
         >
-          {spinning ? '旋转中…' : '随机指向'}
+          {t(spinning ? 'quick.pointer.spinning' : 'quick.pointer.spin')}
         </button>
       </div>
 
@@ -79,7 +85,7 @@ export function QuickPointer() {
           type="button"
           onClick={handleSpin}
           disabled={spinning}
-          aria-label="随机指向"
+          aria-label={t('quick.pointer.spin')}
           // vmin 而非 vh：竖屏下 vh 取的是长边，42vh 会算出 288px 顶着 shrink-0 硬溢出
           className="relative size-[min(18rem,42vmin)] shrink-0 rounded-full transition-transform duration-75 active:scale-[0.97]"
         >

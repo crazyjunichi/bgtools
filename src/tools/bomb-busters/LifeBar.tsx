@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
+import type { I18nKey } from '../../shared/i18n/types'
 import { IconMinus, IconPlus } from '../../shared/icons'
 import { MAX_LIVES } from './store'
 import { DATA_FONT } from './typography'
@@ -32,12 +34,15 @@ const TONE: Record<Level, string> = {
   ok: 'text-emerald-200',
 }
 
-/** 颜色之外的第二层编码：档位换文案，色觉障碍与斜视色偏都不影响判断 */
-const CAPTION: Record<Level, string> = {
-  dead: '💥 已引爆',
-  critical: '⚠️ 最后一点',
-  low: '⚡ 还剩两点',
-  ok: '剩余生命',
+/**
+ * 颜色之外的第二层编码：档位换文案，色觉障碍与斜视色偏都不影响判断。
+ * 💥⚠️⚡ 在字典值里（见 locales/zh.ts），仍是 emoji 而非 lucide 图标 —— 它们是内容标识。
+ */
+const CAPTION_KEY: Record<Level, I18nKey> = {
+  dead: 'tools.bombBusters.lives.dead',
+  critical: 'tools.bombBusters.lives.critical',
+  low: 'tools.bombBusters.lives.low',
+  ok: 'tools.bombBusters.lives.ok',
 }
 
 /**
@@ -45,6 +50,7 @@ const CAPTION: Record<Level, string> = {
  * 省下的高度让给道具描述。
  */
 export function LifeBar({ lives, onChange }: Props) {
+  const { t } = useTranslation()
   const level = levelOf(lives)
 
   const bump = (dir: 1 | -1) => {
@@ -58,7 +64,7 @@ export function LifeBar({ lives, onChange }: Props) {
     <section
       className={`card flex min-h-0 flex-1 flex-col justify-between border-2 transition-colors ${CARD[level]}`}
     >
-      <span className={`text-base font-semibold ${TONE[level]}`}>{CAPTION[level]}</span>
+      <span className={`text-base font-semibold ${TONE[level]}`}>{t(CAPTION_KEY[level])}</span>
 
       <div className="flex min-h-0 flex-1 items-center justify-center py-2">
         <span className="font-mono tabular-nums">
@@ -75,7 +81,7 @@ export function LifeBar({ lives, onChange }: Props) {
       <div className="grid shrink-0 grid-cols-2 gap-3">
         <button
           type="button"
-          aria-label="扣除一点生命"
+          aria-label={t('tools.bombBusters.lives.minus')}
           disabled={lives <= 0}
           onClick={() => bump(-1)}
           className="btn-base border-2 border-rose-400/70 bg-rose-500/25 text-rose-100"
@@ -84,7 +90,7 @@ export function LifeBar({ lives, onChange }: Props) {
         </button>
         <button
           type="button"
-          aria-label="增加一点生命"
+          aria-label={t('tools.bombBusters.lives.plus')}
           disabled={lives >= MAX_LIVES}
           onClick={() => bump(1)}
           className="btn-base border-2 border-emerald-400/70 bg-emerald-500/20 text-emerald-100"

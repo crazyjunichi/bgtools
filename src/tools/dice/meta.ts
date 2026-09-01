@@ -2,8 +2,8 @@ import type { ToolMeta } from '../types'
 
 export const diceMeta: ToolMeta = {
   id: 'dice',
-  name: '骰子',
-  desc: 'd4 ~ d100 多骰同投，带历史记录',
+  nameKey: 'tools.dice.name',
+  descKey: 'tools.dice.desc',
   icon: '🎲',
   accent: 'amber',
 }

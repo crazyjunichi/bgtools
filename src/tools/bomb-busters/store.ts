@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { I18nKey } from '../../shared/i18n/types'
 
 export const MIN_PLAYERS = 2
 export const MAX_PLAYERS = 5
@@ -18,29 +19,30 @@ export type Equipment = {
   id: string
   /** 实物卡上的编号，卡面右侧大字显示，方便和桌上的牌对上 */
   no: number
-  name: string
-  desc: string
+  /** 存 key 而不存文案：本表在模块顶层求值，文案由 EquipmentList 在渲染期 t() */
+  nameKey: I18nKey
+  descKey: I18nKey
   icon: string
 }
 
 /**
- * 装备卡 1–12。desc 只写核心动作 —— 道具栏窄且 line-clamp-2，
- * 中文超过约 28 字就会被截断，完整措辞看桌上实物卡。
+ * 装备卡 1–12。卡名与描述见 [locales/zh](../../shared/i18n/locales/zh.ts) 的
+ * `tools.bombBusters.equip.*`。
  * icon 刻意避开同类形状（三个探测类分别用 🔍/🔬/📡），斜视下靠轮廓就能认。
  */
 export const EQUIPMENT_POOL: Equipment[] = [
-  { id: 'e1', no: 1, name: '标签 ≠', desc: '在两根号码不同的相邻导线间放 ≠ 指示物', icon: '🏷️' },
-  { id: 'e2', no: 2, name: '对讲机', desc: '与一名玩家各交换一根未剪断的导线', icon: '📻' },
-  { id: 'e3', no: 3, name: '三重探测器', desc: '探测队友底座上指定的 3 根导线', icon: '🔍' },
-  { id: 'e4', no: 4, name: '便利贴', desc: '在自己一根蓝线前放「危险」指示物', icon: '📝' },
-  { id: 'e5', no: 5, name: '超级探测器', desc: '探测队友整个底座上的所有导线', icon: '🔬' },
-  { id: 'e6', no: 6, name: '抑制器', desc: '起爆器指针倒退一格', icon: '⏪' },
-  { id: 'e7', no: 7, name: '备用电池', desc: '翻回 1–2 张已用的角色能力牌', icon: '🔋' },
-  { id: 'e8', no: 8, name: '通用雷达', desc: '报一个号码，有该号蓝线的人须应「有」', icon: '📡' },
-  { id: 'e9', no: 9, name: '稳定器', desc: '本回合指针不动、红线不炸', icon: '🛡️' },
-  { id: 'e10', no: 10, name: 'X/Y 射线', desc: '指定 1 根导线时可同时报两个号码', icon: '☢️' },
-  { id: 'e11', no: 11, name: '咖啡瓶', desc: '跳过本回合，并指定下一位行动的玩家', icon: '☕' },
-  { id: 'e12', no: 12, name: '标签 =', desc: '在自己两根号码相同的相邻导线前放 = 指示物', icon: '🟰' },
+  { id: 'e1', no: 1, nameKey: 'tools.bombBusters.equip.e1.name', descKey: 'tools.bombBusters.equip.e1.desc', icon: '🏷️' },
+  { id: 'e2', no: 2, nameKey: 'tools.bombBusters.equip.e2.name', descKey: 'tools.bombBusters.equip.e2.desc', icon: '📻' },
+  { id: 'e3', no: 3, nameKey: 'tools.bombBusters.equip.e3.name', descKey: 'tools.bombBusters.equip.e3.desc', icon: '🔍' },
+  { id: 'e4', no: 4, nameKey: 'tools.bombBusters.equip.e4.name', descKey: 'tools.bombBusters.equip.e4.desc', icon: '📝' },
+  { id: 'e5', no: 5, nameKey: 'tools.bombBusters.equip.e5.name', descKey: 'tools.bombBusters.equip.e5.desc', icon: '🔬' },
+  { id: 'e6', no: 6, nameKey: 'tools.bombBusters.equip.e6.name', descKey: 'tools.bombBusters.equip.e6.desc', icon: '⏪' },
+  { id: 'e7', no: 7, nameKey: 'tools.bombBusters.equip.e7.name', descKey: 'tools.bombBusters.equip.e7.desc', icon: '🔋' },
+  { id: 'e8', no: 8, nameKey: 'tools.bombBusters.equip.e8.name', descKey: 'tools.bombBusters.equip.e8.desc', icon: '📡' },
+  { id: 'e9', no: 9, nameKey: 'tools.bombBusters.equip.e9.name', descKey: 'tools.bombBusters.equip.e9.desc', icon: '🛡️' },
+  { id: 'e10', no: 10, nameKey: 'tools.bombBusters.equip.e10.name', descKey: 'tools.bombBusters.equip.e10.desc', icon: '☢️' },
+  { id: 'e11', no: 11, nameKey: 'tools.bombBusters.equip.e11.name', descKey: 'tools.bombBusters.equip.e11.desc', icon: '☕' },
+  { id: 'e12', no: 12, nameKey: 'tools.bombBusters.equip.e12.name', descKey: 'tools.bombBusters.equip.e12.desc', icon: '🟰' },
 ]
 
 export function findEquipment(id: string): Equipment | undefined {

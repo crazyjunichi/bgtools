@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useWakeLock } from '../shared/hooks/useWakeLock'
 import { buzz } from '../shared/haptics'
 import { QuickDialog } from './QuickDialog'
@@ -16,6 +17,7 @@ const TICK_MS = 250
  * - 计时器到时判定要在 dialog 关掉、甚至换了工具页之后依然生效
  */
 export function QuickLayer() {
+  const { t } = useTranslation()
   const { open, close } = useQuickUI()
   const endAt = useQuickTimerStore((s) => s.endAt)
   const alarming = useQuickTimerStore((s) => s.alarming)
@@ -41,7 +43,7 @@ export function QuickLayer() {
   return (
     <>
       {tool && (
-        <QuickDialog title={tool.name} icon={tool.icon} wide={tool.wide} onClose={close}>
+        <QuickDialog title={t(tool.nameKey)} icon={tool.icon} wide={tool.wide} onClose={close}>
           <tool.Component />
         </QuickDialog>
       )}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useQuickUI } from '../../quick/store'
 import { buzz } from '../haptics'
 import { IconCheck, IconPlayers } from '../icons'
@@ -22,6 +23,7 @@ type Props = {
  * 光靠颜色深浅在斜视下分不出选没选。
  */
 export function PlayerSelect({ value, onChange, mode = 'multi', max, label }: Props) {
+  const { t } = useTranslation()
   const players = usePlayersStore((s) => s.players)
   const openTool = useQuickUI((s) => s.openTool)
 
@@ -50,7 +52,7 @@ export function PlayerSelect({ value, onChange, mode = 'multi', max, label }: Pr
       {players.length === 0 ? (
         <div className="flex flex-col gap-2 rounded-xl border border-line bg-surface-2 p-3">
           <span className="text-sm leading-relaxed text-text-muted">
-            名单是空的。先添加玩家，之后每个工具都能直接用。
+            {t('players.select.empty')}
           </span>
           <button
             type="button"
@@ -58,7 +60,7 @@ export function PlayerSelect({ value, onChange, mode = 'multi', max, label }: Pr
             className="btn-quiet !min-h-12 gap-2 px-4 text-base"
           >
             <IconPlayers className="size-5" aria-hidden />
-            管理玩家
+            {t('players.select.manage')}
           </button>
         </div>
       ) : (

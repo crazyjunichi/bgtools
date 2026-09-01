@@ -17,10 +17,12 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
+      // manifest 是构建期静态的，运行时切语言不会变（同 index.html 的 title / lang）——
+      // 这里的中文字面量是唯一允许留在源码里的一处，description 中英并排聊作缓解
       manifest: {
         name: '桌游工具箱',
         short_name: 'BGTools',
-        description: '桌游桌上常用的计分、骰子、计时等工具合集',
+        description: '桌游工具箱 · Board game tools',
         lang: 'zh-CN',
         theme_color: '#0b0f17',
         background_color: '#0b0f17',

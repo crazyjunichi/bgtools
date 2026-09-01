@@ -1,0 +1,128 @@
+import { useTranslation } from 'react-i18next'
+import { PLAYER_SOLID } from '../../shared/players/colors'
+import { ScoreOverlay } from './ScoreOverlay'
+import { fmtDelta, totalOf, type Round, type SeatView } from './store'
+import { tone } from './tone'
+
+type Props = {
+  seats: SeatView[]
+  rounds: Round[]
+  draft: Record<string, number>
+  onClose: () => void
+}
+
+/** 轮次号列，窄到只放两位数 —— 横向每一像素都该留给分数 */
+const LEAD = 'w-9'
+
+/** 每列 80px：`text-lg` 的等宽四位数约 43px，加 padding 后仍留得下五位 */
+const COL = 'w-20'
+
+/**
+ * 完整记录：一行一轮、一列一人的矩阵。
+ *
+ * 主界面（[ScoreGrid]）是一人一张卡，**横向对比全落在这里** —— 「这一轮谁最高」
+ * 「上半场是谁在领跑」得把同一轮排成一行才看得出。放浮层而不放主界面，是因为记分时
+ * 要看的只有当前轮，回溯是低频动作，不该为它常占屏幕并把每人的宽度压到一列。
+ *
+ * 当前轮（还没封档）作为进行中的第一行留在最上面，底色标出来 —— 否则合计对不上账。
+ */
+export function ScoreHistory({ seats, rounds, draft, onClose }: Props) {
+  const { t } = useTranslation()
+
+  const drafted = Object.values(draft).some((v) => v !== 0)
+
+  return (
+    <ScoreOverlay
+      title={<span className="text-lg font-bold">{t('tools.score.history.title')}</span>}
+      maxWidth="max-w-5xl"
+      onClose={onClose}
+    >
+      {rounds.length === 0 && !drafted ? (
+        <p className="p-4 text-center text-sm leading-relaxed text-text-muted">
+          {t('tools.score.noRounds')}
+        </p>
+      ) : (
+        /* 自己滚而不是让浮层滚：表头要 sticky 住，否则滚两屏就不知道哪列是谁 */
+        <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-line">
+          {/* min-w-max 让列宽跌到 COL 以下时改为横滚，而不是继续压窄到读不出数字 */}
+          <table className="w-full min-w-max table-fixed border-collapse">
+            <thead>
+              <tr>
+                <th className={`sticky left-0 top-0 z-20 bg-surface p-1 ${LEAD}`}>
+                  <span className="sr-only">{t('tools.score.roundCol')}</span>
+                </th>
+                {seats.map((s) => (
+                  <th key={s.id} className={`sticky top-0 z-10 bg-surface p-1 ${COL}`}>
+                    <span className="flex flex-col items-stretch gap-0.5">
+                      <span className="font-mono text-2xl font-bold leading-none tabular-nums">
+                        {totalOf(rounds, draft, s.id)}
+                      </span>
+                      <span
+                        className={`truncate rounded-md px-1 text-sm font-bold ${
+                          PLAYER_SOLID[s.color]
+                        }`}
+                      >
+                        {s.name}
+                      </span>
+                    </span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {drafted && (
+                <tr className="border-t border-line bg-sky-500/15">
+                  <td
+                    className={`sticky left-0 bg-surface-3 p-1 text-center text-xs font-semibold text-sky-300 ${LEAD}`}
+                  >
+                    {t('tools.score.thisRound')}
+                  </td>
+                  {seats.map((s) => (
+                    <td
+                      key={s.id}
+                      className={`p-1 text-center font-mono text-lg font-semibold tabular-nums ${COL} ${tone(
+                        draft[s.id],
+                      )}`}
+                    >
+                      {fmtDelta(draft[s.id])}
+                    </td>
+                  ))}
+                </tr>
+              )}
+
+              {rounds
+                .slice()
+                .reverse()
+                .map((r, i) => (
+                  <tr key={r.id} className="border-t border-line">
+                    {/* 轮次号跟着横滚固定在左侧，否则滚到右边就不知道在看第几轮 */}
+                    <td
+                      className={`sticky left-0 bg-surface p-1 text-center font-mono text-sm tabular-nums text-text-dim ${LEAD}`}
+                    >
+                      {rounds.length - i}
+                    </td>
+                    {seats.map((s) => (
+                      <td
+                        key={s.id}
+                        className={`p-1 text-center font-mono text-lg tabular-nums ${COL} ${tone(
+                          r.delta[s.id],
+                        )}`}
+                      >
+                        {fmtDelta(r.delta[s.id])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* 合计与主界面同源，但这里没有王冠：一屏矩阵里同时出现王冠和一堆数字反而更花 */}
+      <p className="text-center text-xs text-text-dim">
+        {t('tools.score.history.hint', { n: rounds.length })}
+      </p>
+    </ScoreOverlay>
+  )
+}

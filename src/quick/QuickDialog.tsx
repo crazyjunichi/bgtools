@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IconClose, type LucideIcon } from '../shared/icons'
 
 type Props = {
@@ -15,6 +16,8 @@ type Props = {
  * 免得被工具页 ToolLayout 的 overflow-hidden 裁掉。
  */
 export function QuickDialog({ title, icon: Icon, onClose, wide, children }: Props) {
+  const { t } = useTranslation()
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -53,7 +56,7 @@ export function QuickDialog({ title, icon: Icon, onClose, wide, children }: Prop
           <button
             type="button"
             onClick={onClose}
-            aria-label="关闭"
+            aria-label={t('common.close')}
             className="btn-quiet !min-h-12 w-12 short:!min-h-10 short:w-10"
           >
             <IconClose className="size-5 short:size-4" aria-hidden />

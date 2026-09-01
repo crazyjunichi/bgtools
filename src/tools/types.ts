@@ -1,11 +1,16 @@
 import type { ComponentType } from 'react'
+import type { I18nKey } from '../shared/i18n/types'
 
 /** 工具的元数据，同时驱动首页宫格与路由生成 */
 export type ToolMeta = {
   /** 唯一 id，也直接作为路由 path：/#/dice */
   id: string
-  name: string
-  desc: string
+  /**
+   * 存 key 而不存文案：meta 在模块顶层求值，拿不到 hook；
+   * 由消费方（首页宫格、顶栏标题）在渲染期 `t()`，切语言才会立刻跟着变。
+   */
+  nameKey: I18nKey
+  descKey: I18nKey
   /**
    * 工具身份图标，**刻意仍用 emoji**：它是内容标识而非功能按钮，
    * 彩色 emoji 的轮廓差异在桌上斜视 45° 时比单色线条更好认。

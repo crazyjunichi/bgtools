@@ -1,5 +1,6 @@
 import { bombBustersMeta } from './bomb-busters/meta'
 import { diceMeta } from './dice/meta'
+import { scoreMeta } from './score/meta'
 import type { ToolEntry } from './types'
 
 /**
@@ -9,6 +10,7 @@ import type { ToolEntry } from './types'
  */
 export const tools: ToolEntry[] = [
   { ...diceMeta, load: () => import('./dice/DicePage') },
+  { ...scoreMeta, load: () => import('./score/ScorePage') },
   { ...bombBustersMeta, load: () => import('./bomb-busters/BombBustersPage') },
 ]
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { QuickBar } from './quick/QuickBar'
 import { useFullscreen } from './shared/hooks/useFullscreen'
@@ -20,16 +21,22 @@ function readSeenHint() {
 type Props = { tool?: ToolEntry }
 
 /**
- * 全站顶栏。返回/全屏是通用能力，不下放给各工具自己实现；
- * 但横屏平板上 57px 的通栏是最贵的空间，所以在工具页里 3 秒后自动收起，
- * 留一条顶部热区唤出。
+ * 全站顶栏。返回/全屏是通用能力，不下放给各工具自己实现。
+ * 工具页里的形态按朝向分两种，因为横屏最贵的是高度、竖屏最贵的是宽度：
+ *
+ * - **横屏**：左侧常驻 64px 竖条，正常参与 flex 布局占位。顶部整条留给内容，
+ *   不遮挡也不需要热区；标题放不下，`sr-only` 只留给读屏
+ * - **竖屏**：通栏 absolute overlay，3 秒后收起，留一条顶部热区唤出
  *
  * 两个关键约束：
- * - 工具页的顶栏是 absolute overlay，绝不参与 flex 布局 —— 参与了就会在收放时
- *   改变内容区高度，跟 vh / flex-1 走的骰子和大数字会跳一下。首页正常占位。
+ * - 竖屏的顶栏必须是 absolute overlay，绝不参与 flex 布局 —— 参与了就会在收放时
+ *   改变内容区高度，跟 vh / flex-1 走的骰子和大数字会跳一下。首页与横屏侧栏正常占位
+ * - 朝向差异全部走 `wide:` 覆盖，不引入 JS 判朝向：自动收起的 state 和计时在横屏
+ *   照旧跑，只是位移与 pointer-events 被 `wide:` 抵消（media variant 规则后置必然赢）
  * - 由 App 传 key={tool.id}：靠重挂载重置隐藏状态，省掉在 effect 里同步 setState。
  */
 export function AppHeader({ tool }: Props) {
+  const { t } = useTranslation()
   const { isFullscreen, toggle, supported } = useFullscreen()
   const [visible, setVisible] = useState(true)
   const [seenHint, setSeenHint] = useState(readSeenHint)
@@ -67,26 +74,37 @@ export function AppHeader({ tool }: Props) {
         onFocus={tool ? show : undefined}
         className={`safe-t safe-x border-b border-line ${
           tool
-            ? `absolute inset-x-0 top-0 z-20 bg-ink/95 backdrop-blur transition-transform duration-200 ${
-                visible ? 'translate-y-0' : 'pointer-events-none -translate-y-full'
+            ? `absolute inset-x-0 top-0 z-20 bg-ink/95 backdrop-blur transition-transform duration-200 wide:static wide:z-auto wide:h-full wide:shrink-0 wide:border-r wide:border-b-0 wide:bg-ink wide:backdrop-blur-none ${
+                visible
+                  ? 'translate-y-0'
+                  : 'pointer-events-none -translate-y-full wide:pointer-events-auto wide:translate-y-0'
               }`
             : 'shrink-0 bg-ink'
         }`}
       >
-        <div className="flex h-14 w-full items-center gap-2 px-3">
+        {/* 宽度给内层而不是 header：safe-x 的刘海 padding 才能加在 64px 之外，
+            手机横屏 44px 的 inset-left 不会把按钮挤扁 */}
+        <div
+          className={`flex h-14 w-full items-center gap-2 px-3 ${
+            tool
+              ? 'wide:h-full wide:w-16 wide:flex-col wide:overflow-y-auto wide:px-1 wide:py-3 short:wide:gap-1'
+              : ''
+          }`}
+        >
           {tool ? (
             <Link
               to="/"
               className="flex size-12 items-center justify-center rounded-xl text-text-muted active:scale-95"
-              aria-label="返回首页"
+              aria-label={t('header.back')}
             >
               <IconBack className="size-6" aria-hidden />
             </Link>
           ) : (
             <IconLogo className="ml-2 size-6 text-text" aria-hidden />
           )}
-          <h1 className="flex-1 truncate text-lg font-semibold">
-            {tool ? `${tool.icon} ${tool.name}` : '桌游工具箱'}
+          {/* 横屏侧栏只有 64px，塞不下标题；用 sr-only 而非 hidden，读屏仍报得出当前工具 */}
+          <h1 className={`flex-1 truncate text-lg font-semibold ${tool ? 'wide:sr-only' : ''}`}>
+            {tool ? `${tool.icon} ${t(tool.nameKey)}` : t('app.title')}
           </h1>
           {/* 骰子/计时器这类通用小工具的入口：任何工具页里都要能随手用一下 */}
           <QuickBar onOpen={tool ? arm : undefined} />
@@ -98,7 +116,7 @@ export function AppHeader({ tool }: Props) {
                 if (tool) arm()
               }}
               className="flex size-12 items-center justify-center rounded-xl text-text-muted active:scale-95"
-              aria-label={isFullscreen ? '退出全屏' : '进入全屏'}
+              aria-label={t(isFullscreen ? 'header.exitFullscreen' : 'header.enterFullscreen')}
             >
               {isFullscreen ? (
                 <IconExitFull className="size-5" aria-hidden />
@@ -122,16 +140,16 @@ export function AppHeader({ tool }: Props) {
            * click 在抬手后才触发，那时布局还没动过，不会有后续的幽灵点击。
            */
           onClick={show}
-          aria-label="显示顶栏"
-          className="safe-t absolute inset-x-0 top-0 z-20 flex h-4 justify-center"
+          aria-label={t('header.show')}
+          className="safe-t absolute inset-x-0 top-0 z-20 flex h-4 justify-center wide:hidden"
         >
           <span className="mt-1 h-1 w-10 rounded-full bg-surface-3" aria-hidden />
         </button>
       )}
 
       {tool && visible && !seenHint && (
-        <p className="pointer-events-none absolute inset-x-0 top-16 z-20 text-center text-sm text-text-dim">
-          顶栏会自动隐藏 · 轻点屏幕顶部可唤出
+        <p className="pointer-events-none absolute inset-x-0 top-16 z-20 text-center text-sm text-text-dim wide:hidden">
+          {t('header.hint')}
         </p>
       )}
     </>

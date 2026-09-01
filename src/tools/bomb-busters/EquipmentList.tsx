@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
+import type { I18nKey } from '../../shared/i18n/types'
 import { IconCheck, IconLocked, IconUnknown, type LucideIcon } from '../../shared/icons'
 import { findEquipment, type EquipState, type HandCard } from './store'
 import { DATA_FONT } from './typography'
@@ -55,7 +57,11 @@ const BADGE: Record<EquipState, string> = {
 }
 
 /** 拆成两张表：文字那份还要喂 aria-label 拼接，图标不能混进读屏文本 */
-const BADGE_TEXT: Record<EquipState, string> = { 0: '未激活', 1: '可用', 2: '已用' }
+const BADGE_TEXT_KEY: Record<EquipState, I18nKey> = {
+  0: 'tools.bombBusters.equip.state.locked',
+  1: 'tools.bombBusters.equip.state.ready',
+  2: 'tools.bombBusters.equip.state.used',
+}
 
 const BADGE_ICON: Record<EquipState, LucideIcon | null> = {
   0: IconLocked,
@@ -70,10 +76,12 @@ const BADGE_ICON: Record<EquipState, LucideIcon | null> = {
  * 编号单独占最右一列：它是"桌上那张牌是哪张"的唯一锚点，比图标和徽章都更需要远距离可读。
  */
 export function EquipmentList({ hand, onCycle }: Props) {
+  const { t } = useTranslation()
+
   return (
     <section className="flex min-h-0 flex-col gap-2 rounded-3xl border-2 border-violet-500/40 bg-violet-950/40 p-3">
       <span className="shrink-0 text-sm font-semibold tracking-wide text-violet-200">
-        道具牌 · 点击切换状态
+        {t('tools.bombBusters.equip.title')}
       </span>
       {/* 竖屏时本区只分到约一半屏高，5 张卡的硬下限可能刚好装不下 —— 允许框内滚，
           总比被 Split 外层的 overflow-hidden 裁掉第 5 张好（页面级仍不翻页） */}
@@ -81,11 +89,17 @@ export function EquipmentList({ hand, onCycle }: Props) {
         {hand.map((card, i) => {
           const equip = findEquipment(card.equipId)
           const BadgeIcon = BADGE_ICON[card.state]
+          const badgeText = t(BADGE_TEXT_KEY[card.state])
+          const name = equip ? t(equip.nameKey) : t('tools.bombBusters.equip.unknown')
           return (
             <button
               key={i}
               type="button"
-              aria-label={`${equip?.no ?? '?'} 号 ${equip?.name ?? '未知道具'}：${BADGE_TEXT[card.state]}`}
+              aria-label={t('tools.bombBusters.equip.card', {
+                no: equip?.no ?? '?',
+                name,
+                state: badgeText,
+              })}
               onClick={() => {
                 buzz()
                 onCycle(i)
@@ -104,17 +118,17 @@ export function EquipmentList({ hand, onCycle }: Props) {
               <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="flex items-center gap-2">
                   <span className={`truncate text-xl font-bold ${TITLE[card.state]}`}>
-                    {equip?.name ?? '未知道具'}
+                    {name}
                   </span>
                   <span
                     className={`flex shrink-0 items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-bold ${BADGE[card.state]}`}
                   >
                     {BadgeIcon && <BadgeIcon className="size-3.5" aria-hidden />}
-                    {BADGE_TEXT[card.state]}
+                    {badgeText}
                   </span>
                 </span>
                 <span className={`line-clamp-2 text-base leading-snug ${DESC[card.state]}`}>
-                  {equip?.desc ?? '清单已更新，请重发道具'}
+                  {equip ? t(equip.descKey) : t('tools.bombBusters.equip.stale')}
                 </span>
               </span>
 

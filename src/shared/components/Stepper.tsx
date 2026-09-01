@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { buzz } from '../haptics'
 import { IconMinus, IconPlus } from '../icons'
 
@@ -32,6 +33,7 @@ export function Stepper({
   size = 'sm',
   format,
 }: Props) {
+  const { t } = useTranslation()
   const timers = useRef<{ delay?: number; repeat?: number }>({})
 
   const clamp = useCallback(
@@ -85,7 +87,7 @@ export function Stepper({
           type="button"
           className={btn}
           disabled={atMin}
-          aria-label="减少"
+          aria-label={t('stepper.decrease')}
           onPointerDown={() => startHold(-1)}
           onPointerUp={stopHold}
           onPointerLeave={stopHold}
@@ -104,7 +106,7 @@ export function Stepper({
           type="button"
           className={btn}
           disabled={atMax}
-          aria-label="增加"
+          aria-label={t('stepper.increase')}
           onPointerDown={() => startHold(1)}
           onPointerUp={stopHold}
           onPointerLeave={stopHold}

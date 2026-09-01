@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Stepper } from '../../shared/components/Stepper'
 import { ToolLayout } from '../../shared/components/ToolLayout'
@@ -22,11 +23,13 @@ function colsFor(n: number) {
   return 4
 }
 
-function formatTime(at: number) {
-  return new Date(at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+/** 时刻格式跟界面语言走：中文 24 小时制、英文 AM/PM，与用户预期一致 */
+function formatTime(at: number, locale: string) {
+  return new Date(at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
 }
 
 export default function DicePage() {
+  const { t, i18n } = useTranslation()
   const { sides, count, last, history, setSides, setCount, roll, clearHistory } = useDiceStore()
   const [rolling, setRolling] = useState(false)
   // 动画期间展示的临时随机值，落定后置空、改读 store 的真实结果
@@ -70,7 +73,7 @@ export default function DicePage() {
         <>
           <section className="card flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <span className="section-label">骰型</span>
+              <span className="section-label">{t('dice.type')}</span>
               <div className="flex flex-wrap gap-2">
                 {DICE_TYPES.map((s) => (
                   <button
@@ -86,7 +89,13 @@ export default function DicePage() {
                 ))}
               </div>
             </div>
-            <Stepper label="数量" value={count} onChange={setCount} min={1} max={MAX_COUNT} />
+            <Stepper
+              label={t('common.count')}
+              value={count}
+              onChange={setCount}
+              min={1}
+              max={MAX_COUNT}
+            />
           </section>
 
           <button
@@ -95,15 +104,15 @@ export default function DicePage() {
             disabled={rolling}
             className="btn-base min-h-20 w-full bg-amber-400 text-xl font-bold text-ink"
           >
-            {rolling ? '投掷中…' : `投掷 ${count}d${sides}`}
+            {rolling ? t('dice.rolling') : t('dice.roll', { n: count, sides })}
           </button>
 
           {history.length > 0 && (
             <section className="flex min-h-0 flex-none flex-col gap-2 wide:flex-1">
               <div className="flex items-center justify-between">
-                <span className="section-label">历史记录</span>
+                <span className="section-label">{t('tools.dice.history')}</span>
                 <ConfirmButton onConfirm={clearHistory} className="!min-h-12 !px-4 !text-sm">
-                  清空
+                  {t('common.clear')}
                 </ConfirmButton>
               </div>
               {/* 历史是次要信息，允许在自己的框里滚，页面级仍然不翻页。
@@ -119,7 +128,7 @@ export default function DicePage() {
                     </span>
                     <span className="font-mono text-base font-bold text-amber-300">{h.total}</span>
                     <span className="w-10 shrink-0 text-right text-xs text-text-dim">
-                      {formatTime(h.at)}
+                      {formatTime(h.at, i18n.language)}
                     </span>
                   </li>
                 ))}
@@ -144,14 +153,14 @@ export default function DicePage() {
           </div>
           {shown.length > 1 && (
             <p className="shrink-0 text-center text-text-muted">
-              总和{' '}
+              {t('common.total')}{' '}
               <span className="font-mono text-data font-bold tabular-nums text-text">{total}</span>
             </p>
           )}
         </>
       ) : (
         <div className="flex min-h-0 flex-1 items-center justify-center text-lg text-text-dim">
-          点左侧按钮开始投掷
+          {t('tools.dice.hint')}
         </div>
       )}
     </ToolLayout>

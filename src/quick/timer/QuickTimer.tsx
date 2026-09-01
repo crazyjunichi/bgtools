@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Stepper } from '../../shared/components/Stepper'
 import { buzz } from '../../shared/haptics'
@@ -13,6 +14,7 @@ const TICK_MS = 250
  * 中性色用 sky：同屏 rose 留给"到时"这种打断性警示。
  */
 export function QuickTimer() {
+  const { t } = useTranslation()
   const { durationSec, endAt, remainMs, setDuration, start, pause, resume, cancel } =
     useQuickTimerStore()
   const [now, setNow] = useState(() => Date.now())
@@ -50,18 +52,18 @@ export function QuickTimer() {
               ) : (
                 <IconPlay className="size-6 short:size-5" aria-hidden />
               )}
-              {running ? '暂停' : '继续'}
+              {t(running ? 'quick.timer.pause' : 'quick.timer.resume')}
             </button>
             {/* 桌上误触取消会毁掉一个限时回合，必须点两次 */}
             <ConfirmButton onConfirm={cancel} className="w-full">
               <IconClose className="size-5 short:size-4" aria-hidden />
-              取消
+              {t('common.cancel')}
             </ConfirmButton>
           </>
         ) : (
           <>
             <div className="flex flex-col gap-2">
-              <span className="section-label">快速开始</span>
+              <span className="section-label">{t('quick.timer.quickStart')}</span>
               {/* 矮屏改 4 列一行：省掉一整行 ~52px，正好是塞进手机横屏的最后那点缺口 */}
               <div className="grid grid-cols-2 gap-2 short:grid-cols-4 short:gap-1">
                 {PRESETS.map((sec) => (
@@ -81,7 +83,7 @@ export function QuickTimer() {
             </div>
 
             <Stepper
-              label={`自定义（${STEP_SEC} 秒一档）`}
+              label={t('quick.timer.custom', { step: STEP_SEC })}
               value={durationSec}
               onChange={setDuration}
               min={MIN_SEC}
@@ -98,7 +100,7 @@ export function QuickTimer() {
               }}
               className="btn-base mt-auto min-h-16 w-full bg-sky-400 text-xl font-bold text-ink short:min-h-12 short:text-base"
             >
-              开始 {formatMS(durationSec * 1000)}
+              {t('quick.timer.start', { time: formatMS(durationSec * 1000) })}
             </button>
           </>
         )}
@@ -116,7 +118,7 @@ export function QuickTimer() {
         {/* 暂停态不只靠颜色：加一行文案 */}
         <span className="flex items-center gap-1 text-sm text-text-muted">
           {paused && <IconPause className="size-4" aria-hidden />}
-          {running ? '计时中' : paused ? '已暂停' : '未开始'}
+          {t(running ? 'quick.timer.running' : paused ? 'quick.timer.paused' : 'quick.timer.idle')}
         </span>
       </div>
     </div>

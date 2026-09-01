@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
 import { IconAlarm, IconRepeat } from '../../shared/icons'
 import { formatMS, useQuickTimerStore } from './store'
@@ -11,6 +12,7 @@ import { formatMS, useQuickTimerStore } from './store'
  * z-40 压住 dialog(z-30)：计时器 dialog 开着时到时，提醒必须在最上层。
  */
 export function TimerAlarm() {
+  const { t } = useTranslation()
   const { durationSec, dismiss, start } = useQuickTimerStore()
 
   return (
@@ -27,7 +29,7 @@ export function TimerAlarm() {
       {/* 图标跟着 text-data 的 clamp 走（size-[0.9em]），不写死 px：整屏提醒在 10"–13" 平板上都要撑满 */}
       <span className="flex animate-pulse items-center gap-4 text-center text-data font-bold text-white">
         <IconAlarm className="size-[0.9em]" aria-hidden />
-        时间到
+        {t('quick.timer.alarm.title')}
       </span>
 
       {/* 外层换成 click 后，这里的拦截也必须跟着换，否则按钮的 click 冒上去会立刻 dismiss */}
@@ -41,18 +43,18 @@ export function TimerAlarm() {
           className="btn-base gap-2 bg-white px-6 text-lg font-bold text-ink"
         >
           <IconRepeat className="size-5" aria-hidden />
-          再计 {formatMS(durationSec * 1000)}
+          {t('quick.timer.alarm.again', { time: formatMS(durationSec * 1000) })}
         </button>
         <button
           type="button"
           onClick={dismiss}
           className="btn-base border-2 border-white/70 px-6 text-lg font-bold text-white"
         >
-          知道了
+          {t('quick.timer.alarm.dismiss')}
         </button>
       </div>
 
-      <span className="text-sm text-white/80">点任意处关闭</span>
+      <span className="text-sm text-white/80">{t('quick.timer.alarm.tapToClose')}</span>
     </div>
   )
 }
