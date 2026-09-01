@@ -17,19 +17,21 @@ export function QuickDice() {
   const total = last ? last.reduce((a, b) => a + b, 0) : null
 
   return (
-    // 横向双栏：参数收进左侧固定窄栏，结果区独占右侧 —— 一屏放完，不出滚动条
-    <div className="flex gap-4">
-      <div className="flex w-56 shrink-0 flex-col gap-3">
+    // 朝向只决定排列轴：横屏并排、竖屏堆叠，两种朝向都一屏放完
+    <div className="flex flex-col gap-4 short:gap-2 wide:flex-row">
+      {/* 刚性块（按钮和步进器压了就点不到）。竖屏排在下贴拇指，宽度只在横屏约束 ——
+          矮屏不收窄：手机横屏宽有 ~750px 不紧张，收窄反而让 6 列骰型挤到放不下 d10 */}
+      <div className="order-2 flex shrink-0 flex-col gap-3 short:gap-2 wide:order-1 wide:w-56">
         <div className="flex flex-col gap-2">
           <span className="section-label">骰型</span>
-          {/* 3 列两行，每格 ≈64px 宽仍满足触控目标 */}
-          <div className="grid grid-cols-3 gap-2">
+          {/* 3 列两行，每格 ≈64px 宽仍满足触控目标；矮屏挤成 6 列一行，省掉一整行 64px */}
+          <div className="grid grid-cols-3 gap-2 short:grid-cols-6 short:gap-1">
             {QUICK_DICE_TYPES.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => setSides(s)}
-                className={`btn-base ${
+                className={`btn-base short:!min-h-11 short:text-sm ${
                   s === sides ? 'bg-amber-400 text-ink' : 'bg-surface-2 text-text-muted'
                 }`}
               >
@@ -44,13 +46,15 @@ export function QuickDice() {
         <button
           type="button"
           onClick={handleRoll}
-          className="btn-base mt-auto min-h-16 w-full bg-amber-400 text-xl font-bold text-ink"
+          className="btn-base mt-auto min-h-16 w-full bg-amber-400 text-xl font-bold text-ink short:min-h-12 short:text-base"
         >
           投掷 {count}d{sides}
         </button>
       </div>
 
-      <div className="flex min-h-56 flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 p-4">
+      {/* 弹性块：下限跟 vmin 走，平板横屏算出来仍是 224px（与原 min-h-56 一致），
+          手机横屏收到 ~133px、竖屏 ~148px。用 vh 会在竖屏取长边，那是指针表盘爆宽的原因 */}
+      <div className="order-1 flex min-h-[min(14rem,38vmin)] min-w-0 flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 p-4 short:p-2 wide:order-2">
         {last === null ? (
           <span className="text-sm text-text-dim">点「投掷」出数</span>
         ) : last.length === 1 ? (

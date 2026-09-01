@@ -1,4 +1,5 @@
 import { buzz } from '../../shared/haptics'
+import { IconMinus, IconPlus } from '../../shared/icons'
 import { MAX_LIVES } from './store'
 import { DATA_FONT } from './typography'
 
@@ -77,18 +78,18 @@ export function LifeBar({ lives, onChange }: Props) {
           aria-label="扣除一点生命"
           disabled={lives <= 0}
           onClick={() => bump(-1)}
-          className="btn-base border-2 border-rose-400/70 bg-rose-500/25 text-3xl text-rose-100"
+          className="btn-base border-2 border-rose-400/70 bg-rose-500/25 text-rose-100"
         >
-          −
+          <IconMinus className="size-8" aria-hidden />
         </button>
         <button
           type="button"
           aria-label="增加一点生命"
           disabled={lives >= MAX_LIVES}
           onClick={() => bump(1)}
-          className="btn-base border-2 border-emerald-400/70 bg-emerald-500/20 text-3xl text-emerald-100"
+          className="btn-base border-2 border-emerald-400/70 bg-emerald-500/20 text-emerald-100"
         >
-          +
+          <IconPlus className="size-8" aria-hidden />
         </button>
       </div>
     </section>

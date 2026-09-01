@@ -1,4 +1,5 @@
 import { buzz } from '../../shared/haptics'
+import { IconCheck, IconLocked, IconUnknown, type LucideIcon } from '../../shared/icons'
 import { findEquipment, type EquipState, type HandCard } from './store'
 import { DATA_FONT } from './typography'
 
@@ -53,7 +54,15 @@ const BADGE: Record<EquipState, string> = {
   2: 'text-violet-300 ring-1 ring-violet-500/50',
 }
 
-const BADGE_TEXT: Record<EquipState, string> = { 0: '🔒 未激活', 1: '可用', 2: '✔ 已用' }
+/** 拆成两张表：文字那份还要喂 aria-label 拼接，图标不能混进读屏文本 */
+const BADGE_TEXT: Record<EquipState, string> = { 0: '未激活', 1: '可用', 2: '已用' }
+
+const BADGE_ICON: Record<EquipState, LucideIcon | null> = {
+  0: IconLocked,
+  // 可用是全卡唯一的实心块，本身已经最扎眼，再加图标反而抢走编号的位置
+  1: null,
+  2: IconCheck,
+}
 
 /**
  * 道具牌竖排、卡内横向排布。竖排是为了把整个栏宽让给名称和描述 ——
@@ -71,6 +80,7 @@ export function EquipmentList({ hand, onCycle }: Props) {
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto wide:overflow-visible">
         {hand.map((card, i) => {
           const equip = findEquipment(card.equipId)
+          const BadgeIcon = BADGE_ICON[card.state]
           return (
             <button
               key={i}
@@ -83,8 +93,13 @@ export function EquipmentList({ hand, onCycle }: Props) {
               // 竖屏下限降到 64px（仍高于 56px 触控下限），5 张才塞得进半屏
               className={`flex min-h-16 flex-1 items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-transform duration-75 active:scale-95 wide:min-h-20 ${TONE[card.state]}`}
             >
-              {/* 已用态整卡已经 opacity-45，图标不再单独压暗，否则叠加后糊掉 */}
-              <span className="shrink-0 text-3xl">{equip?.icon ?? '❔'}</span>
+              {/* 道具图示仍是 emoji：它是内容标识，彩色轮廓在斜视下比单色线条更好认。
+                  已用态整卡已经 opacity-45，图标不再单独压暗，否则叠加后糊掉 */}
+              {equip ? (
+                <span className="shrink-0 text-3xl">{equip.icon}</span>
+              ) : (
+                <IconUnknown className="size-8 shrink-0" aria-hidden />
+              )}
 
               <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="flex items-center gap-2">
@@ -92,8 +107,9 @@ export function EquipmentList({ hand, onCycle }: Props) {
                     {equip?.name ?? '未知道具'}
                   </span>
                   <span
-                    className={`shrink-0 rounded-lg px-2 py-0.5 text-xs font-bold ${BADGE[card.state]}`}
+                    className={`flex shrink-0 items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-bold ${BADGE[card.state]}`}
                   >
+                    {BadgeIcon && <BadgeIcon className="size-3.5" aria-hidden />}
                     {BADGE_TEXT[card.state]}
                   </span>
                 </span>

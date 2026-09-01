@@ -21,9 +21,9 @@ export function QuickBar({ onOpen }: Props) {
             onOpen?.()
           }}
           aria-label={t.name}
-          className="flex size-12 shrink-0 items-center justify-center rounded-xl text-xl active:scale-95"
+          className="flex size-12 shrink-0 items-center justify-center rounded-xl text-text active:scale-95"
         >
-          {t.icon}
+          <t.icon className="size-6" aria-hidden />
         </button>
       ))}
     </>

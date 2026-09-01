@@ -8,9 +8,10 @@ export default function App() {
   const tool = findTool(pathname)
 
   return (
-    // 高度锁死一屏：内容超出必须让布局自己收缩，而不是悄悄变成可滚页面
+    // 高度锁死一屏：内容超出必须让布局自己收缩，而不是悄悄变成可滚页面。
+    // h-full（而非 h-dvh）继承 html/body 的 100% —— PWA standalone 下 dvh 会把状态栏算进去
     // relative 是顶栏 overlay 的定位上下文
-    <div className="relative flex h-dvh flex-col overflow-hidden">
+    <div className="relative flex h-full flex-col overflow-hidden">
       {/* key 让换页时重挂载，顶栏的隐藏状态自然回到初始值 */}
       <AppHeader key={tool?.id ?? 'home'} tool={tool} />
 

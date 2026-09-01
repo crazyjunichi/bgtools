@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { buzz } from '../haptics'
+import { IconMinus, IconPlus } from '../icons'
 
 type Props = {
   value: number
@@ -72,12 +73,14 @@ export function Stepper({
   const atMin = min !== undefined && value <= min
   const atMax = max !== undefined && value >= max
 
-  const btn = 'btn-quiet size-14 shrink-0 text-3xl'
+  // size-11 单给 w/h 不够：btn-base 里的 min-h-14 会顶着不缩，必须一起压
+  const btn = 'btn-quiet size-14 shrink-0 short:!min-h-11 short:size-11'
+  const icon = 'size-7 short:size-6'
 
   return (
     <div className="flex flex-col gap-1.5">
       {label && <span className="section-label">{label}</span>}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 short:gap-2">
         <button
           type="button"
           className={btn}
@@ -88,11 +91,11 @@ export function Stepper({
           onPointerLeave={stopHold}
           onPointerCancel={stopHold}
         >
-          −
+          <IconMinus className={icon} aria-hidden />
         </button>
         <span
           className={`flex-1 text-center font-mono tabular-nums ${
-            size === 'lg' ? 'text-data font-bold' : 'text-3xl font-semibold'
+            size === 'lg' ? 'text-data font-bold' : 'text-3xl font-semibold short:text-2xl'
           }`}
         >
           {format ? format(value) : value}
@@ -107,7 +110,7 @@ export function Stepper({
           onPointerLeave={stopHold}
           onPointerCancel={stopHold}
         >
-          +
+          <IconPlus className={icon} aria-hidden />
         </button>
       </div>
     </div>

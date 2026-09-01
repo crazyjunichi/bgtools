@@ -40,11 +40,12 @@ export function QuickPointer() {
   const hour = Math.round(direction / 30) % 12 || 12
 
   return (
-    // 横向双栏：读数与操作在左窄栏，表盘独占右侧 —— 一屏放完，不出滚动条
-    <div className="flex gap-4">
-      <div className="flex w-56 shrink-0 flex-col gap-3">
+    // 朝向只决定排列轴：横屏并排、竖屏堆叠，两种朝向都一屏放完
+    <div className="flex flex-col gap-4 short:gap-2 wide:flex-row">
+      {/* 刚性块。竖屏排在下贴拇指，宽度只在横屏约束 */}
+      <div className="order-2 flex shrink-0 flex-col gap-3 short:gap-2 wide:order-1 wide:w-56">
         <div
-          className={`flex flex-col items-center gap-1 rounded-2xl border p-4 ${
+          className={`flex flex-col items-center gap-1 rounded-2xl border p-4 short:p-2 ${
             landed ? 'border-violet-500/60 bg-violet-500/15' : 'border-line bg-surface-2'
           }`}
         >
@@ -65,20 +66,22 @@ export function QuickPointer() {
           type="button"
           onClick={handleSpin}
           disabled={spinning}
-          className="btn-base mt-auto min-h-16 w-full bg-violet-400 text-xl font-bold text-ink"
+          className="btn-base mt-auto min-h-16 w-full bg-violet-400 text-xl font-bold text-ink short:min-h-12 short:text-base"
         >
           {spinning ? '旋转中…' : '随机指向'}
         </button>
       </div>
 
-      <div className="flex flex-1 items-center justify-center rounded-2xl border border-line bg-surface-2 p-4">
+      {/* 弹性块：表盘自带尺寸，这里不设下限，只负责居中 */}
+      <div className="order-1 flex min-h-0 min-w-0 flex-1 items-center justify-center rounded-2xl border border-line bg-surface-2 p-4 short:p-2 wide:order-2">
         {/* 表盘整体就是按钮：桌上最直觉的动作是直接戳指针 */}
         <button
           type="button"
           onClick={handleSpin}
           disabled={spinning}
           aria-label="随机指向"
-          className="relative size-[min(18rem,42vh)] shrink-0 rounded-full transition-transform duration-75 active:scale-[0.97]"
+          // vmin 而非 vh：竖屏下 vh 取的是长边，42vh 会算出 288px 顶着 shrink-0 硬溢出
+          className="relative size-[min(18rem,42vmin)] shrink-0 rounded-full transition-transform duration-75 active:scale-[0.97]"
         >
           {/* 落定后整圈发光，是"停下来了"最外围的一层反馈 */}
           <div

@@ -1,3 +1,4 @@
+import { LucideProvider } from 'lucide-react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createHashRouter, RouterProvider } from 'react-router-dom'
@@ -25,6 +26,10 @@ const router = createHashRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    {/* 描边 2.25 而非默认 2：平板平放桌面、视距 50–70cm 斜视 45°，细线会糊断。
+        尺寸不在这里给 —— 各处用 size-* 类，CSS 才能压过 svg 的 width/height 属性 */}
+    <LucideProvider strokeWidth={2.25}>
+      <RouterProvider router={router} />
+    </LucideProvider>
   </StrictMode>,
 )

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { QuickBar } from './quick/QuickBar'
 import { useFullscreen } from './shared/hooks/useFullscreen'
+import { IconBack, IconExitFull, IconFullscreen, IconLogo } from './shared/icons'
 import type { ToolEntry } from './tools/types'
 
 const HIDE_DELAY = 3000
@@ -76,13 +77,13 @@ export function AppHeader({ tool }: Props) {
           {tool ? (
             <Link
               to="/"
-              className="flex size-12 items-center justify-center rounded-xl text-2xl text-text-muted active:scale-95"
+              className="flex size-12 items-center justify-center rounded-xl text-text-muted active:scale-95"
               aria-label="返回首页"
             >
-              ←
+              <IconBack className="size-6" aria-hidden />
             </Link>
           ) : (
-            <span className="ml-2 text-2xl">🎯</span>
+            <IconLogo className="ml-2 size-6 text-text" aria-hidden />
           )}
           <h1 className="flex-1 truncate text-lg font-semibold">
             {tool ? `${tool.icon} ${tool.name}` : '桌游工具箱'}
@@ -96,10 +97,14 @@ export function AppHeader({ tool }: Props) {
                 toggle()
                 if (tool) arm()
               }}
-              className="flex size-12 items-center justify-center rounded-xl text-xl text-text-muted active:scale-95"
+              className="flex size-12 items-center justify-center rounded-xl text-text-muted active:scale-95"
               aria-label={isFullscreen ? '退出全屏' : '进入全屏'}
             >
-              {isFullscreen ? '⤡' : '⤢'}
+              {isFullscreen ? (
+                <IconExitFull className="size-5" aria-hidden />
+              ) : (
+                <IconFullscreen className="size-5" aria-hidden />
+              )}
             </button>
           )}
         </div>
@@ -109,7 +114,14 @@ export function AppHeader({ tool }: Props) {
       {tool && !visible && (
         <button
           type="button"
-          onPointerDown={show}
+          /*
+           * 必须是 onClick，不许改回 onPointerDown 图那点响应速度。
+           * pointerdown 里 setVisible 会当场卸载本热区、同时把顶栏滑到手指底下；
+           * 触屏抬手后补发的兼容鼠标事件按**抬手坐标**重新 hit-test，click 就落到
+           * 顶栏上了 —— 右侧误开 quick 浮层，左侧直接点掉返回键跳回首页。
+           * click 在抬手后才触发，那时布局还没动过，不会有后续的幽灵点击。
+           */
+          onClick={show}
           aria-label="显示顶栏"
           className="safe-t absolute inset-x-0 top-0 z-20 flex h-4 justify-center"
         >

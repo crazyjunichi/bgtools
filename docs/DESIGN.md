@@ -64,6 +64,22 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 
 注意：工具 accent 与语义色可能撞车。炸弹克星 accent 是 `rose`，所以它的**人数选中态改用 `sky-400`** —— 同一屏里 rose 必须只代表"会掉血/会重开"。
 
+玩家名单面板（顶栏 👥）身份色用 `teal`：四个语义色都不能占，`amber` / `sky` / `violet` 已分给快速骰子 / 计时器 / 随机指针，且 `teal` 不在下面的玩家调色板里 —— 面板主按钮不该和某个玩家的身份色撞。
+
+### 玩家标识色
+
+[shared/players/colors.ts](../src/shared/players/colors.ts) 的 8 色，**刻意一个都不碰语义色**：玩家色要能和"危险 / 完成 / 信息 / 警告"同屏共存，撞色就分不出哪个是语义。取的都是桌上实物棋子常见色相，玩家能直接对上手里的棋子。
+
+| 玩家色 | Tailwind 色板 | 与语义色的关系 |
+|---|---|---|
+| 红 / 橙 / 黄 | `red` / `orange` / `yellow` | 避开 `rose`（危险）与 `amber`（警告） |
+| 绿 / 青 / 蓝 | `green` / `cyan` / `blue` | 避开 `emerald`（完成）与 `sky`（信息） |
+| 紫 / 粉 | `violet` / `pink` | `violet` 与随机指针同色但两者不同屏 |
+
+档位仍走上面那张表：`PLAYER_SOLID` = `bg-<c>-400 text-ink`，`PLAYER_SOFT` = `border-<c>-500/60 bg-<c>-500/15 text-<c>-300`，`PLAYER_DOT` 只取 `bg-<c>-400`。三张都是显式 `Record`，禁止拼接。**soft 档已含 `bg-<c>-500/15`，不要再叠 `bg-surface-2`** —— 两条都是 `background-color`，谁赢取决于 CSS 生成顺序而非类名顺序。
+
+**同色允许被两个玩家共用**（偏好比唯一性重要，调色板只提示"谁也在用"、不禁用）。代价是颜色不再是唯一识别编码，所以硬性要求：任何露出玩家色的地方必须同时出**名字**或**中文色名**，选中态再叠 `✓`（见 §6）。
+
 ## 3. 排版与尺寸
 
 | 角色 | 取值 |
@@ -76,10 +92,13 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 | 次级数据（默认档） | `text-data-sm` = `clamp(1.5rem, 4.5vmin, 3rem)` |
 | 触控目标 | `size-14` / `min-h-14`（56px）起；次要按钮不低于 `min-h-12` |
 | 卡片内距 | `p-5`（`card` utility 已含） |
+| 功能图标 | `size-6`（24px）默认，`short` 档降一级；徽章内 `size-3.5` |
 
 数字用视口单位而非固定 px：桌上平板从 10" 到 13" 都有，固定 px 在大屏上会显得偏小。
 
 单位必须是 **`vmin` 而不是 `vh`**：横屏下 `vmin === vh`（表现与原来完全一致），竖屏下自动改按宽度算 —— 否则 820×1180 竖屏里 `18vh` = 212px 的生命数字会把卡片撑爆。所有会变化的数字必须加 `font-mono tabular-nums`，否则动画时宽度会跳。
+
+**功能按钮的图标是 SVG（lucide-react，出口收在 [shared/icons.ts](../src/shared/icons.ts)）而不是 emoji 字形**：emoji 的粗细/基线由系统字体决定，`⤢ ⤡` 在部分安卓字体里没有字形会掉成方框，字号也只能间接控制视觉体积。尺寸因此走 `size-*` 而非 `text-*`，描边由 [main.tsx](../src/main.tsx) 的 `LucideProvider` 统一给 `strokeWidth: 2.25` —— 比默认 2 更实，视距 50–70cm 斜视 45° 下细线会糊断。**内容标识（`meta.icon`、装备卡图示、⚠️💥⚡）仍是 emoji**，彩色轮廓在斜视下比单色线条更好认，分工写在 [CLAUDE.md](../CLAUDE.md) 的「图标」一节。
 
 **两档数据字号是默认值，不是上限。** 数字该多大取决于工具自己的信息密度：同屏元素多的工具整体压小，元素少的应该把焦点数字放大到容器装得下的最大值 —— 不要为了统一 token 而缩小信息。需要更激进字号的工具，在**自己目录里**用 `clamp()` 定一组常量、附上按最窄视口算出的上限依据，别往 `@theme` 加全局档位（一个工具的密度不该强加给其他工具）。
 
@@ -98,12 +117,15 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 
 ## 5. 布局：一屏不翻页
 
-- [App.tsx](../src/App.tsx) 外壳是 `h-dvh overflow-hidden`。**这是有意的硬约束**：内容超一屏必须让布局自己收缩，而不是悄悄变成可滚页面
+- 高度锁在 `html` / `body` / `#root` 上（`height: 100%; overflow: hidden`，[index.css](../src/index.css)），[App.tsx](../src/App.tsx) 外壳跟着 `h-full overflow-hidden`。**这是有意的硬约束**：内容超一屏必须让布局自己收缩，而不是悄悄变成可滚页面
+  - **不要用 `h-dvh` 当外壳**：PWA standalone 下 `100dvh` 在部分平台包含状态栏那一条，`#root` 比真正可视区高出 24–48px，而 `body` 没有 `overflow` 兜底 → 整页多出一条滚动条。`height: 100%` 取 ICB，不受这类实现差异影响；百分比高度要求父链每级高度确定，所以 `#root` 也必须给
+  - 配套：manifest `display: 'fullscreen'`（[vite.config.ts](../vite.config.ts)）让 Android 直接隐藏状态栏。**iOS 忽略此值仍是 standalone**，所以 `safe-t` / `safe-b` / `safe-x` 避让一个都不能拆
 - **顶栏（返回 + 全屏）由 [AppHeader](../src/AppHeader.tsx) 统一提供，工具里不要自己画。** 它在工具页 3 秒后自动收起，顶部留一条 16px 全宽热区 + 小把手唤出；首次进入工具页提示一次（`bgtools:chrome-hint`）。两个不能改的实现细节：
   - 工具页的顶栏是 `absolute` overlay，**绝不参与 flex 布局** —— 参与了，收放时内容区高度就会变，跟 `vh` / `flex-1` 走的骰子和大数字会跳一下。首页没有一屏压力，顶栏正常占位
   - 隐藏状态靠 `key={tool.id}` 重挂载重置，不在 effect 里同步 `setState`（oxlint 的 `react(set-state-in-effect)` 会拦）
   - 代价：顶栏唤出时会盖住内容顶部约 57px（工具页顶部是 `section-label` 一行），3 秒后自己让开，可接受
-- **通用小工具（骰子 🎲 / 计时器 ⏱️ / 随机指针 🧭）的入口也在顶栏**，点开是居中 dialog，不占工具页版面。浮层不能挂在 `<header>` 内（`translate` + `backdrop-blur` 会成为 `fixed` 的包含块），由 App 层的 [QuickLayer](../src/quick/QuickLayer.tsx) 渲染，机械流程见 [CLAUDE.md](../CLAUDE.md)
+- **通用小工具（骰子 / 计时器 / 随机指针 / 玩家名单）的入口也在顶栏**（图标来自 [shared/icons.ts](../src/shared/icons.ts)，注册表里存的是组件不是字符串），点开是居中 dialog，不占工具页版面。浮层不能挂在 `<header>` 内（`translate` + `backdrop-blur` 会成为 `fixed` 的包含块），由 App 层的 [QuickLayer](../src/quick/QuickLayer.tsx) 渲染，机械流程见 [CLAUDE.md](../CLAUDE.md)
+- quick 面板的 `wide` prop 只决定**宽度上限**（`max-w-2xl` / `max-w-md`），不是朝向判据。内部要分横竖屏的面板（[QuickPlayers](../src/quick/players/QuickPlayers.tsx)：横屏左名单 + 右编辑，竖屏上下堆叠）自己写 `wide:` variant，并**显式给一个 `h-[min(…rem,…vh)]` 高度** —— 面板高度由内容决定，内层写 `h-full` 没有锚点会塌缩，列表也就撑不满
 - `fixed` 浮层的层级约定，**新增浮层按这三档挑，不要自造数字**：
 
   | 层 | z | 例子 |
@@ -130,9 +152,12 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 
 | 例子 | 编码 1 | 编码 2 |
 |---|---|---|
-| 拆弹三态 | 描边/底色 | `½` / `✓` 角标 + 半高填充 + 删除线 |
+| 拆弹三态 | 描边/底色 | `½` / `✓` 角标 + 半高填充 + 删除线（**刻意保留字形**：这俩是压在内容格上的排版记号，跟数字同处一个字号体系，换成 SVG 会与编号错位） |
 | 道具三态 | 描边/底色 | 徽章文字（未激活/可用/已用）+ 已用加删除线 |
 | 生命危险 | 整块转红 | 文案换成「⚠️ 最后一点」「💥 已引爆」+ 脉冲 |
+| 玩家身份 | 玩家色实心/色点 | **始终带名字**；调色板格子带中文色名，选中加 `IconCheck`（同色可共用，颜色靠不住） |
+| 名单里选中的玩家 | 实心玩家色 | `IconCheck` 角标；面板左侧列表的选中态干脆不用玩家色，走 `surface-3` + `IconSelected` |
+| 计时器暂停 | amber 淡底 | 状态行换成 `IconPause` + 「已暂停」 |
 
 ## 7. 新增工具时的自检
 
@@ -144,6 +169,7 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 6. 长时间盯屏的工具调 [useWakeLock](../src/shared/hooks/useWakeLock.ts)
 7. 没有自己画返回/全屏/标题栏；页面最顶部 16px 内没有需要精准点击的控件（那是顶栏唤出热区）
 8. 横竖屏判断只用 `wide` variant：`grep -n "lg:\|max-lg:" src` 一遍，布局类里不该再有宽度断点
+9. 功能按钮里没有裸 emoji / 箭头字形（`← ✕ ⏸ ▶ ↑ ↓ ↺ ▸ ⚙️ 🗑`），图标一律从 [shared/icons.ts](../src/shared/icons.ts) 取；尺寸用 `size-*`，没有只为撑字形而留下的 `text-*`
 
 ## 8. 已知取舍
 

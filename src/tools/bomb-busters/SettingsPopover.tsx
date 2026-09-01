@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
+import { IconClose, IconNewGame, IconRepeat, IconSettings } from '../../shared/icons'
 import { MAX_PLAYERS, MIN_PLAYERS } from './store'
 
 const PLAYER_OPTIONS = Array.from(
@@ -54,7 +55,8 @@ export function SettingsPopover({ players, started, onSetPlayers, onDeal, onRese
         className="btn-quiet shrink-0 gap-2 text-base"
         aria-label="设置：人数、重发道具、新一局"
       >
-        ⚙️ 设置
+        <IconSettings className="size-5" aria-hidden />
+        设置
         <span className="font-mono tabular-nums text-text-muted">{players}人</span>
       </button>
 
@@ -62,7 +64,8 @@ export function SettingsPopover({ players, started, onSetPlayers, onDeal, onRese
         // 点遮罩关闭；面板自身的点击不冒泡到遮罩
         <div
           className="fixed inset-0 z-20 flex items-center justify-center bg-ink/85 p-4 backdrop-blur-sm"
-          onPointerDown={(e) => {
+          /* 同 QuickDialog 遮罩：onPointerDown 会让抬手的 click 穿透到底下的牌面 */
+          onClick={(e) => {
             if (e.target === e.currentTarget) {
               setOpen(false)
               setPending(null)
@@ -79,9 +82,9 @@ export function SettingsPopover({ players, started, onSetPlayers, onDeal, onRese
                   setPending(null)
                 }}
                 aria-label="关闭"
-                className="btn-quiet !min-h-12 w-12 text-xl"
+                className="btn-quiet !min-h-12 w-12"
               >
-                ✕
+                <IconClose className="size-5" aria-hidden />
               </button>
             </div>
 
@@ -135,10 +138,12 @@ export function SettingsPopover({ players, started, onSetPlayers, onDeal, onRese
               <span className="section-label">局面</span>
               <div className="flex gap-2">
                 <ConfirmButton onConfirm={onDeal} className="flex-1">
-                  🔄 重发道具
+                  <IconRepeat className="size-5" aria-hidden />
+                  重发道具
                 </ConfirmButton>
                 <ConfirmButton onConfirm={onReset} className="flex-1">
-                  🧨 新一局
+                  <IconNewGame className="size-5" aria-hidden />
+                  新一局
                 </ConfirmButton>
               </div>
             </div>

@@ -9,6 +9,16 @@
 @custom-variant wide (@media (orientation: landscape));
 
 /*
+ * 矮屏紧凑档。与 wide 是**两个正交维度**：wide 判朝向决定布局方向，
+ * short 判可视高决定尺寸档位 —— 手机横屏同时命中 wide 和 short。
+ * 480px 是分界：手机横屏可视高 320–430px（浏览器 UI 吃掉一截），
+ * 最小的 8" 平板横屏也有 600px+，不会被误判。
+ * 命中 short 意味着手持、视距 ≈30cm，所以触控目标可以从桌面场景的
+ * 56px 降到 44px（iOS HIG 下限）—— 只在这一档降，别扩散到别处。
+ */
+@custom-variant short (@media (max-height: 480px));
+
+/*
  * 深色单一主题。运行场景是平板平放桌面、多人从不同角度斜视、视距 50-70cm，
  * 所有取值的下限是"倾斜 45° 看仍能分辨"，而非仅满足 WCAG AA。
  *
@@ -49,6 +59,21 @@
 }
 
 @layer base {
+  /*
+   * 高度锁在 html/body 上，而不是只靠内层的 dvh。
+   * PWA standalone 下 100dvh 在部分平台把状态栏那一条也算进去，
+   * #root 就比真正的可视区高出 24–48px，body 没兜住 → 整页多出一条滚动条。
+   * height:100% 取的是 ICB（真正可视高度），overflow:hidden 是最后一道兜底：
+   * 任何 1px 溢出都不许变成页面滚动。
+   */
+  /* #root 也必须给：百分比高度要求父链每一级高度确定，漏一级 App 的 h-full 就退化成 auto */
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
   html {
     background-color: var(--color-ink);
     color-scheme: dark;

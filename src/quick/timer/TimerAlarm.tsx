@@ -1,4 +1,5 @@
 import { buzz } from '../../shared/haptics'
+import { IconAlarm, IconRepeat } from '../../shared/icons'
 import { formatMS, useQuickTimerStore } from './store'
 
 /**
@@ -15,21 +16,32 @@ export function TimerAlarm() {
   return (
     // 整屏可点消除；按钮区自己吃掉事件，不冒泡
     <div
-      onPointerDown={dismiss}
+      /*
+       * 同 QuickDialog 遮罩：必须 onClick。整屏 pointerdown 一按就卸载，
+       * 抬手补发的 click 按新坐标 hit-test 全落到底下的工具页上 ——
+       * 这一层是全屏的，穿透是必然而非偶然。
+       */
+      onClick={dismiss}
       className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 bg-rose-600/95 p-6 backdrop-blur-sm"
     >
-      <span className="animate-pulse text-center text-data font-bold text-white">⏰ 时间到</span>
+      {/* 图标跟着 text-data 的 clamp 走（size-[0.9em]），不写死 px：整屏提醒在 10"–13" 平板上都要撑满 */}
+      <span className="flex animate-pulse items-center gap-4 text-center text-data font-bold text-white">
+        <IconAlarm className="size-[0.9em]" aria-hidden />
+        时间到
+      </span>
 
-      <div className="flex gap-3" onPointerDown={(e) => e.stopPropagation()}>
+      {/* 外层换成 click 后，这里的拦截也必须跟着换，否则按钮的 click 冒上去会立刻 dismiss */}
+      <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
           onClick={() => {
             start()
             buzz(20)
           }}
-          className="btn-base bg-white px-6 text-lg font-bold text-ink"
+          className="btn-base gap-2 bg-white px-6 text-lg font-bold text-ink"
         >
-          🔄 再计 {formatMS(durationSec * 1000)}
+          <IconRepeat className="size-5" aria-hidden />
+          再计 {formatMS(durationSec * 1000)}
         </button>
         <button
           type="button"
