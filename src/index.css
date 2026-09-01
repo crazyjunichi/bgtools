@@ -1,15 +1,41 @@
 @import 'tailwindcss';
 
+/*
+ * 深色单一主题。运行场景是平板平放桌面、多人从不同角度斜视、视距 50-70cm，
+ * 所有取值的下限是"倾斜 45° 看仍能分辨"，而非仅满足 WCAG AA。
+ *
+ * 深底配色规范：
+ * - 语义色文字/图标用 -300 档（text-emerald-300）
+ * - 实心底用 -400 档 + text-ink（≈9~11:1）；不要 -500 底 + 白字（rose-500 + white 仅 3.75:1）
+ * - 淡底态用 -500/15 底 + border-<c>-500/60
+ * - 唯一例外：危险实心用 bg-rose-600 text-white + font-bold，保留红色的警示直觉
+ * 语义分配：rose = 破坏性/危险（仅此用途）· emerald = 完成 · sky = 信息/可用 · amber = 警告
+ * 工具身份色由各自 meta.accent 决定，不设全局主色。
+ */
 @theme {
-  --color-ink: #0b0f17;
-  --color-surface: #151b26;
-  --color-surface-2: #1e2635;
-  --color-line: #2a3547;
+  /* 表面阶梯：相邻两级亮度差 ≈2x，斜视时卡片边界才不糊在一起 */
+  --color-ink: #0a0a0a;
+  --color-surface: #17181a;
+  --color-surface-2: #262829;
+  --color-surface-3: #343739;
+  /* 对 surface 2.0:1，旧值只有 1.42:1，斜视下描边会整条消失 */
+  --color-line: #454a4f;
+
+  /* 文字只留 3 档，最低档对 surface 仍有 5.6:1。比 text-dim 更暗的一律不用 */
+  --color-text: #f5f5f5;
+  --color-text-muted: #b4b8bd;
+  --color-text-dim: #8b9096;
+
   --font-sans:
     system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
     sans-serif;
   /* 结果数字用等宽，避免投掷动画时数字宽度跳动 */
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  /* 关键数字跟视口高走：桌上平板从 10" 到 13" 都有，固定 px 在大屏上偏小。
+     这是默认档位，不是上限 —— 内容少的工具可以在自己目录里放大 */
+  --text-data: clamp(2.5rem, 9vh, 5.5rem);
+  --text-data-sm: clamp(1.5rem, 4.5vh, 3rem);
 }
 
 @layer base {
@@ -22,7 +48,7 @@
   }
 
   body {
-    @apply bg-ink font-sans text-slate-100 antialiased;
+    @apply bg-ink text-text font-sans antialiased;
     /* 工具型界面，误选文本比选中文本更常见 */
     user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -38,6 +64,24 @@
   textarea {
     user-select: text;
   }
+}
+
+@utility card {
+  @apply rounded-2xl border border-line bg-surface p-5;
+}
+
+@utility section-label {
+  @apply text-sm font-semibold tracking-wide text-text-muted;
+}
+
+/* 只管形状/尺寸/反馈，颜色由调用方给——主色是 per-tool 的。
+   过渡只作用于 transform：颜色也跟着渐变会让点按反馈发钝 */
+@utility btn-base {
+  @apply inline-flex min-h-14 items-center justify-center rounded-xl font-semibold transition-transform duration-75 active:scale-95 disabled:opacity-40;
+}
+
+@utility btn-quiet {
+  @apply btn-base bg-surface-2 text-text;
 }
 
 @utility safe-t {

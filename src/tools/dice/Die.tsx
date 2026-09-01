@@ -15,25 +15,22 @@ export function Die({ value, sides, rolling }: Props) {
 
   return (
     <div
-      className={`flex aspect-square items-center justify-center rounded-2xl border border-amber-400/25 bg-gradient-to-br from-surface-2 to-surface shadow-lg transition-transform ${
+      className={`flex aspect-square items-center justify-center rounded-2xl border border-amber-400/40 bg-gradient-to-br from-surface-2 to-surface shadow-lg transition-transform ${
         rolling ? 'animate-pulse' : ''
       }`}
     >
       {pips ? (
         <div className="grid size-3/5 grid-cols-3 grid-rows-3 gap-0.5">
           {Array.from({ length: 9 }, (_, i) => (
+            // 点阵按骰面比例缩放：骰子会随可用空间变大，固定 px 的点会显得过小
             <span
               key={i}
-              className={`m-auto size-2 rounded-full sm:size-2.5 ${
-                pips.includes(i) ? 'bg-amber-300' : ''
-              }`}
+              className={`m-auto size-[70%] rounded-full ${pips.includes(i) ? 'bg-amber-300' : ''}`}
             />
           ))}
         </div>
       ) : (
-        <span className="font-mono text-3xl font-bold tabular-nums text-amber-300 sm:text-4xl">
-          {value}
-        </span>
+        <span className="font-mono text-data-sm font-bold tabular-nums text-amber-300">{value}</span>
       )}
     </div>
   )

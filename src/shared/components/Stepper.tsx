@@ -10,6 +10,8 @@ type Props = {
   label?: string
   /** 数字区域尺寸，计分板用 lg，参数调节用 sm */
   size?: 'sm' | 'lg'
+  /** 显示格式化，如把秒数显示成 m:ss。不传就直接显示数字 */
+  format?: (value: number) => string
 }
 
 const HOLD_DELAY = 400
@@ -19,7 +21,16 @@ const HOLD_INTERVAL = 90
  * 大号 +/- 数字步进器。触控目标 ≥ 44px，支持长按连续增减
  * （计分板一次加 10 分不该点 10 次）。
  */
-export function Stepper({ value, onChange, min, max, step = 1, label, size = 'sm' }: Props) {
+export function Stepper({
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  label,
+  size = 'sm',
+  format,
+}: Props) {
   const timers = useRef<{ delay?: number; repeat?: number }>({})
 
   const clamp = useCallback(
@@ -61,12 +72,11 @@ export function Stepper({ value, onChange, min, max, step = 1, label, size = 'sm
   const atMin = min !== undefined && value <= min
   const atMax = max !== undefined && value >= max
 
-  const btn =
-    'flex size-12 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-2xl font-semibold text-slate-200 transition active:scale-95 disabled:opacity-30'
+  const btn = 'btn-quiet size-14 shrink-0 text-3xl'
 
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <span className="text-xs font-medium text-slate-400">{label}</span>}
+      {label && <span className="section-label">{label}</span>}
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -82,10 +92,10 @@ export function Stepper({ value, onChange, min, max, step = 1, label, size = 'sm
         </button>
         <span
           className={`flex-1 text-center font-mono tabular-nums ${
-            size === 'lg' ? 'text-6xl font-bold' : 'text-3xl font-semibold'
+            size === 'lg' ? 'text-data font-bold' : 'text-3xl font-semibold'
           }`}
         >
-          {value}
+          {format ? format(value) : value}
         </span>
         <button
           type="button"

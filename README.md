@@ -1,6 +1,6 @@
 # BGTools · 桌游工具箱
 
-桌游桌上常用的小工具合集。纯前端、离线可用（PWA）、移动优先。
+桌游桌上常用的小工具合集。纯前端、离线可用（PWA）。**为平板横屏、平放在桌面中央的场景设计** —— 高对比深色主题、大号触控目标、每个工具一屏放完不翻页。设计规范见 [docs/DESIGN.md](docs/DESIGN.md)。
 
 ## 技术栈
 
@@ -30,16 +30,19 @@ npm run lint     # oxlint
 ## 目录结构
 
 ```
+docs/DESIGN.md         # 设计规范：配色 / 字号 / 布局的取值依据
 src/
-  App.tsx              # 布局外壳（顶栏 / 返回 / 全屏）
+  App.tsx              # 布局外壳（h-dvh 一屏 · 顶栏 / 返回 / 全屏）
+  index.css            # @theme 主题 token + card/btn-base 等 utility
   main.tsx             # 由 registry 生成 hash 路由
   pages/               # 首页、404
   tools/
     registry.ts        # 工具注册表 —— 唯一真源
     types.ts           # ToolMeta / ToolEntry 契约
     dice/              # 骰子工具
+    bomb-busters/      # 炸弹克星辅助
   shared/
-    components/        # Stepper（长按连增）、ConfirmButton（防误触）
+    components/        # ToolLayout（横屏双栏）、Stepper（长按连增）、ConfirmButton（防误触）
     hooks/             # useWakeLock（防息屏）、useFullscreen
     haptics.ts         # 震动反馈
 ```
@@ -47,6 +50,7 @@ src/
 ## 已实现
 
 - **骰子**：d4~d100，1–12 颗同投，d6 点阵显示，总和，历史记录 20 条
+- **炸弹克星**：1–12 拆弹三态、按人数随机发放道具牌（可重发）、道具三态追踪、生命指示器（上限 6）
 
 ## 计划中
 

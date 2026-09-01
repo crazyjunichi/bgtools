@@ -1,46 +1,30 @@
-import { Link, Outlet, useLocation } from 'react-router-dom'
-import { useFullscreen } from './shared/hooks/useFullscreen'
+import { Outlet, useLocation } from 'react-router-dom'
+import { AppHeader } from './AppHeader'
+import { QuickLayer } from './quick/QuickLayer'
 import { findTool } from './tools/registry'
 
 export default function App() {
   const { pathname } = useLocation()
   const tool = findTool(pathname)
-  const { isFullscreen, toggle, supported } = useFullscreen()
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="safe-t safe-x sticky top-0 z-10 border-b border-line bg-ink/85 backdrop-blur">
-        <div className="mx-auto flex h-14 w-full max-w-3xl items-center gap-2 px-3">
-          {tool ? (
-            <Link
-              to="/"
-              className="flex size-10 items-center justify-center rounded-xl text-xl text-slate-300 active:scale-95"
-              aria-label="返回首页"
-            >
-              ←
-            </Link>
-          ) : (
-            <span className="ml-1 text-xl">🎯</span>
-          )}
-          <h1 className="flex-1 truncate text-base font-semibold">
-            {tool ? `${tool.icon} ${tool.name}` : '桌游工具箱'}
-          </h1>
-          {supported && (
-            <button
-              type="button"
-              onClick={toggle}
-              className="flex size-10 items-center justify-center rounded-xl text-slate-400 active:scale-95"
-              aria-label={isFullscreen ? '退出全屏' : '进入全屏'}
-            >
-              {isFullscreen ? '⤡' : '⤢'}
-            </button>
-          )}
-        </div>
-      </header>
+    // 高度锁死一屏：内容超出必须让布局自己收缩，而不是悄悄变成可滚页面
+    // relative 是顶栏 overlay 的定位上下文
+    <div className="relative flex h-dvh flex-col overflow-hidden">
+      {/* key 让换页时重挂载，顶栏的隐藏状态自然回到初始值 */}
+      <AppHeader key={tool?.id ?? 'home'} tool={tool} />
 
-      <main className="safe-b safe-x mx-auto w-full max-w-3xl flex-1 px-3 py-4">
+      {/* 工具页顶栏不占位，safe-t 得由内容区自己让出刘海 */}
+      <main
+        className={`safe-b safe-x min-h-0 w-full flex-1 overflow-hidden px-4 py-3 ${
+          tool ? 'safe-t' : ''
+        }`}
+      >
         <Outlet />
       </main>
+
+      {/* 故意不给 key：换页也不能重挂载，否则正在跑的计时会被打断 */}
+      <QuickLayer />
     </div>
   )
 }

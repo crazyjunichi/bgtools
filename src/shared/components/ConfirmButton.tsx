@@ -33,8 +33,9 @@ export function ConfirmButton({ onConfirm, children, confirmText = '确认？', 
     <button
       type="button"
       onClick={handle}
-      className={`rounded-xl px-4 py-2.5 text-sm font-medium transition active:scale-95 ${
-        armed ? 'bg-rose-500 text-white' : 'bg-surface-2 text-slate-300'
+      className={`btn-base px-5 text-base ${
+        // 深底上 rose-500 + 白字只有 3.75:1，靠 600 档 + 加粗补足
+        armed ? 'bg-rose-600 font-bold text-white' : 'bg-surface-2 text-text'
       } ${className ?? ''}`}
     >
       {armed ? confirmText : children}

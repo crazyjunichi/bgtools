@@ -6,6 +6,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   // 相对路径产物：丢到任意静态托管的任意子目录都能直接跑
   base: './',
+  server: {
+    port: 9004,
+    // 端口被占用时直接报错退出，而不是静默递增到下一个可用端口 —— 否则"固定端口"没意义
+    strictPort: true,
+  },
   plugins: [
     react(),
     tailwindcss(),

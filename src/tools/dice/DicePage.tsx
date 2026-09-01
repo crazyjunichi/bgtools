@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Stepper } from '../../shared/components/Stepper'
+import { ToolLayout } from '../../shared/components/ToolLayout'
 import { buzz } from '../../shared/haptics'
 import { Die } from './Die'
 import { DICE_TYPES, MAX_COUNT, useDiceStore } from './store'
@@ -8,10 +9,17 @@ import { DICE_TYPES, MAX_COUNT, useDiceStore } from './store'
 const ROLL_MS = 600
 const TICK_MS = 70
 
-function colsClass(n: number) {
-  if (n <= 4) return 'grid-cols-2'
-  if (n <= 9) return 'grid-cols-3'
-  return 'grid-cols-4'
+// 显式映射而非拼接类名：Tailwind 编译期扫描静态字符串
+const COLS_CLASS: Record<number, string> = {
+  2: 'grid-cols-2',
+  3: 'grid-cols-3',
+  4: 'grid-cols-4',
+}
+
+function colsFor(n: number) {
+  if (n <= 4) return 2
+  if (n <= 9) return 3
+  return 4
 }
 
 function formatTime(at: number) {
@@ -54,80 +62,97 @@ export default function DicePage() {
 
   const shown = preview ?? last?.values ?? []
   const total = preview ? preview.reduce((a, b) => a + b, 0) : last?.total
+  const cols = colsFor(shown.length)
 
   return (
-    <div className="flex flex-col gap-5">
-      <section className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-slate-400">骰型</span>
-          <div className="flex flex-wrap gap-2">
-            {DICE_TYPES.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setSides(s)}
-                className={`min-w-14 rounded-xl px-3 py-2.5 text-sm font-semibold transition active:scale-95 ${
-                  s === sides ? 'bg-amber-400 text-ink' : 'bg-surface-2 text-slate-300'
-                }`}
-              >
-                d{s}
-              </button>
-            ))}
-          </div>
-        </div>
-        <Stepper label="数量" value={count} onChange={setCount} min={1} max={MAX_COUNT} />
-      </section>
+    <ToolLayout
+      panel={
+        <>
+          <section className="card flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <span className="section-label">骰型</span>
+              <div className="flex flex-wrap gap-2">
+                {DICE_TYPES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSides(s)}
+                    className={`btn-base min-w-16 px-3 ${
+                      s === sides ? 'bg-amber-400 text-ink' : 'bg-surface-2 text-text-muted'
+                    }`}
+                  >
+                    d{s}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Stepper label="数量" value={count} onChange={setCount} min={1} max={MAX_COUNT} />
+          </section>
 
-      <button
-        type="button"
-        onClick={handleRoll}
-        disabled={rolling}
-        className="rounded-2xl bg-amber-400 py-5 text-lg font-bold text-ink transition active:scale-[0.98] disabled:opacity-60"
-      >
-        {rolling ? '投掷中…' : `投掷 ${count}d${sides}`}
-      </button>
+          <button
+            type="button"
+            onClick={handleRoll}
+            disabled={rolling}
+            className="btn-base min-h-20 w-full bg-amber-400 text-xl font-bold text-ink"
+          >
+            {rolling ? '投掷中…' : `投掷 ${count}d${sides}`}
+          </button>
 
-      {shown.length > 0 && (
-        <section className="flex flex-col items-center gap-4">
-          <div className={`grid w-full max-w-sm gap-2.5 ${colsClass(shown.length)}`}>
-            {shown.map((v, i) => (
-              <Die key={i} value={v} sides={sides} rolling={rolling} />
-            ))}
+          {history.length > 0 && (
+            <section className="flex min-h-0 flex-1 flex-col gap-2 max-lg:flex-none">
+              <div className="flex items-center justify-between">
+                <span className="section-label">历史记录</span>
+                <ConfirmButton onConfirm={clearHistory} className="!min-h-12 !px-4 !text-sm">
+                  清空
+                </ConfirmButton>
+              </div>
+              {/* 历史是次要信息，允许在自己的框里滚，页面级仍然不翻页 */}
+              <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto rounded-2xl border border-line bg-surface max-lg:max-h-64">
+                {history.map((h) => (
+                  <li key={h.id} className="flex items-center gap-3 px-4 py-3 text-sm">
+                    <span className="w-14 shrink-0 font-mono text-text-dim">
+                      {h.values.length}d{h.sides}
+                    </span>
+                    <span className="flex-1 truncate font-mono text-text-muted">
+                      {h.values.join(' · ')}
+                    </span>
+                    <span className="font-mono text-base font-bold text-amber-300">{h.total}</span>
+                    <span className="w-10 shrink-0 text-right text-xs text-text-dim">
+                      {formatTime(h.at)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
+      }
+    >
+      {shown.length > 0 ? (
+        <>
+          <div className="flex min-h-0 flex-1 items-center justify-center">
+            {/* aspectRatio + max-h/max-w 双向夹住：骰子随可用空间缩放，永不溢出一屏 */}
+            <div
+              className={`grid max-h-full max-w-full gap-3 ${COLS_CLASS[cols]}`}
+              style={{ aspectRatio: `${cols} / ${Math.ceil(shown.length / cols)}` }}
+            >
+              {shown.map((v, i) => (
+                <Die key={i} value={v} sides={sides} rolling={rolling} />
+              ))}
+            </div>
           </div>
           {shown.length > 1 && (
-            <p className="text-slate-400">
-              总和 <span className="font-mono text-2xl font-bold text-slate-100">{total}</span>
+            <p className="shrink-0 text-center text-text-muted">
+              总和{' '}
+              <span className="font-mono text-data font-bold tabular-nums text-text">{total}</span>
             </p>
           )}
-        </section>
+        </>
+      ) : (
+        <div className="flex min-h-0 flex-1 items-center justify-center text-lg text-text-dim">
+          点左侧按钮开始投掷
+        </div>
       )}
-
-      {history.length > 0 && (
-        <section className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">历史记录</span>
-            <ConfirmButton onConfirm={clearHistory} className="!px-3 !py-1.5 !text-xs">
-              清空
-            </ConfirmButton>
-          </div>
-          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
-            {history.map((h) => (
-              <li key={h.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                <span className="w-14 shrink-0 font-mono text-slate-500">
-                  {h.values.length}d{h.sides}
-                </span>
-                <span className="flex-1 truncate font-mono text-slate-300">
-                  {h.values.join(' · ')}
-                </span>
-                <span className="font-mono font-bold text-amber-300">{h.total}</span>
-                <span className="w-10 shrink-0 text-right text-xs text-slate-600">
-                  {formatTime(h.at)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-    </div>
+    </ToolLayout>
   )
 }

@@ -1,0 +1,17 @@
+/**
+ * 本工具自己的关键数字字号，比全局 `text-data` 默认档位更激进。
+ * 依据：这里同屏只有 12 个格子 + 5 张道具，信息密度低，格子能给到 96–120px 宽，
+ * 所以数字按"格子装得下的最大值"取，而不是迁就通用档位。
+ *
+ * 上限算法：等宽字体两位数宽 ≈ 1.2em，格子最窄的场景是 1024×768 横屏
+ * （拆弹区 413px / 4 列 = 96px），所以 9.5vh @768 = 73px → 88px 宽，仍留 6px 余量。
+ * 改这些值前先按最窄尺寸重算，别只看 iPad Pro。
+ */
+export const DATA_FONT = {
+  /** 生命：整屏唯一焦点，左栏 232px 宽只放它一个数 */
+  lives: { fontSize: 'clamp(4rem, 18vh, 10rem)', lineHeight: 1 },
+  /** 拆弹编号：受最窄格子宽度约束 */
+  wire: { fontSize: 'clamp(2rem, 9.5vh, 6rem)', lineHeight: 1 },
+  /** 道具编号：与名称、描述抢同一张卡的宽度，只能拿到剩余空间 */
+  equipNo: { fontSize: 'clamp(1.5rem, 5.5vh, 3rem)', lineHeight: 1 },
+} as const
