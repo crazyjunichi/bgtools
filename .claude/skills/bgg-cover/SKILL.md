@@ -94,6 +94,27 @@ python .claude/skills/bgg-cover/scripts/fetch_bgg_cover.py --id 413246 --tool bo
 
 不需要动 i18n（图不带文案），不需要动 registry.ts。
 
+## 第 4 步：给盒图定主体色（可选）
+
+首页卡片要一条身份色的规则线时用。**先跑脚本再挑色**：
+
+```bash
+python .claude/skills/bgg-cover/scripts/cover_hue.py public/covers/sheet   # 目录，批量
+python .claude/skills/bgg-cover/scripts/cover_hue.py public/covers/bomb-busters.png --top 5
+```
+
+输出每张图的：中性像素占比、平均彩度/明度、按彩度加权的前 N 档 Tailwind 色相及占比、建议档位。
+
+判读要点（细则与逐盒结论在 [DESIGN.md](../../../docs/DESIGN.md) §2「盒图主体色」）：
+
+- **桌游盒图极度偏暖**，第一名大概率是 `orange` / `amber` / `yellow` / `red`。一批图一起看，别单张定 —— 单张定出来的一批全是暖黄
+- 一个色档被多盒争时，给**对它主张最强**的那盒，其余顺次退次名
+- 前几名全被占、或第一名明显不是这盒的公认识别色（花砖物语统计出红黄，但它叫"蓝"）时，取识别色
+- 建议列打出「低彩度，色相不可信」= 做旧照片那类，走 `stone` / `brown`
+- `rose` 不能用（本项目留给破坏性操作），撞上就退到 `pink`
+
+脚本只做统计，**不改任何代码** —— 色档名要手写进数据结构（计分纸模板是 `SheetHue`），映射成类名的表在 [Home.tsx](../../../src/pages/Home.tsx)。
+
 ## 交互要点
 
 1. **先分流**（顶上那张表），别拿到「找个图标」就来抓 BGG

@@ -45,6 +45,32 @@ export type SheetEntry = {
   scoring?: Scoring
 }
 
+/**
+ * 盒图主体色档位。只存档位名不存 hex：首页要按名取 Tailwind 类名，
+ * 存 hex 会绕开 `@theme` 也保不住斜视下的对比度。
+ *
+ * **不含 `rose`** —— 规范把它留给破坏性操作。取色办法与逐盒依据见 DESIGN.md §2。
+ */
+export type SheetHue =
+  | 'red'
+  | 'orange'
+  | 'amber'
+  | 'yellow'
+  | 'lime'
+  | 'green'
+  | 'emerald'
+  | 'teal'
+  | 'cyan'
+  | 'sky'
+  | 'blue'
+  | 'indigo'
+  | 'violet'
+  | 'purple'
+  | 'fuchsia'
+  | 'pink'
+  | 'stone'
+  | 'brown'
+
 export type SheetTemplate = {
   id: string
   nameKey: I18nKey
@@ -58,6 +84,12 @@ export type SheetTemplate = {
    * 渲染时必须拼 `import.meta.env.BASE_URL`，`base: './'` 下不许写绝对路径
    */
   cover?: string
+  /**
+   * 首页那张卡的规则线色，取自盒图的主色相。**必填，没有缺省值** ——
+   * 17 张模板卡全共用一个色时那条线就不再是身份编码了。允许两款共享同一档：
+   * 卡上同时有盒图与游戏名，颜色从来不是唯一识别码
+   */
+  hue: SheetHue
   /**
    * **只参与搜索、永不渲染**的别名串（`农家乐`、`翼展`、`车票之旅`）。
    * 桌上的口头叫法常常不是官方译名，只匹配正式名会搜不到
@@ -76,6 +108,9 @@ const custom: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.custom',
   // 不是一款游戏、BGG 上没有条目，所以只有 emoji（与 meta.icon 一致）
   icon: '📝',
+  // 没有盒图可取色。首页也不给它单独的模板卡（入口是通用区那张「计分纸」），
+  // 这里跟着 meta.accent 走只为让字段有个不矛盾的值
+  hue: 'violet',
   entries: [],
   editable: true,
 }
@@ -134,6 +169,7 @@ const agricola: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.agricola',
   icon: '🌾',
   cover: 'covers/sheet/agricola.png',
+  hue: 'amber',
   aliasKey: 'tools.scoreSheet.templateAlias.agricola',
   entries: [
     { id: 'ag.fields', nameKey: 'tools.scoreSheet.agricola.fields', scoring: { kind: 'table', steps: T_FIELDS } },
@@ -167,6 +203,7 @@ const catan: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.catan',
   icon: '🏝',
   cover: 'covers/sheet/catan.png',
+  hue: 'red',
   aliasKey: 'tools.scoreSheet.templateAlias.catan',
   entries: [
     { id: 'ct.settlements', nameKey: 'tools.scoreSheet.catan.settlements', scoring: { kind: 'perUnit', per: 1 } },
@@ -184,6 +221,7 @@ const splendor: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.splendor',
   icon: '💎',
   cover: 'covers/sheet/splendor.png',
+  hue: 'indigo',
   aliasKey: 'tools.scoreSheet.templateAlias.splendor',
   entries: [
     { id: 'sp.cards', nameKey: 'tools.scoreSheet.splendor.cards' },
@@ -197,6 +235,7 @@ const azul: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.azul',
   icon: '🎨',
   cover: 'covers/sheet/azul.png',
+  hue: 'cyan',
   aliasKey: 'tools.scoreSheet.templateAlias.azul',
   entries: [
     { id: 'az.board', nameKey: 'tools.scoreSheet.azul.board' },
@@ -215,6 +254,7 @@ const ticketToRide: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.ticketToRide',
   icon: '🚂',
   cover: 'covers/sheet/ticket-to-ride.png',
+  hue: 'orange',
   aliasKey: 'tools.scoreSheet.templateAlias.ticketToRide',
   entries: [
     { id: 'tr.routes', nameKey: 'tools.scoreSheet.ticketToRide.routes' },
@@ -231,6 +271,7 @@ const carcassonne: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.carcassonne',
   icon: '🧩',
   cover: 'covers/sheet/carcassonne.png',
+  hue: 'lime',
   aliasKey: 'tools.scoreSheet.templateAlias.carcassonne',
   entries: [
     { id: 'ca.track', nameKey: 'tools.scoreSheet.carcassonne.track' },
@@ -248,6 +289,7 @@ const wingspan: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.wingspan',
   icon: '🐦',
   cover: 'covers/sheet/wingspan.png',
+  hue: 'sky',
   aliasKey: 'tools.scoreSheet.templateAlias.wingspan',
   entries: [
     { id: 'ws.birds', nameKey: 'tools.scoreSheet.wingspan.birds' },
@@ -265,6 +307,7 @@ const patchwork: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.patchwork',
   icon: '🧵',
   cover: 'covers/sheet/patchwork.png',
+  hue: 'pink',
   aliasKey: 'tools.scoreSheet.templateAlias.patchwork',
   entries: [
     { id: 'pw.buttons', nameKey: 'tools.scoreSheet.patchwork.buttons', scoring: { kind: 'perUnit', per: 1 } },
@@ -279,6 +322,7 @@ const everdell: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.everdell',
   icon: '🌳',
   cover: 'covers/sheet/everdell.png',
+  hue: 'yellow',
   aliasKey: 'tools.scoreSheet.templateAlias.everdell',
   entries: [
     { id: 'ev.cards', nameKey: 'tools.scoreSheet.everdell.cards' },
@@ -299,6 +343,7 @@ const sevenWonders: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.sevenWonders',
   icon: '🏛',
   cover: 'covers/sheet/seven-wonders.png',
+  hue: 'brown',
   aliasKey: 'tools.scoreSheet.templateAlias.sevenWonders',
   entries: [
     { id: '7w.military', nameKey: 'tools.scoreSheet.sevenWonders.military' },
@@ -331,6 +376,7 @@ const arnak: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.arnak',
   icon: '🏺',
   cover: 'covers/sheet/arnak.png',
+  hue: 'emerald',
   aliasKey: 'tools.scoreSheet.templateAlias.arnak',
   entries: [
     { id: 'ak.magnifier', nameKey: 'tools.scoreSheet.arnak.magnifier' },
@@ -355,6 +401,7 @@ const cascadia: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.cascadia',
   icon: '🦌',
   cover: 'covers/sheet/cascadia.png',
+  hue: 'blue',
   aliasKey: 'tools.scoreSheet.templateAlias.cascadia',
   entries: [
     { id: 'cs.bear', nameKey: 'tools.scoreSheet.cascadia.bear' },
@@ -380,6 +427,7 @@ const terraformingMars: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.terraformingMars',
   icon: '🚀',
   cover: 'covers/sheet/terraforming-mars.png',
+  hue: 'orange',
   aliasKey: 'tools.scoreSheet.templateAlias.terraformingMars',
   entries: [
     { id: 'tf.tr', nameKey: 'tools.scoreSheet.terraformingMars.tr' },
@@ -406,6 +454,7 @@ const terraMystica: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.terraMystica',
   icon: '🧙',
   cover: 'covers/sheet/terra-mystica.png',
+  hue: 'violet',
   aliasKey: 'tools.scoreSheet.templateAlias.terraMystica',
   entries: [
     { id: 'tm.track', nameKey: 'tools.scoreSheet.terraMystica.track' },
@@ -431,6 +480,7 @@ const greatWesternTrail: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.greatWesternTrail',
   icon: '🤠',
   cover: 'covers/sheet/great-western-trail.png',
+  hue: 'stone',
   aliasKey: 'tools.scoreSheet.templateAlias.greatWesternTrail',
   entries: [
     {
@@ -459,6 +509,7 @@ const castlesOfBurgundy: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.castlesOfBurgundy',
   icon: '🏰',
   cover: 'covers/sheet/castles-of-burgundy.png',
+  hue: 'green',
   aliasKey: 'tools.scoreSheet.templateAlias.castlesOfBurgundy',
   entries: [
     { id: 'cb.track', nameKey: 'tools.scoreSheet.castlesOfBurgundy.track' },
@@ -480,6 +531,7 @@ const clank: SheetTemplate = {
   nameKey: 'tools.scoreSheet.templates.clank',
   icon: '💀',
   cover: 'covers/sheet/clank.png',
+  hue: 'teal',
   aliasKey: 'tools.scoreSheet.templateAlias.clank',
   entries: [
     { id: 'ck.artifacts', nameKey: 'tools.scoreSheet.clank.artifacts' },

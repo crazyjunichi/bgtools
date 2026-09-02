@@ -86,14 +86,15 @@ export function AppHeader({ tool }: Props) {
       <header
         // 顶栏收起时，键盘 Tab 到返回键也能把它唤出来
         onFocus={tool ? show : undefined}
-        className={`safe-t safe-x border-b border-line ${
+        className={`safe-t safe-x ${
           tool
-            ? `absolute inset-x-0 top-0 z-20 bg-ink/95 backdrop-blur transition-transform duration-200 wide:static wide:z-auto wide:h-full wide:shrink-0 wide:border-r wide:border-b-0 wide:bg-ink wide:backdrop-blur-none ${
+            ? `absolute inset-x-0 top-0 z-20 border-b border-line bg-ink/95 backdrop-blur transition-transform duration-200 wide:static wide:z-auto wide:h-full wide:shrink-0 wide:border-r wide:border-b-0 wide:bg-ink wide:backdrop-blur-none ${
                 shown
                   ? 'translate-y-0'
                   : 'pointer-events-none -translate-y-full wide:pointer-events-auto wide:translate-y-0'
               }`
-            : 'shrink-0 bg-ink'
+            : // 首页是印刷版式：页眉那条规则线要粗且亮，跟区块的细分隔线分出层级
+              'shrink-0 border-b-2 border-text bg-ink'
         }`}
       >
         {/* 宽度给内层而不是 header：safe-x 的刘海 padding 才能加在 64px 之外，
@@ -117,7 +118,14 @@ export function AppHeader({ tool }: Props) {
             <IconLogo className="ml-2 size-6 text-text" aria-hidden />
           )}
           {/* 横屏侧栏只有 64px，塞不下标题；用 sr-only 而非 hidden，读屏仍报得出当前工具 */}
-          <h1 className={`flex-1 truncate text-lg font-semibold ${tool ? 'wide:sr-only' : ''}`}>
+          <h1
+            className={`flex-1 truncate ${
+              tool
+                ? 'text-lg font-semibold wide:sr-only'
+                : // 与首页区块标题同一套字距，负 me 吃掉末字后面那份
+                  '-me-[0.25em] text-base font-bold tracking-[0.25em]'
+            }`}
+          >
             {tool ? `${tool.icon} ${t(tool.nameKey)}` : t('app.title')}
           </h1>
           {/* 小工具入口（首页直达配置类那两个，工具页收进 tile 面板）+ 计时器芯片 */}
