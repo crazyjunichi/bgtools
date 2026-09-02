@@ -17,7 +17,7 @@ type Props = {
 
 /**
  * 只管人数：它一晚基本不动，值得收进浮层不占版面。
- * 重发道具 / 新一局虽然也是"设置"，但每局都要按，已提到左栏常驻（[BoardActions](BoardActions.tsx)）。
+ * 重发装备 / 新一局虽然也是"设置"，但每局都要按，已提到左栏常驻（[BoardActions](BoardActions.tsx)）。
  * 用 fixed 遮罩而非 absolute 气泡：ToolLayout 的 aside 是 overflow-hidden，气泡会被裁掉。
  */
 export function SettingsPopover({ players, started, onSetPlayers }: Props) {

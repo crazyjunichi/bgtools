@@ -64,7 +64,7 @@ const LABEL_KEY: Record<DefuseState, I18nKey> = {
 }
 
 /**
- * 有色外壳把拆弹区圈成一块 sky 领地，和右侧 violet 的道具区分开 ——
+ * 有色外壳把拆弹区圈成一块 sky 领地，和右侧 violet 的装备区分开 ——
  * 两块信息都裸放在同一深底上时会连成一片，隔着桌子找不到边界。
  */
 export function WireGrid({ wires, onCycle }: Props) {

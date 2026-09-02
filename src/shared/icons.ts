@@ -42,6 +42,8 @@ export {
   Lock as IconLocked,
   Target as IconLogo,
   Minus as IconMinus,
+  /** 这台设备不支持语音播报。带斜杠的喇叭是「没有声音」的通行字形 */
+  VolumeX as IconMute,
   /** 「更多操作」的收纳入口，横向省略号是这个语义的通行字形 */
   Ellipsis as IconMore,
   ChevronDown as IconMoveDown,
@@ -61,12 +63,18 @@ export {
   Search as IconSearch,
   ChevronRight as IconSelected,
   Settings as IconSettings,
+  /** 跳过当前这一步，不是「下一页」—— 带竖线的双三角才是「跳到下一个」 */
+  SkipForward as IconSkip,
+  /** 语音播报中 / 这一步是一句播报 */
+  Volume2 as IconSpeak,
   /** 系统分享面板 */
   Share2 as IconShare,
   /** 计分模板（一张预置好条目的表），与 IconCsv 的表格字形区分开 */
   ClipboardList as IconTemplate,
   Timer as IconTimer,
   CircleHelp as IconUnknown,
+  /** 条件已满足、这张牌能打了。与 IconLocked 成对出现才读得出对立，别单独用 */
+  LockOpen as IconUnlocked,
   /** PWA 有新版本待接管。云下载而非 IconRepeat 的刷新箭头：要的是「取新东西」不是「再来一次」 */
   CloudDownload as IconUpdate,
 } from 'lucide-react'

@@ -1,6 +1,8 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Stepper } from '../../shared/components/Stepper'
+import type { RenderDie } from '../../shared/dice/dice3d/DiceCanvas'
+import { dieRenderOf, numericDie } from '../../shared/dice/types'
 import { buzz } from '../../shared/haptics'
 import { QUICK_DICE_TYPES, QUICK_MAX_COUNT, useQuickDiceStore } from './store'
 
@@ -9,7 +11,9 @@ import { QUICK_DICE_TYPES, QUICK_MAX_COUNT, useQuickDiceStore } from './store'
  * 一个装饰用的画布。quick registry 那条"静态 import 不懒加载"针对的是很小的
  * 组件，这里是例外；dialog 一打开就预取，按到「投掷」时早已到位
  */
-const DiceCanvas = lazy(() => import('./DiceCanvas').then((m) => ({ default: m.DiceCanvas })))
+const DiceCanvas = lazy(() =>
+  import('../../shared/dice/dice3d/DiceCanvas').then((m) => ({ default: m.DiceCanvas })),
+)
 
 /**
  * 顶栏快捷骰子。数字读数不等动画 —— 在别的工具中途弹出来，要的是立刻出数，
@@ -18,10 +22,10 @@ const DiceCanvas = lazy(() => import('./DiceCanvas').then((m) => ({ default: m.D
  */
 export function QuickDice() {
   const { t } = useTranslation()
-  const { sides, count, last, setSides, setCount, roll } = useQuickDiceStore()
+  const { sides, count, last, seq, setSides, setCount, roll } = useQuickDiceStore()
 
   useEffect(() => {
-    void import('./DiceCanvas')
+    void import('../../shared/dice/dice3d/DiceCanvas')
   }, [])
 
   const handleRoll = () => {
@@ -30,6 +34,12 @@ export function QuickDice() {
   }
 
   const total = last ? last.reduce((a, b) => a + b, 0) : null
+  // 顺手掷一下没有锁定这回事：每颗都用同一个 seq，投掷时全部一起转
+  const dice = useMemo<RenderDie[]>(() => {
+    if (!last) return []
+    const render = dieRenderOf(numericDie(sides, 'amber'))
+    return last.map((face, i) => ({ key: String(i), render, face, locked: false, spin: seq }))
+  }, [last, seq, sides])
 
   return (
     // 朝向只决定排列轴：横屏并排、竖屏堆叠，两种朝向都一屏放完
@@ -84,7 +94,7 @@ export function QuickDice() {
             {/* fallback 撑住同样的空间，加载完不会让下方读数跳一下；
                 没有 WebGL 时 DiceCanvas 返回 null，这块空间跟着收掉 */}
             <Suspense fallback={<div className="min-h-0 w-full flex-1" />}>
-              <DiceCanvas sides={sides} values={last} className="min-h-0 w-full flex-1" />
+              <DiceCanvas dice={dice} className="min-h-0 w-full flex-1" />
             </Suspense>
             {/* leading-none 是预算的前提：88px 的字默认行盒会多吃 17px */}
             <div className="flex shrink-0 flex-col items-center gap-2 short:gap-1">

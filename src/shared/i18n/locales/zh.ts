@@ -74,11 +74,31 @@ export const zh = {
     increase: '增加',
   },
 
-  /** 顶栏快捷骰子 */
+  /** 顶栏快捷骰子（前三条）与游戏骰组界面（[shared/dice](../../dice)）共用 */
   dice: {
     type: '骰型',
     roll: '投掷 {{n}}d{{sides}}',
     rolling: '投掷中…',
+    /** 骰组名，与 [presets.ts](../../dice/presets.ts) 一一对应 */
+    sets: {
+      yahtzee: '快艇骰子',
+    },
+    /** 骰池：勾选哪几颗、投掷、锁定结果 */
+    pool: {
+      open: '打开骰子',
+      pick: '骰子',
+      all: '全选',
+      none: '全不选',
+      /** 勾选格的读屏名：骰名 + 它是盒里第几颗 */
+      die: '{{name}} 第 {{n}} 颗',
+      roll: '投掷 {{n}} 颗',
+      reroll: '重掷 {{n}} 颗',
+      emptyPick: '先勾选要投的骰子',
+      hint: '点「投掷」出数',
+      lock: '锁定 {{name}}：{{face}}',
+      unlock: '解锁 {{name}}：{{face}}',
+      tally: '各面',
+    },
   },
 
   players: {
@@ -181,10 +201,77 @@ export const zh = {
     },
   },
 
+  /**
+   * 语音主持人（[shared/voice-host](../../voice-host)）自己的界面文案。
+   * **被念出去的台词不在这里**，在各宿主游戏的 `tools.<id>.say.*` 下 ——
+   * 流程是按游戏定的，引擎不认识任何一句台词。
+   */
+  voiceHost: {
+    start: '开始主持',
+    progress: '第 {{n}} / {{total}} 步',
+    stepsTotal: '共 {{n}} 步',
+    toggles: '包含的角色',
+    pause: '暂停',
+    resume: '继续',
+    skip: '跳过',
+    stop: '结束',
+    stopConfirm: '确认结束',
+    paused: '已暂停',
+    done: '流程结束',
+    again: '再跑一遍',
+    /** 「等你确认」那一步的主按钮：把屏上那句话说完了才点 */
+    spoken: '说完了，继续',
+    noSpeech: '这台设备不支持语音播报，流程改为屏幕显示',
+    /** 每种步骤是什么。也当读屏文本用（流程预览里那排图标的 aria-label） */
+    kind: {
+      say: '播报',
+      wait: '等待',
+      confirm: '等你确认',
+      beep: '提示音',
+    },
+  },
+
   tools: {
+    werewolf: {
+      name: '狼人杀主持',
+      desc: '语音主持一整夜 · 环节可开关',
+      flow: '标准夜晚流程',
+      param: {
+        guard: '守卫',
+        witch: '女巫',
+        seer: '预言家',
+        hunter: '猎人',
+        roleSec: '每个角色环节',
+        daySec: '白天讨论',
+      },
+      /** 这些是**要被念出来**的台词：写口语、带标点（TTS 靠标点断句和收尾） */
+      say: {
+        nightFall: '天黑请闭眼。',
+        guardOpen: '守卫请睁眼，请选择你今晚要守护的人。',
+        guardClose: '守卫请闭眼。',
+        wolvesOpen: '狼人请睁眼，请互相确认身份，统一意见选择今晚要击杀的人。',
+        wolvesClose: '狼人请闭眼。',
+        witchOpen: '女巫请睁眼。你有一瓶解药和一瓶毒药，今晚要用吗？',
+        witchClose: '女巫请闭眼。',
+        seerOpen: '预言家请睁眼，请选择一位玩家查验身份。',
+        seerClose: '预言家请闭眼。',
+        hunterOpen: '猎人请睁眼，请确认你的技能状态。',
+        hunterClose: '猎人请闭眼。',
+        dayBreak: '天亮了，请所有人睁眼。',
+        discuss: '本轮自由讨论 {{n}} 秒，时间到会有提示音。现在开始。',
+        vote: '讨论时间到，请开始投票。',
+        roundEnd: '本轮结束。',
+      },
+      /** 反过来这些**不念**：给主持人看的动作提示，内容每局都变，只能人自己说 */
+      do: {
+        announceDeaths: '宣布昨晚的死亡情况',
+        announceVote: '宣布投票结果与被放逐的人',
+      },
+    },
+
     bombBusters: {
       name: '炸弹克星',
-      desc: '拆弹进度 · 道具发放 · 生命追踪',
+      desc: '拆弹进度 · 装备发放 · 生命追踪',
       lives: {
         dead: '💥 已引爆',
         critical: '⚠️ 最后一点',
@@ -209,17 +296,18 @@ export const zh = {
         },
       },
       equip: {
-        title: '道具牌 · 点击切换状态',
+        title: '装备牌 · 点击切换状态',
         card: '{{no}} 号 {{name}}：{{state}}',
-        unknown: '未知道具',
-        stale: '清单已更新，请重发道具',
+        unknown: '未知装备',
+        stale: '清单已更新，请重发装备',
+        /** 三态词只进 aria-label —— 卡上的徽章只画图标，那点宽度让给名称 */
         state: {
           locked: '未激活',
           ready: '可用',
           used: '已用',
         },
         /**
-         * 装备卡 1–12。desc 只写核心动作 —— 道具栏窄且 line-clamp-2，
+         * 装备卡 1–12。desc 只写核心动作 —— 装备栏窄且 line-clamp-2，
          * 中文超过约 28 字就会被截断，完整措辞看桌上实物卡。
          */
         e1: { name: '标签 ≠', desc: '在两根号码不同的相邻导线间放 ≠ 指示物' },
@@ -237,17 +325,17 @@ export const zh = {
       },
       /** 左栏常驻的局面快捷键 */
       actions: {
-        deal: '重发道具',
+        deal: '重发装备',
         newGame: '新一局',
         confirmNewGame: '确认重开',
       },
       settings: {
         open: '设置：人数',
         title: '设置',
-        players: '人数（决定初始生命与道具数）',
+        players: '人数（决定初始生命与装备数）',
         /** 人数下限是 2，英文永远是复数，不需要 i18next 的复数变体 */
         playerCount: '{{n}}人',
-        warn: '切到 {{n}} 人将重开一局：生命重置为 {{n}}、道具重发、拆弹进度清空',
+        warn: '切到 {{n}} 人将重开一局：生命重置为 {{n}}、装备重发、拆弹进度清空',
       },
     },
     score: {
@@ -667,6 +755,11 @@ export const zh = {
         order: '{{n}} 个触点已随机排序',
         group: '{{n}} 个触点已随机分成 {{g}} 组',
       },
+    },
+
+    yahtzee: {
+      name: '快艇骰子',
+      desc: '5 颗骰 · 锁定重掷',
     },
   },
 } as const

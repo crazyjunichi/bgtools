@@ -18,7 +18,7 @@ const levelOf = (lives: number): Level =>
 /**
  * 血量色带：绿 → 琥珀 → 红，整块卡跟着变。
  * 生命是"量"而不是"状态"，色带能让人不读数字就知道还剩多少，
- * 这也是左栏唯一一块信息，颜色给得比拆弹/道具区更满。
+ * 这也是左栏唯一一块信息，颜色给得比拆弹/装备区更满。
  */
 const CARD: Record<Level, string> = {
   dead: 'border-rose-400 bg-rose-600/45 animate-pulse',

@@ -3,6 +3,8 @@ import { scoreSheetMeta } from './score-sheet/meta'
 import { scoreMeta } from './score/meta'
 import { touchPickMeta } from './touch-pick/meta'
 import type { ToolEntry } from './types'
+import { werewolfMeta } from './werewolf/meta'
+import { yahtzeeMeta } from './yahtzee/meta'
 
 /**
  * 工具注册表 —— 唯一真源。
@@ -14,6 +16,8 @@ export const tools: ToolEntry[] = [
   { ...scoreSheetMeta, load: () => import('./score-sheet/ScoreSheetPage') },
   { ...bombBustersMeta, load: () => import('./bomb-busters/BombBustersPage') },
   { ...touchPickMeta, load: () => import('./touch-pick/TouchPickPage') },
+  { ...yahtzeeMeta, load: () => import('./yahtzee/YahtzeePage') },
+  { ...werewolfMeta, load: () => import('./werewolf/WerewolfPage') },
 ]
 
 export function findTool(pathname: string): ToolEntry | undefined {

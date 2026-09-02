@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
 import { IconAlarm, IconRepeat } from '../../shared/icons'
-import { formatMS, useQuickTimerStore } from './store'
+import { formatMS } from '../../shared/time'
+import { useQuickTimerStore } from './store'
 
 /**
  * 到时提醒。全屏红底是刻意的：平板平放在桌上、没人盯着屏幕，

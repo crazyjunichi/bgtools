@@ -8,7 +8,7 @@ export const MAX_LIVES = 6
 /** 线缆编号 1–12，每个编号的三态与人数无关 */
 export const WIRE_COUNT = 12
 
-/** 拆弹与道具都是点击循环的三态，共用底层类型 */
+/** 拆弹与装备都是点击循环的三态，共用底层类型 */
 type TriState = 0 | 1 | 2
 /** 0 未拆过 / 1 拆了一半 / 2 全部拆完 */
 export type DefuseState = TriState
@@ -52,7 +52,7 @@ export function findEquipment(id: string): Equipment | undefined {
 export type HandCard = { equipId: string; state: EquipState }
 
 /**
- * 用 crypto 而非 Math.random：道具发放的公平性玩家会当场质疑。
+ * 用 crypto 而非 Math.random：装备发放的公平性玩家会当场质疑。
  * 拒绝采样丢弃尾部不完整区间，避免取模引入分布偏差。
  */
 function randomIndex(max: number): number {
@@ -79,7 +79,7 @@ function pickDistinct<T>(pool: readonly T[], n: number): T[] {
   return picked
 }
 
-/** 道具牌数量 = 人数，发放后一律回到「未激活」 */
+/** 装备牌数量 = 人数，发放后一律回到「未激活」 */
 function deal(players: number): HandCard[] {
   return pickDistinct(EQUIPMENT_POOL, players).map((e) => ({ equipId: e.id, state: 0 as const }))
 }
@@ -95,7 +95,7 @@ type BombBustersState = {
   /** 下标 i 对应线缆编号 i+1 */
   wires: DefuseState[]
   hand: HandCard[]
-  /** 切换人数即开新一局：重置生命、重发道具、清空拆弹进度 */
+  /** 切换人数即开新一局：重置生命、重发装备、清空拆弹进度 */
   setPlayers: (players: number) => void
   setLives: (lives: number) => void
   cycleWire: (index: number) => void

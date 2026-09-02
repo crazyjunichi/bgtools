@@ -1,7 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
 import type { I18nKey } from '../../shared/i18n/types'
-import { IconCheck, IconLocked, IconUnknown, type LucideIcon } from '../../shared/icons'
+import {
+  IconCheck,
+  IconLocked,
+  IconUnknown,
+  IconUnlocked,
+  type LucideIcon,
+} from '../../shared/icons'
 import { findEquipment, type EquipState, type HandCard } from './store'
 import { DATA_FONT } from './typography'
 
@@ -11,7 +17,7 @@ type Props = {
 }
 
 /**
- * 整个道具区是一块 violet 领地：色相在这里表示"这是道具信息"，不再表示"能不能用"，
+ * 整个装备区是一块 violet 领地：色相在这里表示"这是装备信息"，不再表示"能不能用"，
  * 所以三态在同一色系里靠饱和度拉开，而不是靠"有色 / 无色"。
  * 未激活保持正常亮度 —— 它是待满足条件的牌，玩家得读清条件，压暗反而误导；
  * 真该被忽略的只有已用，整卡压透明直接退场。
@@ -55,27 +61,33 @@ const BADGE: Record<EquipState, string> = {
   2: 'text-violet-300 ring-1 ring-violet-500/50',
 }
 
-/** 拆成两张表：文字那份还要喂 aria-label 拼接，图标不能混进读屏文本 */
+/**
+ * 拆成两张表：徽章上只画图标（文案会跟名称抢卡片宽度，而名称优先级更高），
+ * 文字那份只喂 aria-label —— 读屏文本里不许混图标。
+ */
 const BADGE_TEXT_KEY: Record<EquipState, I18nKey> = {
   0: 'tools.bombBusters.equip.state.locked',
   1: 'tools.bombBusters.equip.state.ready',
   2: 'tools.bombBusters.equip.state.used',
 }
 
-const BADGE_ICON: Record<EquipState, LucideIcon | null> = {
+/** 三态都要有图标：缺一个会让右列时高时矮，编号跟着上下跳 */
+const BADGE_ICON: Record<EquipState, LucideIcon> = {
   0: IconLocked,
-  // 可用是全卡唯一的实心块，本身已经最扎眼，再加图标反而抢走编号的位置
-  1: null,
+  1: IconUnlocked,
   2: IconCheck,
 }
 
 /**
- * 道具牌竖排、卡内横向排布。竖排是为了把整个栏宽让给名称和描述 ——
+ * 装备牌竖排、卡内横向排布。竖排是为了把整个栏宽让给名称和描述 ——
  * 5 张横排时每张分到的宽度会把描述碎成五六行。
  * 卡内两列：左边文字（图示 + 名称一行、描述一行），右边纵向的编号 + 状态徽章。
  * 图示不再单独占一列 —— 独立列会把它的宽度从描述里也扣掉一份，塞进名称行只影响名称。
- * 编号是"桌上那张牌是哪张"的唯一锚点，所以它独占一列且字号最大；
- * 徽章挪到编号下方而不是名称旁边 —— 名称长度不可控，横排时它先被 truncate 掉。
+ *
+ * 卡内三样东西的优先级是**名称 > 编号 > 状态**，右列的两处设计都由它推出来：
+ * 徽章在编号下方而不是名称旁边（名称长度不可控，横排时它先被切掉），
+ * 且徽章只画图标不带文案 —— 状态文案（尤其英文）会让右列比编号还宽，
+ * 挤掉的正好是名称。状态本身还有底色和删除线两层编码，少一份文字不影响识别。
  */
 export function EquipmentList({ hand, onCycle }: Props) {
   const { t } = useTranslation()
@@ -118,15 +130,18 @@ export function EquipmentList({ hand, onCycle }: Props) {
                   ) : (
                     <IconUnknown className="size-6 shrink-0" aria-hidden />
                   )}
-                  <span className={`truncate text-xl font-bold ${TITLE[card.state]}`}>{name}</span>
+                  {/* 名称保持单行（换行会把描述挤成三行），矮屏降一档给英文名留余量 */}
+                  <span className={`truncate text-xl font-bold short:text-lg ${TITLE[card.state]}`}>
+                    {name}
+                  </span>
                 </span>
                 <span className={`line-clamp-2 text-base leading-snug ${DESC[card.state]}`}>
                   {equip ? t(equip.descKey) : t('tools.bombBusters.equip.stale')}
                 </span>
               </span>
 
-              {/* 编号在上、徽章在下，居中对齐：徽章比两位数编号宽，右列宽度由它定，
-                  编号居中才不会看着往左偏。这一列整体仍矮于两行描述的文本块，不撑高卡片 */}
+              {/* 编号在上、徽章在下，居中对齐：右列宽度现在由编号独占，
+                  徽章比它窄，居中才不会看着往左偏。这一列整体仍矮于两行描述的文本块，不撑高卡片 */}
               <span className="flex shrink-0 flex-col items-center gap-1">
                 <span
                   style={DATA_FONT.equipNo}
@@ -134,11 +149,8 @@ export function EquipmentList({ hand, onCycle }: Props) {
                 >
                   {equip?.no ?? '?'}
                 </span>
-                <span
-                  className={`flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-bold ${BADGE[card.state]}`}
-                >
-                  {BadgeIcon && <BadgeIcon className="size-3.5" aria-hidden />}
-                  {badgeText}
+                <span className={`rounded-lg p-1 ${BADGE[card.state]}`}>
+                  <BadgeIcon className="size-4" aria-hidden />
                 </span>
               </span>
             </button>

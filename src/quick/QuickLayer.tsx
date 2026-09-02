@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { beep } from '../shared/beep'
 import { useWakeLock } from '../shared/hooks/useWakeLock'
 import { buzz } from '../shared/haptics'
 import { QuickDialog } from './QuickDialog'
 import { QuickMenu } from './QuickMenu'
 import { quickTools } from './registry'
 import { QUICK_MENU, useQuickUI } from './store'
-import { beep } from './timer/beep'
 import { TimerAlarm } from './timer/TimerAlarm'
 import { TICK_MS, useQuickTimerStore } from './timer/store'
 

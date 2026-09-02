@@ -10,6 +10,12 @@ type Props = {
    * 拉宽只会让拇指多跑）；完整记录那种矩阵要横向铺开，自己传更大的档。
    */
   maxWidth?: string
+  /**
+   * 能不能随手关掉。`false` 时撤掉 ✕、遮罩点击与 Esc 三条出口 ——
+   * 给「关掉就等于中断一件正在进行的事」的浮层用（语音主持人的运行现场），
+   * 那种浮层的退出必须走内部的二次确认按钮，否则桌上一次误触就毁掉整晚流程。
+   */
+  dismissible?: boolean
   onClose: () => void
   children: ReactNode
 }
@@ -25,22 +31,29 @@ type Props = {
  * 遮罩关闭走 onClick 而非 onPointerDown：pointerdown 里卸载浮层后，触屏抬手补发的兼容 click
  * 会按抬手坐标重新 hit-test，穿透到底下的格子上，顺手就把别人的分改了。
  */
-export function Overlay({ title, maxWidth = 'max-w-md', onClose, children }: Props) {
+export function Overlay({
+  title,
+  maxWidth = 'max-w-md',
+  dismissible = true,
+  onClose,
+  children,
+}: Props) {
   const { t } = useTranslation()
 
   useEffect(() => {
+    if (!dismissible) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [dismissible, onClose])
 
   return (
     <div
       className="fixed inset-0 z-20 flex items-center justify-center bg-ink/85 p-4 backdrop-blur-sm"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
+        if (dismissible && e.target === e.currentTarget) onClose()
       }}
     >
       <div
@@ -48,14 +61,16 @@ export function Overlay({ title, maxWidth = 'max-w-md', onClose, children }: Pro
       >
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">{title}</div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t('common.close')}
-            className="btn-quiet !min-h-12 w-12 shrink-0 short:!min-h-11 short:w-11"
-          >
-            <IconClose className="size-5" aria-hidden />
-          </button>
+          {dismissible && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t('common.close')}
+              className="btn-quiet !min-h-12 w-12 shrink-0 short:!min-h-11 short:w-11"
+            >
+              <IconClose className="size-5" aria-hidden />
+            </button>
+          )}
         </div>
         {children}
       </div>

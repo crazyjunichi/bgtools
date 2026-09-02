@@ -1,37 +1,41 @@
 import * as THREE from 'three'
 
 /**
- * 骰子几何体 + 每个面的「点数 / 法线 / 中心 / 正立方向」。
+ * 骰子几何体 + 每个面的「面号 / 法线 / 中心 / 正立方向」。
  *
- * 不做 UV 贴图：多面体的每面单独排 UV 工作量极大，而这里的数字是贴片
+ * 不做 UV 贴图：多面体的每面单独排 UV 工作量极大，而这里的字形是贴片
  * （面前方一张 plane），所以只需要知道每个面在哪、朝哪、哪边算上。
+ *
+ * 这一层与「面上画什么」无关：面号只是 1..N 的槽位，画数字还是画符号由
+ * [Die3D](Die3D.ts) 拿到的字形表决定。
  */
 
 /** 所有骰型统一外接球半径 —— 多颗并排时视觉大小才一致 */
 const R = 1
 
 export type DieFace = {
+  /** 面号，1..N。**不是**面上画的内容 */
   value: number
   /** 单位法线，指向骰子外侧 */
   normal: THREE.Vector3
   /** 面中心（局部坐标） */
   center: THREE.Vector3
-  /** 面内的「数字朝上」方向，决定贴片正立姿态；与 normal 正交 */
+  /** 面内的「字形朝上」方向，决定贴片正立姿态；与 normal 正交 */
   up: THREE.Vector3
 }
 
 export type DieShape = {
   geometry: THREE.BufferGeometry
   faces: DieFace[]
-  /** 数字贴片边长（局部单位）。三角面能放的字比五边形小得多 */
-  numeralSize: number
+  /** 字形贴片边长（局部单位）。三角面能放的字比五边形小得多 */
+  glyphSize: number
 }
 
 /**
- * 数字贴片边长。上限是「正方形贴片内接于该面的内切圆」，超了贴片四角会戳出骰面边缘 ——
+ * 字形贴片边长。上限是「正方形贴片内接于该面的内切圆」，超了贴片四角会戳出骰面边缘 ——
  * 加新面数时按这个约束反推，别照着已有值猜。三角面 (d4/d8/d20) 吃亏最大。
  */
-const NUMERAL_SIZE: Record<number, number> = {
+const GLYPH_SIZE: Record<number, number> = {
   4: 0.66,
   6: 0.84,
   8: 0.56,
@@ -44,7 +48,7 @@ export function createDieShape(sides: number): DieShape {
   const geometry = createGeometry(sides)
   const faces = extractFaces(geometry)
   assignValues(faces, sides)
-  return { geometry, faces, numeralSize: NUMERAL_SIZE[sides] ?? 0.6 }
+  return { geometry, faces, glyphSize: GLYPH_SIZE[sides] ?? 0.6 }
 }
 
 function createGeometry(sides: number): THREE.BufferGeometry {
@@ -157,8 +161,8 @@ function extractFaces(geo: THREE.BufferGeometry): DieFace[] {
 }
 
 /**
- * 数字该朝哪边。真骰子的刻字方向不是随便定的：
- * 正方形（d6）数字轴对齐 → 取边中点方向；三角形/五边形数字与对边平行 → 取顶点方向；
+ * 字形该朝哪边。真骰子的刻字方向不是随便定的：
+ * 正方形（d6）刻字轴对齐 → 取边中点方向；三角形/五边形刻字与对边平行 → 取顶点方向；
  * 鸢形（d10）沿长轴 → 取最远那个顶点，也就是朝骰子尖端。
  */
 function pickUp(points: THREE.Vector3[], center: THREE.Vector3, normal: THREE.Vector3) {

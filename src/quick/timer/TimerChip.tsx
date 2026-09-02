@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconAlarm, IconPause, IconTimer } from '../../shared/icons'
+import { formatMS } from '../../shared/time'
 import { useQuickUI } from '../store'
-import { formatMS, TICK_MS, useQuickTimerStore } from './store'
+import { TICK_MS, useQuickTimerStore } from './store'
 
 /**
  * 栏上的计时器芯片。小工具入口收进 tile 面板后，这是唯一还能常驻栏上的小工具 ——

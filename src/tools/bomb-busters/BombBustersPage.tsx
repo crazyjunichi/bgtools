@@ -29,7 +29,7 @@ export default function BombBustersPage() {
 
   return (
     <ToolLayout
-      // 左栏只有一个生命读数 + 几个入口，撑不满默认档；省下的宽度给拆弹区与道具区
+      // 左栏只有一个生命读数 + 几个入口，撑不满默认档；省下的宽度给拆弹区与装备区
       panelWidth="narrow"
       panel={
         <>
@@ -40,7 +40,7 @@ export default function BombBustersPage() {
         </>
       }
     >
-      {/* 横屏并排（道具吃满右侧栏宽，描述才能整行读完）；竖屏自动改成拆弹在上、道具在下 */}
+      {/* 横屏并排（装备吃满右侧栏宽，描述才能整行读完）；竖屏自动改成拆弹在上、装备在下 */}
       <Split ratio="majorFirst">
         <WireGrid wires={wires} onCycle={cycleWire} />
         <EquipmentList hand={hand} onCycle={cycleEquip} />

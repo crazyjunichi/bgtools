@@ -7,6 +7,14 @@ import { htmlLangOf } from './shared/i18n'
 import { findTool } from './tools/registry'
 import { UpdatePrompt } from './UpdatePrompt'
 
+/**
+ * 内容区内距。**刘海与基础内距必须 calc 相加**：拆成 safe-x / px-* 两条规则写在同一个
+ * 元素上是同一个 padding，会互相覆盖，刘海一赢内容就直接贴到屏幕边上。
+ * 顶部不在这里，见下面的三元 —— 两种页面该不该让出顶部刘海是相反的。
+ */
+const PAD =
+  'pb-[calc(0.5rem_+_env(safe-area-inset-bottom))] ps-[calc(0.5rem_+_env(safe-area-inset-left))] pe-[calc(0.5rem_+_env(safe-area-inset-right))]'
+
 export default function App() {
   const { pathname } = useLocation()
   const tool = findTool(pathname)
@@ -32,10 +40,11 @@ export default function App() {
       {/* key 让换页时重挂载，顶栏的隐藏状态自然回到初始值 */}
       <AppHeader key={tool?.id ?? 'home'} tool={tool} />
 
-      {/* 工具页竖屏顶栏不占位，safe-t 得由内容区自己让出刘海 */}
+      {/* 顶部内距二选一而不是叠加覆盖：工具页竖屏顶栏是 overlay，那份刘海只能由内容区
+          自己让出；首页顶栏正常占位，已经把它吃掉了，这里再让一次就白空一条 */}
       <main
-        className={`safe-b safe-x min-h-0 w-full min-w-0 flex-1 overflow-hidden px-4 py-3 ${
-          tool ? 'safe-t' : ''
+        className={`min-h-0 w-full min-w-0 flex-1 overflow-hidden ${PAD} ${
+          tool ? 'pt-[calc(0.5rem_+_env(safe-area-inset-top))]' : 'pt-2'
         }`}
       >
         <Outlet />

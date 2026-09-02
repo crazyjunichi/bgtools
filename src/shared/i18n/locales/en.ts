@@ -4,7 +4,7 @@ import type { Resources } from '../types'
  * English。类型受 [zh.ts](zh.ts) 约束：缺 key / 多 key / 拼错都在 `tsc` 阶段报错。
  *
  * 措辞刻意压短 —— 运行场景是平板横屏，英文普遍比中文宽 1.5–2 倍，
- * 按钮和 `line-clamp-2` 的道具描述都是按中文长度调过的。
+ * 按钮和 `line-clamp-2` 的装备描述都是按中文长度调过的。
  * 装备卡名按实物卡直译，与官方英文版卡名可能有出入。
  */
 export const en: Resources = {
@@ -73,6 +73,24 @@ export const en: Resources = {
     type: 'Die type',
     roll: 'Roll {{n}}d{{sides}}',
     rolling: 'Rolling…',
+    sets: {
+      yahtzee: 'Yahtzee',
+    },
+    // 面板只有 224px 宽，按钮文案一律一到两个词
+    pool: {
+      open: 'Open dice',
+      pick: 'Dice',
+      all: 'All',
+      none: 'None',
+      die: '{{name}}, die {{n}}',
+      roll: 'Roll {{n}}',
+      reroll: 'Reroll {{n}}',
+      emptyPick: 'Pick the dice to roll',
+      hint: 'Tap Roll to get numbers',
+      lock: 'Lock {{name}}: {{face}}',
+      unlock: 'Unlock {{name}}: {{face}}',
+      tally: 'Faces',
+    },
   },
 
   players: {
@@ -167,7 +185,69 @@ export const en: Resources = {
     },
   },
 
+  voiceHost: {
+    start: 'Start hosting',
+    progress: 'Step {{n}} / {{total}}',
+    stepsTotal: '{{n}} steps',
+    toggles: 'Roles in play',
+    pause: 'Pause',
+    resume: 'Resume',
+    skip: 'Skip',
+    // 控制条上三个按钮并排，写全 "End hosting" 会撑破
+    stop: 'End',
+    stopConfirm: 'End it?',
+    paused: 'Paused',
+    done: 'Flow finished',
+    again: 'Run again',
+    spoken: 'Said it, go on',
+    noSpeech: 'This device has no speech output — steps are shown on screen instead',
+    kind: {
+      say: 'Announce',
+      wait: 'Wait',
+      confirm: 'Waiting for you',
+      beep: 'Chime',
+    },
+  },
+
   tools: {
+    werewolf: {
+      name: 'Werewolf Host',
+      desc: 'Voice-hosted night · roles toggleable',
+      flow: 'Standard night',
+      param: {
+        guard: 'Guard',
+        witch: 'Witch',
+        seer: 'Seer',
+        hunter: 'Hunter',
+        roleSec: 'Each role phase',
+        daySec: 'Day discussion',
+      },
+      say: {
+        nightFall: 'Night falls. Everyone, close your eyes.',
+        guardOpen: 'Guard, open your eyes. Choose the player you want to protect tonight.',
+        guardClose: 'Guard, close your eyes.',
+        wolvesOpen:
+          'Werewolves, open your eyes. Confirm each other, then agree on who to kill tonight.',
+        wolvesClose: 'Werewolves, close your eyes.',
+        witchOpen:
+          'Witch, open your eyes. You have one healing potion and one poison. Will you use either tonight?',
+        witchClose: 'Witch, close your eyes.',
+        seerOpen: 'Seer, open your eyes. Choose one player to check.',
+        seerClose: 'Seer, close your eyes.',
+        hunterOpen: 'Hunter, open your eyes. Confirm whether your ability is still available.',
+        hunterClose: 'Hunter, close your eyes.',
+        dayBreak: 'Day breaks. Everyone, open your eyes.',
+        discuss:
+          'You have {{n}} seconds of open discussion. A chime will sound when time is up. Begin now.',
+        vote: 'Time is up. Please start voting.',
+        roundEnd: 'This round is over.',
+      },
+      do: {
+        announceDeaths: 'Announce who died last night',
+        announceVote: 'Announce the vote result and who is exiled',
+      },
+    },
+
     bombBusters: {
       name: 'Bomb Busters',
       desc: 'Defuse · gear · lives',
@@ -582,6 +662,11 @@ export const en: Resources = {
         order: '{{n}} touches ordered at random',
         group: '{{n}} touches split into {{g}} random teams',
       },
+    },
+
+    yahtzee: {
+      name: 'Yahtzee',
+      desc: '5 dice · lock & reroll',
     },
   },
 }
