@@ -10,6 +10,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 - **hash 路由**（`createHashRouter`）：为了静态托管免配 rewrite，不要改成 BrowserRouter
 - **`base: './'`**：产物路径必须保持相对，新增静态资源引用不要写绝对路径 `/xxx`
 - **纯本地、无后端**：不引入网络请求。存储分两级，见下方「持久化」一节
+- **PWA 更新走 `prompt`**：不要改回 `registerType: 'autoUpdate'` —— GH Pages 是整站全量替换，autoUpdate 的 skipWaiting 会在旧页面还开着时清掉它正在用的 chunk，懒加载的工具页当场 404。新版本由 [UpdatePrompt](src/UpdatePrompt.tsx) 交给用户择时更新，SW 还没接管时的兜底重载见 [shared/staleChunk.ts](src/shared/staleChunk.ts)
 
 ## 新增工具的机械流程
 

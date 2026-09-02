@@ -4,7 +4,8 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    "types": ["vite/client"],
+    // vite-plugin-pwa/react 提供 virtual:pwa-register/react 的声明（见 src/UpdatePrompt.tsx）
+    "types": ["vite/client", "vite-plugin-pwa/react"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 

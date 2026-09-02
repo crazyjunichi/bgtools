@@ -15,7 +15,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 刻意不用 autoUpdate：那一档等于 workbox 的 skipWaiting + clientsClaim，
+      // 新 SW 一装好就接管当前页面并清掉旧 precache —— 桌上正开着的旧页面记的是旧 hash，
+      // 懒加载的工具页当场 404（GitHub Pages 全站全量替换，服务器上也没有旧文件了）。
+      // prompt 让新 SW 先等着，由 [UpdatePrompt](src/UpdatePrompt.tsx) 交给用户择时更新
+      registerType: 'prompt',
       includeAssets: ['favicon.svg'],
       // manifest 是构建期静态的，运行时切语言不会变（同 index.html 的 title / lang）——
       // 这里的中文字面量是唯一允许留在源码里的一处，description 中英并排聊作缓解

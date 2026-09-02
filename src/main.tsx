@@ -5,8 +5,18 @@ import { createHashRouter, RouterProvider } from 'react-router-dom'
 import App from './App'
 import './index.css'
 import Home from './pages/Home'
+import LoadError from './pages/LoadError'
 import NotFound from './pages/NotFound'
+import { reloadOnceForStaleChunk } from './shared/staleChunk'
 import { tools } from './tools/registry'
+
+/*
+ * 懒加载的工具页取不到 chunk 时自动重载一次（多半是刚部署过，详见 shared/staleChunk）。
+ * 不 preventDefault：错误仍然要冒到路由的 errorElement，重载救不回来时才有界面可看。
+ */
+window.addEventListener('vite:preloadError', () => {
+  reloadOnceForStaleChunk()
+})
 
 // hash 路由：静态托管无需配置 SPA rewrite，直接部署即可
 const router = createHashRouter([
@@ -18,6 +28,8 @@ const router = createHashRouter([
       ...tools.map((tool) => ({
         path: tool.id,
         lazy: async () => ({ Component: (await tool.load()).default }),
+        // chunk 拉不到时不要落到 React Router 的默认报错页
+        errorElement: <LoadError />,
       })),
       { path: '*', element: <NotFound /> },
     ],

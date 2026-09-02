@@ -5,6 +5,7 @@ import { AppHeader } from './AppHeader'
 import { QuickLayer } from './quick/QuickLayer'
 import { htmlLangOf } from './shared/i18n'
 import { findTool } from './tools/registry'
+import { UpdatePrompt } from './UpdatePrompt'
 
 export default function App() {
   const { pathname } = useLocation()
@@ -39,6 +40,9 @@ export default function App() {
       >
         <Outlet />
       </main>
+
+      {/* 排在 QuickLayer 前面：两者同为 z-30，浮层开着时新版本提示该被压住 */}
+      <UpdatePrompt />
 
       {/* 故意不给 key：换页也不能重挂载，否则正在跑的计时会被打断。
           sidebar 只影响 tile 面板的定位（工具页横屏顶栏在左侧），不参与挂载身份 */}

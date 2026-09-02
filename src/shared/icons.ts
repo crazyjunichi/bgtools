@@ -67,6 +67,8 @@ export {
   ClipboardList as IconTemplate,
   Timer as IconTimer,
   CircleHelp as IconUnknown,
+  /** PWA 有新版本待接管。云下载而非 IconRepeat 的刷新箭头：要的是「取新东西」不是「再来一次」 */
+  CloudDownload as IconUpdate,
 } from 'lucide-react'
 
 export type { LucideIcon } from 'lucide-react'

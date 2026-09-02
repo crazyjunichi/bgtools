@@ -54,6 +54,21 @@ export const zh = {
     home: '回首页',
   },
 
+  /** 工具页的 chunk 拉不到（多半是刚部署过，旧 hash 已失效） */
+  loadError: {
+    text: '这个工具没加载出来',
+    hint: '通常是刚更新过，重新加载就好。记录都在本机，不会丢。',
+    retry: '重新加载',
+  },
+
+  /** 有新版本装好了在等着接管 */
+  update: {
+    available: '有新版本',
+    hint: '更新会重新加载页面，记录不受影响',
+    action: '立即更新',
+    later: '稍后',
+  },
+
   stepper: {
     decrease: '减少',
     increase: '增加',

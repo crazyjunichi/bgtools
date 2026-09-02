@@ -50,6 +50,20 @@ export const en: Resources = {
     home: 'Back to home',
   },
 
+  loadError: {
+    text: "This tool didn't load",
+    hint: 'Usually just a fresh update — reload and it works. Your records are local and safe.',
+    retry: 'Reload',
+  },
+
+  update: {
+    available: 'New version',
+    // 提示条要跟按钮同排，措辞压到一行
+    hint: 'Reloads the page · records are kept',
+    action: 'Update',
+    later: 'Later',
+  },
+
   stepper: {
     decrease: 'Decrease',
     increase: 'Increase',
