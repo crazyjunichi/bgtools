@@ -323,6 +323,176 @@ const sevenWonders: SheetTemplate = {
 }
 
 /**
+ * 《阿纳克遗迹》。研究轨迹的放大镜与笔记本各停在一格、各印一个分值，
+ * 拆成两行 —— 合成一行等于让人先自己加一遍。神像分随槽位变，只能直接填
+ */
+const arnak: SheetTemplate = {
+  id: 'arnak',
+  nameKey: 'tools.scoreSheet.templates.arnak',
+  icon: '🏺',
+  cover: 'covers/sheet/arnak.png',
+  aliasKey: 'tools.scoreSheet.templateAlias.arnak',
+  entries: [
+    { id: 'ak.magnifier', nameKey: 'tools.scoreSheet.arnak.magnifier' },
+    { id: 'ak.notebook', nameKey: 'tools.scoreSheet.arnak.notebook' },
+    { id: 'ak.temple', nameKey: 'tools.scoreSheet.arnak.temple' },
+    { id: 'ak.idols', nameKey: 'tools.scoreSheet.arnak.idols' },
+    { id: 'ak.guardians', nameKey: 'tools.scoreSheet.arnak.guardians', scoring: { kind: 'perUnit', per: 5 } },
+    { id: 'ak.cards', nameKey: 'tools.scoreSheet.arnak.cards' },
+    { id: 'ak.fear', nameKey: 'tools.scoreSheet.arnak.fear', scoring: { kind: 'perUnit', per: -1 } },
+  ],
+}
+
+/**
+ * 《喀斯喀迪亚》。全项目最长的一张表，也是它最该被逐项填的原因：
+ * 五种动物 + 五种地形各自独立结算，一行一项才对得上桌上那张官方计分纸。
+ *
+ * 动物分随本局抽到的计分卡变（同一种动物不同卡算法完全不同），
+ * 地形行填的是「最大走廊格数 + 多数奖励」，两者都算不出通式，所以全是直接填分
+ */
+const cascadia: SheetTemplate = {
+  id: 'cascadia',
+  nameKey: 'tools.scoreSheet.templates.cascadia',
+  icon: '🦌',
+  cover: 'covers/sheet/cascadia.png',
+  aliasKey: 'tools.scoreSheet.templateAlias.cascadia',
+  entries: [
+    { id: 'cs.bear', nameKey: 'tools.scoreSheet.cascadia.bear' },
+    { id: 'cs.elk', nameKey: 'tools.scoreSheet.cascadia.elk' },
+    { id: 'cs.salmon', nameKey: 'tools.scoreSheet.cascadia.salmon' },
+    { id: 'cs.hawk', nameKey: 'tools.scoreSheet.cascadia.hawk' },
+    { id: 'cs.fox', nameKey: 'tools.scoreSheet.cascadia.fox' },
+    { id: 'cs.mountain', nameKey: 'tools.scoreSheet.cascadia.mountain' },
+    { id: 'cs.forest', nameKey: 'tools.scoreSheet.cascadia.forest' },
+    { id: 'cs.prairie', nameKey: 'tools.scoreSheet.cascadia.prairie' },
+    { id: 'cs.wetland', nameKey: 'tools.scoreSheet.cascadia.wetland' },
+    { id: 'cs.river', nameKey: 'tools.scoreSheet.cascadia.river' },
+    { id: 'cs.nature', nameKey: 'tools.scoreSheet.cascadia.nature', scoring: { kind: 'perUnit', per: 1 } },
+  ],
+}
+
+/**
+ * 《火星殖民地》。城市那行填的是**邻接绿地数**而不是城市数 ——
+ * 城市本身不给分，分全来自身边的绿地（谁种的都算）
+ */
+const terraformingMars: SheetTemplate = {
+  id: 'terraformingMars',
+  nameKey: 'tools.scoreSheet.templates.terraformingMars',
+  icon: '🚀',
+  cover: 'covers/sheet/terraforming-mars.png',
+  aliasKey: 'tools.scoreSheet.templateAlias.terraformingMars',
+  entries: [
+    { id: 'tf.tr', nameKey: 'tools.scoreSheet.terraformingMars.tr' },
+    {
+      id: 'tf.milestones',
+      nameKey: 'tools.scoreSheet.terraformingMars.milestones',
+      scoring: { kind: 'perUnit', per: 5 },
+    },
+    { id: 'tf.awards', nameKey: 'tools.scoreSheet.terraformingMars.awards' },
+    { id: 'tf.greenery', nameKey: 'tools.scoreSheet.terraformingMars.greenery', scoring: { kind: 'perUnit', per: 1 } },
+    { id: 'tf.cities', nameKey: 'tools.scoreSheet.terraformingMars.cities', scoring: { kind: 'perUnit', per: 1 } },
+    { id: 'tf.cards', nameKey: 'tools.scoreSheet.terraformingMars.cards' },
+  ],
+}
+
+/**
+ * 《泰拉神秘之地》。四条教派轨迹各自排名给分，拆四行。
+ *
+ * 剩余资源那行按金币折算（其他资源先自行换成金币）；炼金术士的换算率与众不同，
+ * 用那个种族时把这一行在行首浮层里改成「直接填得分」
+ */
+const terraMystica: SheetTemplate = {
+  id: 'terraMystica',
+  nameKey: 'tools.scoreSheet.templates.terraMystica',
+  icon: '🧙',
+  cover: 'covers/sheet/terra-mystica.png',
+  aliasKey: 'tools.scoreSheet.templateAlias.terraMystica',
+  entries: [
+    { id: 'tm.track', nameKey: 'tools.scoreSheet.terraMystica.track' },
+    { id: 'tm.network', nameKey: 'tools.scoreSheet.terraMystica.network' },
+    { id: 'tm.fire', nameKey: 'tools.scoreSheet.terraMystica.fire' },
+    { id: 'tm.water', nameKey: 'tools.scoreSheet.terraMystica.water' },
+    { id: 'tm.earth', nameKey: 'tools.scoreSheet.terraMystica.earth' },
+    { id: 'tm.air', nameKey: 'tools.scoreSheet.terraMystica.air' },
+    {
+      id: 'tm.coins',
+      nameKey: 'tools.scoreSheet.terraMystica.coins',
+      scoring: { kind: 'perGroup', every: 3, score: 1 },
+    },
+  ],
+}
+
+/**
+ * 《大西部之路》。城市徽章与目标卡**可以是负的**，所以这两行留直接填分 ——
+ * 键盘上有正负号键。工人那行只数站在计分格上的那几个，不是全部工人
+ */
+const greatWesternTrail: SheetTemplate = {
+  id: 'greatWesternTrail',
+  nameKey: 'tools.scoreSheet.templates.greatWesternTrail',
+  icon: '🤠',
+  cover: 'covers/sheet/great-western-trail.png',
+  aliasKey: 'tools.scoreSheet.templateAlias.greatWesternTrail',
+  entries: [
+    {
+      id: 'gw.money',
+      nameKey: 'tools.scoreSheet.greatWesternTrail.money',
+      scoring: { kind: 'perGroup', every: 5, score: 1 },
+    },
+    { id: 'gw.buildings', nameKey: 'tools.scoreSheet.greatWesternTrail.buildings' },
+    { id: 'gw.cities', nameKey: 'tools.scoreSheet.greatWesternTrail.cities' },
+    { id: 'gw.stations', nameKey: 'tools.scoreSheet.greatWesternTrail.stations' },
+    { id: 'gw.hazards', nameKey: 'tools.scoreSheet.greatWesternTrail.hazards' },
+    { id: 'gw.cattle', nameKey: 'tools.scoreSheet.greatWesternTrail.cattle' },
+    { id: 'gw.objectives', nameKey: 'tools.scoreSheet.greatWesternTrail.objectives' },
+    { id: 'gw.stationMaster', nameKey: 'tools.scoreSheet.greatWesternTrail.stationMaster' },
+    { id: 'gw.workers', nameKey: 'tools.scoreSheet.greatWesternTrail.workers', scoring: { kind: 'perUnit', per: 4 } },
+    { id: 'gw.bonus', nameKey: 'tools.scoreSheet.greatWesternTrail.bonus' },
+  ],
+}
+
+/**
+ * 《勃艮第城堡》。区域、售货、动物那些分局中就走计分轨了，事后没法逐项回溯，
+ * 所以只给一行「计分轨」抄总数，剩下四行才是真正的终局结算
+ */
+const castlesOfBurgundy: SheetTemplate = {
+  id: 'castlesOfBurgundy',
+  nameKey: 'tools.scoreSheet.templates.castlesOfBurgundy',
+  icon: '🏰',
+  cover: 'covers/sheet/castles-of-burgundy.png',
+  aliasKey: 'tools.scoreSheet.templateAlias.castlesOfBurgundy',
+  entries: [
+    { id: 'cb.track', nameKey: 'tools.scoreSheet.castlesOfBurgundy.track' },
+    { id: 'cb.knowledge', nameKey: 'tools.scoreSheet.castlesOfBurgundy.knowledge' },
+    { id: 'cb.goods', nameKey: 'tools.scoreSheet.castlesOfBurgundy.goods', scoring: { kind: 'perUnit', per: 1 } },
+    { id: 'cb.silver', nameKey: 'tools.scoreSheet.castlesOfBurgundy.silver', scoring: { kind: 'perUnit', per: 1 } },
+    {
+      id: 'cb.workers',
+      nameKey: 'tools.scoreSheet.castlesOfBurgundy.workers',
+      scoring: { kind: 'perGroup', every: 2, score: 1 },
+    },
+    { id: 'cb.bonus', nameKey: 'tools.scoreSheet.castlesOfBurgundy.bonus' },
+  ],
+}
+
+/** 《Clank!》。神器、皇冠、秘密标记的面值各不相同，只有偶像与精通标记是定额 */
+const clank: SheetTemplate = {
+  id: 'clank',
+  nameKey: 'tools.scoreSheet.templates.clank',
+  icon: '💀',
+  cover: 'covers/sheet/clank.png',
+  aliasKey: 'tools.scoreSheet.templateAlias.clank',
+  entries: [
+    { id: 'ck.artifacts', nameKey: 'tools.scoreSheet.clank.artifacts' },
+    { id: 'ck.crowns', nameKey: 'tools.scoreSheet.clank.crowns' },
+    { id: 'ck.secrets', nameKey: 'tools.scoreSheet.clank.secrets' },
+    { id: 'ck.monkey', nameKey: 'tools.scoreSheet.clank.monkey', scoring: { kind: 'perUnit', per: 5 } },
+    { id: 'ck.gold', nameKey: 'tools.scoreSheet.clank.gold', scoring: { kind: 'perUnit', per: 1 } },
+    { id: 'ck.cards', nameKey: 'tools.scoreSheet.clank.cards' },
+    { id: 'ck.mastery', nameKey: 'tools.scoreSheet.clank.mastery', scoring: { kind: 'perUnit', per: 20 } },
+  ],
+}
+
+/**
  * 声明顺序**不决定显示顺序** —— [SheetSettings](SheetSettings.tsx) 把通用空白钉在首位、
  * 其余按当前语言的名字排。这个数组只是 `findTemplate` 的查找源
  */
@@ -338,6 +508,13 @@ export const TEMPLATES: readonly SheetTemplate[] = [
   patchwork,
   everdell,
   sevenWonders,
+  arnak,
+  cascadia,
+  terraformingMars,
+  terraMystica,
+  greatWesternTrail,
+  castlesOfBurgundy,
+  clank,
 ]
 
 export function findTemplate(id: string): SheetTemplate {

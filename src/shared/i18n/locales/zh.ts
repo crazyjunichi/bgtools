@@ -397,6 +397,14 @@ export const zh = {
         patchwork: '拼布',
         everdell: '绮丽庄园',
         sevenWonders: '七大奇迹',
+        arnak: '阿纳克遗迹',
+        cascadia: '喀斯喀迪亚',
+        terraformingMars: '火星殖民地',
+        terraMystica: '泰拉神秘之地',
+        greatWesternTrail: '大西部之路',
+        castlesOfBurgundy: '勃艮第城堡',
+        /** 中文圈没有统一译名，索性用原名，几种叫法都进别名串 */
+        clank: 'Clank!',
       },
       /**
        * **只参与搜索、永不渲染**：桌上的口头叫法常常不是官方译名（农家乐 / 翼展 / 车票之旅），
@@ -413,6 +421,13 @@ export const zh = {
         patchwork: '拼布艺术 双人',
         everdell: '常青庄园 艾弗戴尔 松鼠',
         sevenWonders: '7 Wonders 奇迹',
+        arnak: '失落的阿纳克遗迹 阿纳克 遗迹 Arnak',
+        cascadia: '卡斯卡迪亚 山河之间 动物 Cascadia',
+        terraformingMars: '改造火星 殖民火星 火星 TM',
+        terraMystica: '泰拉密斯提卡 神秘大地 教派',
+        greatWesternTrail: '西部之路 赶牛 牛仔 GWT',
+        castlesOfBurgundy: '勃根地城堡 城堡 骰子',
+        clank: '克朗克 珂玛 叮当 地牢',
       },
       /**
        * 《农场主》局末计分表。**只剩条目名** —— 换算表已经是
@@ -438,7 +453,7 @@ export const zh = {
         bonus: '额外分',
       },
       /**
-       * 以下九款同理：**只写条目名**，怎么折算全在
+       * 其余各款同理：**只写条目名**，怎么折算全在
        * [templates.ts](../../../tools/score-sheet/templates.ts) 的数据里。
        * 行首列只有 112–128px，名字压在 6 字内，超了会被 truncate 掉
        */
@@ -501,7 +516,7 @@ export const zh = {
       },
       sevenWonders: {
         military: '军事冲突',
-        /** 每 3 枚 1 分，零头不算 —— 全项目唯一的 perGroup 条目 */
+        /** 零头不算，所以走 perGroup 而不是 perUnit */
         coins: '金币',
         wonders: '奇迹',
         civilian: '蓝色民用',
@@ -512,6 +527,78 @@ export const zh = {
         tablets: '石板',
         compasses: '罗盘',
         sets: '科技全套',
+      },
+      arnak: {
+        /** 两个标记各停一格、各印一个分值，所以是两行 */
+        magnifier: '放大镜',
+        notebook: '笔记本',
+        temple: '神庙板块',
+        idols: '神像',
+        guardians: '击败守卫',
+        cards: '卡牌分',
+        fear: '恐惧卡',
+      },
+      cascadia: {
+        bear: '熊',
+        elk: '麋鹿',
+        salmon: '鲑鱼',
+        hawk: '鹰',
+        fox: '狐狸',
+        /** 以下五行填「最大走廊格数 + 多数奖励」的合计 */
+        mountain: '山地',
+        forest: '森林',
+        prairie: '草原',
+        wetland: '湿地',
+        river: '河流',
+        nature: '自然徽章',
+      },
+      terraformingMars: {
+        tr: '类地指数',
+        milestones: '里程碑',
+        awards: '奖励',
+        greenery: '绿地板块',
+        /** 填的是城市旁的绿地数，不是城市数 */
+        cities: '城市邻接',
+        cards: '卡牌分',
+      },
+      terraMystica: {
+        track: '计分轨',
+        network: '最大连通区',
+        fire: '火教派',
+        water: '水教派',
+        earth: '土教派',
+        air: '风教派',
+        coins: '剩余金币',
+      },
+      greatWesternTrail: {
+        money: '金钱',
+        buildings: '建筑',
+        cities: '城市徽章',
+        stations: '火车站',
+        hazards: '灾害板块',
+        cattle: '牛卡',
+        objectives: '目标卡',
+        stationMaster: '站长牌',
+        /** 只数站在计分格上的工人 */
+        workers: '工人',
+        bonus: '额外分',
+      },
+      castlesOfBurgundy: {
+        track: '计分轨',
+        knowledge: '知识板块',
+        goods: '未售货物',
+        silver: '剩余银币',
+        workers: '工人板块',
+        bonus: '额外分',
+      },
+      clank: {
+        artifacts: '神器',
+        crowns: '皇冠',
+        secrets: '秘密标记',
+        monkey: '猴子偶像',
+        gold: '金币',
+        cards: '卡牌分',
+        mastery: '精通标记',
       },
     },
     touchPick: {
