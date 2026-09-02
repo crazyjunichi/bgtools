@@ -7,6 +7,7 @@ import './index.css'
 import Home from './pages/Home'
 import LoadError from './pages/LoadError'
 import NotFound from './pages/NotFound'
+import StyleLab from './pages/StyleLab'
 import { reloadOnceForStaleChunk } from './shared/staleChunk'
 import { tools } from './tools/registry'
 
@@ -25,6 +26,8 @@ const router = createHashRouter([
     element: <App />,
     children: [
       { index: true, element: <Home /> },
+      // ⚠️ 临时风格样板间，选定首页风格后连同 pages/StyleLab.tsx 一起删
+      { path: 'style-lab', element: <StyleLab /> },
       ...tools.map((tool) => ({
         path: tool.id,
         lazy: async () => ({ Component: (await tool.load()).default }),
