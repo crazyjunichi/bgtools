@@ -263,7 +263,7 @@ export const zh = {
     scoreSheet: {
       name: '计分纸',
       desc: '固定条目逐项结算 · 游戏模板 · 自动合计',
-      empty: '先点键盘下方的「加人」摆开列。要换成名单里的人，点列头的名字。',
+      empty: '还没有人。点下面的「加人」摆开列，之后在表格右上角的「＋」继续加。',
       /** 矩阵首列的列头，视觉上是空的（下面每行自己写着条目名） */
       entryCol: '计分条目',
       total: '合计',
@@ -282,12 +282,14 @@ export const zh = {
       cellEmpty: '{{name}} 的{{entry}}：还没填，点击输入',
       editEntry: '{{name}}，点击看换算表或改输入方式',
       addEntry: '添加条目',
+      /** 列头行末尾那个 ＋ 的 aria-label，也是空态卡片上那个按钮的文案 */
+      addSeat: '加人',
       /** 列头整块是按钮，点开席位面板 */
       editSeat: '{{name}}，点击改名、换人或移除这一列',
       /** 键盘底部的动作行，两个按钮各约 120px */
       bar: {
         template: '模板',
-        addSeat: '加人',
+        more: '更多',
       },
       /** 移除键在共用的席位面板里，文案留在这儿：这个工具删的是各项分数 */
       seat: {
@@ -308,8 +310,7 @@ export const zh = {
         next: '下一条',
       },
       settings: {
-        title: '模板 · 导出 · 记录',
-        template: '计分模板',
+        title: '计分模板',
         /** 搜索框的 placeholder 与 aria-label 共用一条 */
         search: '搜索游戏名',
         /** 搜索结果里可能没有选中项，当前模板要有个常驻锚点 */
@@ -319,6 +320,10 @@ export const zh = {
         noMatch: '没有匹配的模板。中英文名、常用别名都能搜。',
         /** 打消「切模板会不会把分数弄丢」的顾虑，省掉一次二次确认 */
         keepHint: '切换模板不清分数：切走的条目只是先收起来，切回来还在。',
+      },
+      /** 更多操作浮层（[SheetMore](../../../tools/score-sheet/SheetMore.tsx)）：一局的收尾出口 */
+      more: {
+        title: '更多操作',
         /** 导出分组的标签。按钮文案只留一个词 —— 英文比中文宽近两倍，写全句会撑破 */
         export: '本局导出',
         exportImage: '图片',

@@ -1,7 +1,13 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
-import { IconBackspace, IconEraser, IconMoveDown, IconPlayerAdd, IconSettings } from '../../shared/icons'
+import {
+  IconBackspace,
+  IconEraser,
+  IconMore,
+  IconMoveDown,
+  IconTemplate,
+} from '../../shared/icons'
 import { PLAYER_SOLID } from '../../shared/players/colors'
 import type { SeatView } from '../../shared/players/seats'
 import { entryLabel, fmtScore, scoreOf, type Entry } from './store'
@@ -16,8 +22,8 @@ type Props = {
   /** null = 清空这一格 */
   onInput: (raw: number | null) => void
   onNext: () => void
-  onAddSeat: () => void
-  onOpenSettings: () => void
+  onOpenTemplate: () => void
+  onOpenMore: () => void
 }
 
 const INT = /^-?\d+$/
@@ -36,8 +42,8 @@ export function SheetKeypad({
   raw,
   onInput,
   onNext,
-  onAddSeat,
-  onOpenSettings,
+  onOpenTemplate,
+  onOpenMore,
 }: Props) {
   const { t } = useTranslation()
   const [buf, setBuf] = useState('')
@@ -155,14 +161,23 @@ export function SheetKeypad({
         </Key>
       </div>
 
+      {/* 只留这两个：模板是开局要选的，其余出口全在「更多」里 —— 加人已挪到矩阵列头 */}
       <div className="grid shrink-0 grid-cols-2 gap-2">
-        <button type="button" onClick={onOpenSettings} className="btn-quiet gap-2 text-sm short:!min-h-11">
-          <IconSettings className="size-5" aria-hidden />
+        <button
+          type="button"
+          onClick={onOpenTemplate}
+          className="btn-quiet gap-2 text-sm short:!min-h-11"
+        >
+          <IconTemplate className="size-5" aria-hidden />
           {t('tools.scoreSheet.bar.template')}
         </button>
-        <button type="button" onClick={onAddSeat} className="btn-quiet gap-2 text-sm short:!min-h-11">
-          <IconPlayerAdd className="size-5" aria-hidden />
-          {t('tools.scoreSheet.bar.addSeat')}
+        <button
+          type="button"
+          onClick={onOpenMore}
+          className="btn-quiet gap-2 text-sm short:!min-h-11"
+        >
+          <IconMore className="size-5" aria-hidden />
+          {t('tools.scoreSheet.bar.more')}
         </button>
       </div>
     </div>

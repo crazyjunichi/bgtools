@@ -42,6 +42,8 @@ export {
   Lock as IconLocked,
   Target as IconLogo,
   Minus as IconMinus,
+  /** 「更多操作」的收纳入口，横向省略号是这个语义的通行字形 */
+  Ellipsis as IconMore,
   ChevronDown as IconMoveDown,
   ChevronUp as IconMoveUp,
   Bomb as IconNewGame,
@@ -61,6 +63,8 @@ export {
   Settings as IconSettings,
   /** 系统分享面板 */
   Share2 as IconShare,
+  /** 计分模板（一张预置好条目的表），与 IconCsv 的表格字形区分开 */
+  ClipboardList as IconTemplate,
   Timer as IconTimer,
   CircleHelp as IconUnknown,
 } from 'lucide-react'

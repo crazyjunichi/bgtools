@@ -241,7 +241,7 @@ export const en: Resources = {
       name: 'Score Pad',
       desc: 'Per-category scoring · game templates · auto totals',
       empty:
-        'Tap Seat below the keypad to add columns. To use someone from the roster, tap the name in the column header.',
+        'Nobody yet. Tap Add seat below to lay out columns, then use the ＋ at the top right of the table.',
       entryCol: 'Category',
       total: 'Total',
       defaultEntry: 'Item {{n}}',
@@ -254,11 +254,12 @@ export const en: Resources = {
       cellEmpty: "{{name}}'s {{entry}}: empty, tap to enter",
       editEntry: '{{name}}, tap for the table or to change how it scores',
       addEntry: 'Add item',
+      addSeat: 'Add seat',
       editSeat: '{{name}}, tap to rename, swap or remove this column',
       // 键盘动作行两个按钮各约 120px，一个词就够
       bar: {
         template: 'Template',
-        addSeat: 'Seat',
+        more: 'More',
       },
       seat: {
         remove: 'Remove this column (and its scores)',
@@ -276,13 +277,15 @@ export const en: Resources = {
         next: 'Next',
       },
       settings: {
-        title: 'Template · Export · Log',
-        template: 'Scoring template',
+        title: 'Scoring template',
         search: 'Search games',
         current: 'Now: {{name}}',
         entryCount: '{{n}} rows',
         noMatch: 'No template matches. Try the other language or a nickname.',
         keepHint: 'Switching templates keeps your scores — the other items are just hidden.',
+      },
+      more: {
+        title: 'More actions',
         export: 'Export this game',
         exportImage: 'Image',
         exportCsv: 'CSV',

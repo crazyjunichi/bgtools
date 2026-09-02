@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
+import { IconPlayerAdd } from '../../shared/icons'
 import { SeatPicker } from '../../shared/players/SeatPicker'
 import { resolveSeat, takenPlayerIds } from '../../shared/players/seats'
 import { usePlayersStore } from '../../shared/players/store'
@@ -12,17 +13,19 @@ import { SheetGrid } from './SheetGrid'
 import { SheetHistory } from './SheetHistory'
 import { SheetImage } from './SheetImage'
 import { SheetKeypad } from './SheetKeypad'
+import { SheetMore } from './SheetMore'
 import { renderSheetPng } from './sheetPng'
 import { SheetSettings } from './SheetSettings'
 import { buildSnapshot, toCsv } from './snapshot'
 import { cellKey, entriesOf, hasRow, rawOf, useSheetStore } from './store'
 import { findTemplate } from './templates'
 
-/** 同一时刻只开一个浮层：席位（改名 / 换人 / 移除）、条目编辑、模板、历史 */
+/** 同一时刻只开一个浮层：席位（改名 / 换人 / 移除）、条目编辑、模板、更多操作、历史 */
 type Panel =
   | { kind: 'seat'; seatId: string }
   | { kind: 'entry'; entryId: string }
-  | { kind: 'settings' }
+  | { kind: 'template' }
+  | { kind: 'more' }
   | { kind: 'history' }
 
 export default function ScoreSheetPage() {
@@ -147,6 +150,7 @@ export default function ScoreSheetPage() {
      */
     <div className="flex h-full min-h-0 flex-col gap-3 wide:flex-row short:gap-2">
       {views.length === 0 ? (
+        /* 没人时矩阵不渲染，列头那个 ＋ 也就不存在 —— 空态自己得带一个加人入口 */
         <div className="card flex min-h-0 flex-1 flex-col items-center justify-center gap-3 text-center wide:min-w-0">
           <span className="text-5xl" aria-hidden>
             📝
@@ -154,6 +158,17 @@ export default function ScoreSheetPage() {
           <span className="max-w-md text-base leading-relaxed text-text-muted">
             {t('tools.scoreSheet.empty')}
           </span>
+          <button
+            type="button"
+            onClick={() => {
+              addSeat()
+              buzz(20)
+            }}
+            className="btn-base gap-2 border border-line bg-surface-2 px-5 text-base"
+          >
+            <IconPlayerAdd className="size-6" aria-hidden />
+            {t('tools.scoreSheet.addSeat')}
+          </button>
         </div>
       ) : (
         <SheetGrid
@@ -171,6 +186,10 @@ export default function ScoreSheetPage() {
             addEntry()
             buzz(20)
           }}
+          onAddSeat={() => {
+            addSeat()
+            buzz(20)
+          }}
         />
       )}
 
@@ -183,19 +202,22 @@ export default function ScoreSheetPage() {
           if (pick) setCell(pick.seatId, pick.entryId, raw)
         }}
         onNext={next}
-        onAddSeat={() => {
-          addSeat()
-          buzz(20)
-        }}
-        onOpenSettings={() => setPanel({ kind: 'settings' })}
+        onOpenTemplate={() => setPanel({ kind: 'template' })}
+        onOpenMore={() => setPanel({ kind: 'more' })}
       />
 
-      {panel?.kind === 'settings' && (
+      {panel?.kind === 'template' && (
         <SheetSettings
           templateId={templateId}
           customCount={customEntries.length}
-          canExport={Object.keys(cells).length > 0}
           onPickTemplate={setTemplate}
+          onClose={() => setPanel(null)}
+        />
+      )}
+
+      {panel?.kind === 'more' && (
+        <SheetMore
+          canExport={Object.keys(cells).length > 0}
           onExportImage={() => exportImage(current, Date.now())}
           onExportCsv={() => exportCsv(current, Date.now())}
           onOpenHistory={() => setPanel({ kind: 'history' })}

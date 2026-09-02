@@ -103,7 +103,7 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
             className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
           >
             <IconImage className="size-6 short:size-5" aria-hidden />
-            {t('tools.scoreSheet.settings.exportImage')}
+            {t('tools.scoreSheet.more.exportImage')}
           </button>
           <button
             type="button"
@@ -111,7 +111,7 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
             className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
           >
             <IconCsv className="size-6 short:size-5" aria-hidden />
-            {t('tools.scoreSheet.settings.exportCsv')}
+            {t('tools.scoreSheet.more.exportCsv')}
           </button>
           {/* 读取会覆盖当前局，必须二次确认 */}
           <ConfirmButton
