@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ConfirmButton } from '../../shared/components/ConfirmButton'
-import { IconClose, IconNewGame, IconRepeat, IconSettings } from '../../shared/icons'
+import { IconClose, IconSettings } from '../../shared/icons'
 import { MAX_PLAYERS, MIN_PLAYERS } from './store'
 
 const PLAYER_OPTIONS = Array.from(
@@ -14,15 +13,14 @@ type Props = {
   /** 局已开始：改人数会清掉进度，需要二次确认 */
   started: boolean
   onSetPlayers: (players: number) => void
-  onDeal: () => void
-  onReset: () => void
 }
 
 /**
- * 低频操作（人数 / 重发道具 / 新一局）收进浮层，日常不占版面。
+ * 只管人数：它一晚基本不动，值得收进浮层不占版面。
+ * 重发道具 / 新一局虽然也是"设置"，但每局都要按，已提到左栏常驻（[BoardActions](BoardActions.tsx)）。
  * 用 fixed 遮罩而非 absolute 气泡：ToolLayout 的 aside 是 overflow-hidden，气泡会被裁掉。
  */
-export function SettingsPopover({ players, started, onSetPlayers, onDeal, onReset }: Props) {
+export function SettingsPopover({ players, started, onSetPlayers }: Props) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState<number | null>(null)
@@ -139,20 +137,6 @@ export function SettingsPopover({ players, started, onSetPlayers, onDeal, onRese
                 </div>
               </div>
             )}
-
-            <div className="flex flex-col gap-2">
-              <span className="section-label">{t('tools.bombBusters.settings.board')}</span>
-              <div className="flex gap-2">
-                <ConfirmButton onConfirm={onDeal} className="flex-1">
-                  <IconRepeat className="size-5" aria-hidden />
-                  {t('tools.bombBusters.settings.deal')}
-                </ConfirmButton>
-                <ConfirmButton onConfirm={onReset} className="flex-1">
-                  <IconNewGame className="size-5" aria-hidden />
-                  {t('tools.bombBusters.settings.newGame')}
-                </ConfirmButton>
-              </div>
-            </div>
           </div>
         </div>
       )}

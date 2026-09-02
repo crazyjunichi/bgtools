@@ -12,11 +12,13 @@
  */
 export const DATA_FONT = {
   /**
-   * 生命：整屏唯一焦点，左栏（`panelWidth="narrow"`，≥208px）只放它一个数。
-   * 上限校核：card 的 p-5 后剩 168px，等宽单个数字 0.6em + "/6" 的 text-3xl ≈ 36px，
-   * 18vmin @820 = 148px → 88 + 36 = 124px，仍留余量（生命上限 6，永远是一位数）
+   * 生命：左栏（`panelWidth="narrow"`，≥208px）的读数。
+   * 从 18vmin 降到 11vmin —— 它不再靠 flex-1 撑满左栏，高度按内容算，
+   * 省下的约 200px 让给下面的「重发道具 / 新一局」快捷键。
+   * 一位数在 50–70cm 视距下 11vmin @820 = 90px 仍远超可读下限，焦点地位靠整卡色带保住。
+   * 上限校核：card 的 p-5 后剩 168px，等宽单个数字 0.6em ≈ 54px + "/6" 的 text-2xl ≈ 27px = 81px
    */
-  lives: { fontSize: 'clamp(4rem, 18vmin, 10rem)', lineHeight: 1 },
+  lives: { fontSize: 'clamp(3rem, 11vmin, 6rem)', lineHeight: 1 },
   /** 拆弹编号：受最窄格子宽度约束 */
   wire: { fontSize: 'clamp(2rem, 9.5vmin, 6rem)', lineHeight: 1 },
   /** 道具编号：与名称、描述抢同一张卡的宽度，只能拿到剩余空间 */

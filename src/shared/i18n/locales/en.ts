@@ -185,15 +185,17 @@ export const en: Resources = {
         e11: { name: 'Coffee Bottle', desc: 'Skip this turn and choose who acts next' },
         e12: { name: '= Marker', desc: 'Place an = token before two of your adjacent wires of the same number' },
       },
+      actions: {
+        deal: 'Redeal',
+        newGame: 'New game',
+        confirmNewGame: 'Restart?',
+      },
       settings: {
-        open: 'Settings: players, redeal gear, new game',
+        open: 'Settings: players',
         title: 'Settings',
         players: 'Players (sets starting lives and gear count)',
         playerCount: '{{n}} players',
         warn: 'Switching to {{n}} players starts a new game: lives reset to {{n}}, gear redealt, defuse progress cleared',
-        board: 'Game',
-        deal: 'Redeal gear',
-        newGame: 'New game',
       },
     },
     score: {

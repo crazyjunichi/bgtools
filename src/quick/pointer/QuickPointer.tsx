@@ -98,31 +98,40 @@ export function QuickPointer() {
             }`}
           />
 
-          {TICKS.map((deg) => (
-            <div key={deg} className="absolute inset-0" style={{ transform: `rotate(${deg}deg)` }}>
-              {/* 顶端那根加高加亮，作为角度读数的 0° 基准 */}
+          {/* 所有 rotate 层统一裁在圆内：方形层旋转后的包围盒最多比表盘大 41%，
+              而它会算进 dialog(overflow-y-auto) 的可滚区域，凭落点角度随机冒出滚动条。
+              裁掉的只是圆外的透明角，视觉上没东西被切；发光描边在这一层之外，不受影响 */}
+          <div className="absolute inset-0 overflow-hidden rounded-full">
+            {TICKS.map((deg) => (
               <div
-                className={
-                  deg === 0
-                    ? 'absolute top-2 left-1/2 h-5 w-1.5 -translate-x-1/2 rounded-full bg-violet-300'
-                    : 'absolute top-2 left-1/2 h-3.5 w-1 -translate-x-1/2 rounded-full bg-line'
-                }
-              />
-            </div>
-          ))}
+                key={deg}
+                className="absolute inset-0"
+                style={{ transform: `rotate(${deg}deg)` }}
+              >
+                {/* 顶端那根加高加亮，作为角度读数的 0° 基准 */}
+                <div
+                  className={
+                    deg === 0
+                      ? 'absolute top-2 left-1/2 h-5 w-1.5 -translate-x-1/2 rounded-full bg-violet-300'
+                      : 'absolute top-2 left-1/2 h-3.5 w-1 -translate-x-1/2 rounded-full bg-line'
+                  }
+                />
+              </div>
+            ))}
 
-          <div
-            className="absolute inset-0"
-            style={{
-              transform: `rotate(${angle}deg)`,
-              // 长时 transform 过渡是本工具的核心表现，属于 duration-75 规则的有意例外
-              transition: spinning ? `transform ${SPIN_MS}ms ${SPIN_EASING}` : 'none',
-            }}
-          >
-            {/* 单向针：根部收在中心轴下面，只有一头指向结果，免得桌上两边的人各读一头 */}
-            <svg viewBox="0 0 100 100" className="size-full drop-shadow-lg">
-              <polygon points="50,7 58,46 50,58 42,46" className="fill-violet-400" />
-            </svg>
+            <div
+              className="absolute inset-0"
+              style={{
+                transform: `rotate(${angle}deg)`,
+                // 长时 transform 过渡是本工具的核心表现，属于 duration-75 规则的有意例外
+                transition: spinning ? `transform ${SPIN_MS}ms ${SPIN_EASING}` : 'none',
+              }}
+            >
+              {/* 单向针：根部收在中心轴下面，只有一头指向结果，免得桌上两边的人各读一头 */}
+              <svg viewBox="0 0 100 100" className="size-full drop-shadow-lg">
+                <polygon points="50,7 58,46 50,58 42,46" className="fill-violet-400" />
+              </svg>
+            </div>
           </div>
 
           {/* 中心轴，盖住头尾两段的接缝 */}

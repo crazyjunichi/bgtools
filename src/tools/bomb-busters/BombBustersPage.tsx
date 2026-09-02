@@ -1,6 +1,7 @@
 import { Split } from '../../shared/components/Split'
 import { ToolLayout } from '../../shared/components/ToolLayout'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
+import { BoardActions } from './BoardActions'
 import { EquipmentList } from './EquipmentList'
 import { LifeBar } from './LifeBar'
 import { SettingsPopover } from './SettingsPopover'
@@ -33,13 +34,9 @@ export default function BombBustersPage() {
       panel={
         <>
           <LifeBar lives={lives} onChange={setLives} />
-          <SettingsPopover
-            players={players}
-            started={started}
-            onSetPlayers={setPlayers}
-            onDeal={dealEquipment}
-            onReset={resetGame}
-          />
+          {/* 快捷键与设置入口一起沉到栏底（BoardActions 的 mt-auto 推动其后的兄弟节点） */}
+          <BoardActions onDeal={dealEquipment} onReset={resetGame} />
+          <SettingsPopover players={players} started={started} onSetPlayers={setPlayers} />
         </>
       }
     >

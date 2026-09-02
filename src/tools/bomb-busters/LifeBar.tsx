@@ -46,8 +46,9 @@ const CAPTION_KEY: Record<Level, I18nKey> = {
 }
 
 /**
- * 生命指示器。只留数字不做格子进度条 —— 桌上要的是一眼读数，
- * 省下的高度让给道具描述。
+ * 生命指示器。只留数字不做格子进度条 —— 桌上要的是一眼读数。
+ * 高度按内容算（`shrink-0`，约 210px）而不是 `flex-1` 撑满左栏：
+ * 撑满时中间会空出一大片，那片高度给下面的快捷操作更值。
  */
 export function LifeBar({ lives, onChange }: Props) {
   const { t } = useTranslation()
@@ -62,17 +63,17 @@ export function LifeBar({ lives, onChange }: Props) {
 
   return (
     <section
-      className={`card flex min-h-0 flex-1 flex-col justify-between border-2 transition-colors ${CARD[level]}`}
+      className={`card flex shrink-0 flex-col gap-2 border-2 transition-colors ${CARD[level]}`}
     >
       <span className={`text-base font-semibold ${TONE[level]}`}>{t(CAPTION_KEY[level])}</span>
 
-      <div className="flex min-h-0 flex-1 items-center justify-center py-2">
+      <div className="flex items-center justify-center">
         <span className="font-mono tabular-nums">
           <span style={DATA_FONT.lives} className={`font-bold ${TONE[level]}`}>
             {lives}
           </span>
           {/* 分母不用 text-dim：灰字压在彩色底上会显脏 */}
-          <span className="text-3xl text-white/45">/{MAX_LIVES}</span>
+          <span className="text-2xl text-white/45">/{MAX_LIVES}</span>
         </span>
       </div>
 

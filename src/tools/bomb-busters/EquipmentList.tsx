@@ -73,7 +73,10 @@ const BADGE_ICON: Record<EquipState, LucideIcon | null> = {
 /**
  * 道具牌竖排、卡内横向排布。竖排是为了把整个栏宽让给名称和描述 ——
  * 横排 5 张时每张只剩 160px，描述会碎成五六行。
- * 编号单独占最右一列：它是"桌上那张牌是哪张"的唯一锚点，比图标和徽章都更需要远距离可读。
+ * 卡内两列：左边文字（图示 + 名称一行、描述一行），右边纵向的编号 + 状态徽章。
+ * 图示不再单独占一列 —— 独立列会把它的宽度从描述里也扣掉一份，塞进名称行只影响名称。
+ * 编号是"桌上那张牌是哪张"的唯一锚点，所以它独占一列且字号最大；
+ * 徽章挪到编号下方而不是名称旁边 —— 名称长度不可控，横排时它先被 truncate 掉。
  */
 export function EquipmentList({ hand, onCycle }: Props) {
   const { t } = useTranslation()
@@ -107,36 +110,37 @@ export function EquipmentList({ hand, onCycle }: Props) {
               // 竖屏下限降到 64px（仍高于 56px 触控下限），5 张才塞得进半屏
               className={`flex min-h-16 flex-1 items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-transform duration-75 active:scale-95 wide:min-h-20 ${TONE[card.state]}`}
             >
-              {/* 道具图示仍是 emoji：它是内容标识，彩色轮廓在斜视下比单色线条更好认。
-                  已用态整卡已经 opacity-45，图标不再单独压暗，否则叠加后糊掉 */}
-              {equip ? (
-                <span className="shrink-0 text-3xl">{equip.icon}</span>
-              ) : (
-                <IconUnknown className="size-8 shrink-0" aria-hidden />
-              )}
-
               <span className="flex min-w-0 flex-1 flex-col gap-1">
+                {/* 图示只占名称这一行，描述仍从卡片左边缘起排（宽度不受它影响）。
+                    emoji 给 leading-none：24px 字号配 text-xl 的 28px 行高，不加会把整行顶高 */}
                 <span className="flex items-center gap-2">
-                  <span className={`truncate text-xl font-bold ${TITLE[card.state]}`}>
-                    {name}
-                  </span>
-                  <span
-                    className={`flex shrink-0 items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-bold ${BADGE[card.state]}`}
-                  >
-                    {BadgeIcon && <BadgeIcon className="size-3.5" aria-hidden />}
-                    {badgeText}
-                  </span>
+                  {equip ? (
+                    <span className="shrink-0 text-2xl leading-none">{equip.icon}</span>
+                  ) : (
+                    <IconUnknown className="size-6 shrink-0" aria-hidden />
+                  )}
+                  <span className={`truncate text-xl font-bold ${TITLE[card.state]}`}>{name}</span>
                 </span>
                 <span className={`line-clamp-2 text-base leading-snug ${DESC[card.state]}`}>
                   {equip ? t(equip.descKey) : t('tools.bombBusters.equip.stale')}
                 </span>
               </span>
 
-              <span
-                style={DATA_FONT.equipNo}
-                className={`shrink-0 font-mono font-bold tabular-nums ${NUMBER[card.state]}`}
-              >
-                {equip?.no ?? '?'}
+              {/* 编号在上、徽章在下，居中对齐：徽章比两位数编号宽，右列宽度由它定，
+                  编号居中才不会看着往左偏。这一列整体仍矮于两行描述的文本块，不撑高卡片 */}
+              <span className="flex shrink-0 flex-col items-center gap-1">
+                <span
+                  style={DATA_FONT.equipNo}
+                  className={`font-mono font-bold tabular-nums ${NUMBER[card.state]}`}
+                >
+                  {equip?.no ?? '?'}
+                </span>
+                <span
+                  className={`flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-bold ${BADGE[card.state]}`}
+                >
+                  {BadgeIcon && <BadgeIcon className="size-3.5" aria-hidden />}
+                  {badgeText}
+                </span>
               </span>
             </button>
           )

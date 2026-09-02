@@ -63,7 +63,12 @@ export function DiceCanvas({ sides, values, className }: Props) {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     const canvas = renderer.domElement
-    canvas.style.display = 'block'
+    // 必须脱离文档流：canvas 的固有尺寸 = drawing buffer 像素数，而 setSize 按 DPR
+    // 放大它。留在流内会让这个（DPR 倍的）高度参与父级 flex 的内容高度计算 →
+    // 容器变高 → ResizeObserver 再放大 buffer，正反馈一路把 dialog 撑到顶。
+    // DPR=1 的桌面刚好是不动点，所以只在手机上暴露
+    canvas.style.position = 'absolute'
+    canvas.style.inset = '0'
     canvas.style.width = '100%'
     canvas.style.height = '100%'
     host.appendChild(canvas)
@@ -159,7 +164,8 @@ export function DiceCanvas({ sides, values, className }: Props) {
 
   // 探测放在 hooks 之后：没有 WebGL 就整块不挂，effect 拿不到 host 自然全部跳过
   if (!hasWebGL()) return null
-  return <div ref={hostRef} className={className} aria-hidden />
+  // relative 由组件自己给，不指望调用点：canvas 是 absolute，缺了包含块会跑到视口去
+  return <div ref={hostRef} className={`relative ${className ?? ''}`} aria-hidden />
 }
 
 /**

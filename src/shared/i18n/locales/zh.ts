@@ -200,16 +200,19 @@ export const zh = {
         e11: { name: '咖啡瓶', desc: '跳过本回合，并指定下一位行动的玩家' },
         e12: { name: '标签 =', desc: '在自己两根号码相同的相邻导线前放 = 指示物' },
       },
+      /** 左栏常驻的局面快捷键 */
+      actions: {
+        deal: '重发道具',
+        newGame: '新一局',
+        confirmNewGame: '确认重开',
+      },
       settings: {
-        open: '设置：人数、重发道具、新一局',
+        open: '设置：人数',
         title: '设置',
         players: '人数（决定初始生命与道具数）',
         /** 人数下限是 2，英文永远是复数，不需要 i18next 的复数变体 */
         playerCount: '{{n}}人',
         warn: '切到 {{n}} 人将重开一局：生命重置为 {{n}}、道具重发、拆弹进度清空',
-        board: '局面',
-        deal: '重发道具',
-        newGame: '新一局',
       },
     },
     score: {
