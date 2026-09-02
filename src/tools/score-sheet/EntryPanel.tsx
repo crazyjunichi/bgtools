@@ -4,7 +4,7 @@ import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Overlay } from '../../shared/components/Overlay'
 import { Stepper } from '../../shared/components/Stepper'
 import { IconDelete, IconSelected } from '../../shared/icons'
-import { FIELD } from './fieldStyle'
+import { FIELD } from '../../shared/components/fieldStyle'
 import { entryLabel, fmtScore, type CustomEntry, type Entry } from './store'
 import type { Scoring, Step } from './templates'
 

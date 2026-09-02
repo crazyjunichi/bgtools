@@ -35,6 +35,20 @@ export const zh = {
     hint: '顶栏会自动隐藏 · 轻点屏幕顶部可唤出',
   },
 
+  /** 首页三个分区 */
+  home: {
+    quick: '快捷工具',
+    general: '通用工具',
+    game: '游戏专用工具',
+    /** 模板入口的读屏文本：卡面上只有游戏名，得说清点进去是哪个工具 */
+    sheetOf: '{{name}} · 计分纸',
+    /** 模板卡的描述行。同区里还有别的工具，这行要担起「点进去是干什么」 */
+    sheetDesc: '计分纸 · {{n}} 项条目',
+    /** 只筛游戏专用区。与计分纸的模板搜索同一套判据：中英文名、别名都能命中 */
+    filter: '筛选游戏',
+    noMatch: '没有匹配的游戏。换个语言或试试别名。',
+  },
+
   notFound: {
     text: '没有这个工具',
     home: '回首页',
@@ -103,10 +117,13 @@ export const zh = {
     },
     dice: {
       name: '快速骰子',
+      /** 首页快捷卡上的一行说明，下同 */
+      desc: '随手投一把',
       hint: '点「投掷」出数',
     },
     timer: {
       name: '计时器',
+      desc: '回合限时 · 代替沙漏',
       quickStart: '快速开始',
       custom: '自定义（{{step}} 秒一档）',
       start: '开始 {{time}}',
@@ -124,6 +141,7 @@ export const zh = {
     },
     pointer: {
       name: '随机指针',
+      desc: '随机指一个方向',
       spinning: '旋转中…',
       oclock: '≈ {{hour}} 点方向',
       hint: '点指针或按钮开始',
@@ -131,6 +149,7 @@ export const zh = {
     },
     players: {
       name: '玩家名单',
+      desc: '桌上是谁 · 名字与颜色',
       roster: '已添加玩家',
       emptyList: '名单是空的，点上方「添加玩家」。',
       add: '添加玩家',
@@ -142,6 +161,7 @@ export const zh = {
     },
     settings: {
       name: '设置',
+      desc: '界面语言',
       language: '语言',
     },
   },

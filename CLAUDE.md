@@ -14,7 +14,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 ## 新增工具的机械流程
 
 1. 建 `src/tools/<id>/`
-2. `meta.ts` 导出 `ToolMeta`（见 [src/tools/types.ts](src/tools/types.ts)）：`nameKey` / `descKey` 填 `tools.<id>.{name,desc}`，并在**两个** locale 里补上这两条
+2. `meta.ts` 导出 `ToolMeta`（见 [src/tools/types.ts](src/tools/types.ts)）：`nameKey` / `descKey` 填 `tools.<id>.{name,desc}`，并在**两个** locale 里补上这两条；`category` 决定落首页哪个分区（`general` = 任何游戏都用得上 / `game` = 只在特定那盒游戏上用），**必填，没有缺省值**
 3. 页面组件 **default export**，状态放同目录 `store.ts`
 4. 在 [src/tools/registry.ts](src/tools/registry.ts) 追加一行 `{ ...xxxMeta, load: () => import('./xxx/XxxPage') }`
 
@@ -43,7 +43,16 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 
 骰子、计时器这类**任何游戏都可能临时用一下**的东西不进首页宫格，而是常驻顶栏图标，点开是居中 dialog，用完关掉、状态保留。
 
-新增一个：建 `src/quick/<id>/`（组件 + `store.ts`），在 [src/quick/registry.ts](src/quick/registry.ts) 追加一行（`nameKey` 填 `quick.<id>.name`，两个 locale 补上）。顶栏按钮自动出现。
+新增一个：建 `src/quick/<id>/`（组件 + `store.ts`），在 [src/quick/registry.ts](src/quick/registry.ts) 追加一行（`nameKey` / `descKey` 填 `quick.<id>.{name,desc}`，两个 locale 补上）。`descKey` 只有首页那张卡用得到，顶栏和 tile 面板放不下一行描述。
+
+**`onHome` 必填，而且它一个字段决定两处露出**（判据是「开局中会不会随手用一下」）：
+
+| | 首页宫格「快捷工具」区 | 首页顶栏 | 工具页顶栏 |
+|---|---|---|---|
+| `onHome: true`（骰子 / 计时器 / 指针） | 一张卡 | 无 | tile 面板里 |
+| `onHome: false`（名单 / 设置） | 无 | **直达按钮** | tile 面板里 |
+
+首页顶栏刻意**不放 tile 面板**：`onHome: true` 的那几个在宫格里已有大卡，抽屉只是多一层点击。所以 [QuickBar](src/quick/QuickBar.tsx) 的首页分支取 `onHome` 的反面 —— 别在那里另写一份 id 名单，注册表才是真源。工具页反过来只放 tile 面板（横屏侧栏 64px，五个平铺放不下，也会跟工具自己的控件抢注意力）。
 
 不许违反的三条：
 

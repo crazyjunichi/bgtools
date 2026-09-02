@@ -33,6 +33,18 @@ export const en: Resources = {
     hint: 'Header auto-hides · tap the top of the screen',
   },
 
+  home: {
+    quick: 'Quick tools',
+    general: 'General tools',
+    game: 'Game-specific tools',
+    sheetOf: '{{name}} · score sheet',
+    // 小卡只有一行，"Score pad · 15 categories" 会被截掉，压成 rows
+    sheetDesc: 'Score pad · {{n}} rows',
+    // 输入框窄，与标题同排，"Filter games" 已是上限
+    filter: 'Filter games',
+    noMatch: 'No match. Try the other language or a nickname.',
+  },
+
   notFound: {
     text: 'No such tool',
     home: 'Back to home',
@@ -92,10 +104,12 @@ export const en: Resources = {
     },
     dice: {
       name: 'Quick dice',
+      desc: 'Roll a few dice',
       hint: 'Tap Roll to get a number',
     },
     timer: {
       name: 'Timer',
+      desc: 'Turn limits · sand timer',
       quickStart: 'Quick start',
       custom: 'Custom ({{step}}s steps)',
       start: 'Start {{time}}',
@@ -113,6 +127,7 @@ export const en: Resources = {
     },
     pointer: {
       name: 'Spinner',
+      desc: 'Point a random way',
       spinning: 'Spinning…',
       oclock: "≈ {{hour}} o'clock",
       hint: 'Tap the needle or the button',
@@ -120,6 +135,7 @@ export const en: Resources = {
     },
     players: {
       name: 'Players',
+      desc: 'Who is at the table',
       roster: 'Players',
       emptyList: 'Roster is empty — tap Add above.',
       // 与「已添加玩家」标签同排，左栏窄的时候放不进 "Add player"
@@ -132,6 +148,7 @@ export const en: Resources = {
     },
     settings: {
       name: 'Settings',
+      desc: 'Interface language',
       language: 'Language',
     },
   },
@@ -139,7 +156,7 @@ export const en: Resources = {
   tools: {
     bombBusters: {
       name: 'Bomb Busters',
-      desc: 'Defuse progress · gear dealing · lives',
+      desc: 'Defuse · gear · lives',
       lives: {
         dead: '💥 Detonated',
         critical: '⚠️ Last point',
@@ -200,7 +217,7 @@ export const en: Resources = {
     },
     score: {
       name: 'Multi-round Scoring',
-      desc: 'Add and subtract · round history · totals',
+      desc: 'Rounds · log · totals',
       empty:
         'Tap Seat at the top of the action bar to set up players. To use someone from the roster, open their card and tap the name on top.',
       // 首列的列头只给读屏用，长度不受列宽限制
@@ -239,7 +256,7 @@ export const en: Resources = {
 
     scoreSheet: {
       name: 'Score Pad',
-      desc: 'Per-category scoring · game templates · auto totals',
+      desc: 'Categories · templates · totals',
       empty:
         'Nobody yet. Tap Add seat below to lay out columns, then use the ＋ at the top right of the table.',
       entryCol: 'Category',
@@ -528,7 +545,7 @@ export const en: Resources = {
     },
     touchPick: {
       name: 'Finger Pick',
-      desc: 'Press together · pick one · order · teams',
+      desc: 'Pick one · order · teams',
       // 窄条只有 80px，模式名一律一个词
       mode: {
         one: 'Pick 1',

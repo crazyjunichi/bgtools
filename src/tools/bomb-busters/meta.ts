@@ -7,4 +7,5 @@ export const bombBustersMeta: ToolMeta = {
   icon: '💣',
   cover: 'covers/bomb-busters.png',
   accent: 'rose',
+  category: 'game',
 }

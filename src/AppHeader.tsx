@@ -120,8 +120,8 @@ export function AppHeader({ tool }: Props) {
           <h1 className={`flex-1 truncate text-lg font-semibold ${tool ? 'wide:sr-only' : ''}`}>
             {tool ? `${tool.icon} ${t(tool.nameKey)}` : t('app.title')}
           </h1>
-          {/* 小工具的 tile 面板入口 + 正在跑的计时器芯片 */}
-          <QuickBar />
+          {/* 小工具入口（首页直达配置类那两个，工具页收进 tile 面板）+ 计时器芯片 */}
+          <QuickBar home={!tool} />
           {supported && (
             <button
               type="button"

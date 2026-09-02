@@ -7,4 +7,5 @@ export const touchPickMeta: ToolMeta = {
   icon: '👆',
   // emerald：本工具全屏只有一种语义 —— 「这个被选中了」，与 emerald 的「完成」不冲突
   accent: 'emerald',
+  category: 'general',
 }

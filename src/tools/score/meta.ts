@@ -6,4 +6,5 @@ export const scoreMeta: ToolMeta = {
   descKey: 'tools.score.desc',
   icon: '🧮',
   accent: 'sky',
+  category: 'general',
 }

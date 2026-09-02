@@ -7,4 +7,5 @@ export const scoreSheetMeta: ToolMeta = {
   icon: '📝',
   // violet 不在四个语义色里，能同时当首页 accent 和「选中格」的主操作色
   accent: 'violet',
+  category: 'general',
 }

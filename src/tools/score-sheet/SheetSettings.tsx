@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FIELD } from '../../shared/components/fieldStyle'
 import { Overlay } from '../../shared/components/Overlay'
-import { SUPPORTED } from '../../shared/i18n'
+import { searchText, tokenize } from '../../shared/i18n/search'
 import { IconClose, IconSearch, IconSelected } from '../../shared/icons'
-import { FIELD } from './fieldStyle'
 import { BLANK_ID, findTemplate, TEMPLATES, type SheetTemplate } from './templates'
 
 type Props = {
@@ -31,16 +31,7 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
     const all = TEMPLATES.map((tpl) => ({
       tpl,
       name: t(tpl.nameKey),
-      /**
-       * 比对串 = **两个语言**的名字 + 别名。中文界面下打 `catan` / `azul` 也要命中，
-       * 反过来也一样；别名补的是桌上的口头叫法（农家乐、翼展、车票之旅）
-       */
-      text: SUPPORTED.map((s) => {
-        const fixed = i18n.getFixedT(s.lng)
-        return `${fixed(tpl.nameKey)} ${tpl.aliasKey ? fixed(tpl.aliasKey) : ''}`
-      })
-        .join(' ')
-        .toLowerCase(),
+      text: searchText(i18n, [tpl.nameKey, tpl.aliasKey]),
     }))
 
     // 通用空白钉在首位，其余按当前语言的名字排 —— 中文下是拼音序，比声明序好扫
@@ -52,8 +43,7 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
         : a.name.localeCompare(b.name, i18n.language),
     )
 
-    // 空白切分：多个词要**全部命中**（「七大 奇迹」「ticket ride」都算一次筛选）
-    const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
+    const tokens = tokenize(query)
     return tokens.length > 0 ? all.filter((r) => tokens.every((k) => r.text.includes(k))) : all
   }, [t, i18n, query])
 

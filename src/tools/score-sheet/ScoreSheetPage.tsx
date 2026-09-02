@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { buzz } from '../../shared/haptics'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
 import { IconPlayerAdd } from '../../shared/icons'
@@ -57,6 +58,20 @@ export default function ScoreSheetPage() {
     loadGame,
   } = useSheetStore()
   const players = usePlayersStore((s) => s.players)
+
+  /*
+   * 首页的模板入口把目标模板带在 URL 上（见 [Home](../../pages/Home.tsx)）。
+   * **落地即把参数消费掉**：留着它，页面内换过模板之后刷新会被打回 URL 里那个。
+   * setTemplate 不清分数，所以带参进来不会毁掉桌上正在填的表；
+   * 模板 id 失效由 findTemplate 兜回通用空白。
+   */
+  const [params, setParams] = useSearchParams()
+  const wanted = params.get('tpl')
+  useEffect(() => {
+    if (wanted === null) return
+    setTemplate(wanted)
+    setParams({}, { replace: true })
+  }, [wanted, setTemplate, setParams])
 
   const [panel, setPanel] = useState<Panel | null>(null)
   /**

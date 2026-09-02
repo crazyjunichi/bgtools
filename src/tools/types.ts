@@ -26,6 +26,11 @@ export type ToolMeta = {
   cover?: string
   /** 宫格卡片的强调色（Tailwind 类名片段，如 'amber'） */
   accent: 'amber' | 'emerald' | 'sky' | 'violet' | 'rose'
+  /**
+   * 首页落哪个分区：`general` = 任何游戏都用得上，`game` = 只在特定那盒游戏上用。
+   * **刻意必填**：给了缺省值，新工具就会默默落进通用区，而这个判断只有作者自己知道。
+   */
+  category: 'general' | 'game'
 }
 
 export type ToolEntry = ToolMeta & {

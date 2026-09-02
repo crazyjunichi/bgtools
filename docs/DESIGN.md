@@ -182,7 +182,9 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
   - 朝向差异全部走 `wide:` 覆盖，**不引入 JS 判朝向**：自动收起的 state 和计时在横屏照旧跑，只是位移与 `pointer-events` 被 `wide:` 抵消（media variant 规则后置必然赢）
   - 隐藏状态靠 `key={tool.id}` 重挂载重置，不在 effect 里同步 `setState`（oxlint 的 `react(set-state-in-effect)` 会拦）
   - 代价：竖屏顶栏唤出时会盖住内容顶部约 57px（工具页顶部是 `section-label` 一行），3 秒后自己让开，可接受
-- **通用小工具（骰子 / 计时器 / 随机指针 / 玩家名单）的入口也在顶栏**（图标来自 [shared/icons.ts](../src/shared/icons.ts)，注册表里存的是组件不是字符串），点开是居中 dialog，不占工具页版面。浮层不能挂在 `<header>` 内（`translate` + `backdrop-blur` 会成为 `fixed` 的包含块），由 App 层的 [QuickLayer](../src/quick/QuickLayer.tsx) 渲染，机械流程见 [CLAUDE.md](../CLAUDE.md)
+- **通用小工具（骰子 / 计时器 / 随机指针 / 玩家名单 / 设置）的入口也在顶栏**（图标来自 [shared/icons.ts](../src/shared/icons.ts)，注册表里存的是组件不是字符串），点开是居中 dialog，不占工具页版面。浮层不能挂在 `<header>` 内（`translate` + `backdrop-blur` 会成为 `fixed` 的包含块），由 App 层的 [QuickLayer](../src/quick/QuickLayer.tsx) 渲染，机械流程见 [CLAUDE.md](../CLAUDE.md)
+  - 顶栏入口的形态**按页面分两种**：**工具页**是一个 tile 面板开关（[QuickMenu](../src/quick/QuickMenu.tsx)）收纳全部五个 —— 横屏侧栏只有 64px，平铺放不下，也会跟工具自己的控件抢注意力；**首页**不放抽屉，直接给名单与设置两个按钮（右侧顺序：名单 · 设置 · 全屏）。理由是骰子 / 计时器 / 指针在首页宫格里已有大卡，抽屉在首页只是多一层点击。两处的取舍同源于一个 `onHome` 字段，见 [CLAUDE.md](../CLAUDE.md)
+  - 首页顶栏保留 `TimerChip`：从首页宫格开的计时器，关掉 dialog 后只剩它能看到还剩多久
 - quick 面板的 `wide` prop 只决定**宽度上限**（`max-w-2xl` / `max-w-md`），不是朝向判据。内部要分横竖屏的面板（[QuickPlayers](../src/quick/players/QuickPlayers.tsx)：横屏左名单 + 右编辑，竖屏上下堆叠）自己写 `wide:` variant，并**显式给一个 `h-[min(…rem,…vh)]` 高度** —— 面板高度由内容决定，内层写 `h-full` 没有锚点会塌缩，列表也就撑不满
 - `fixed` 浮层的层级约定，**新增浮层按这三档挑，不要自造数字**：
 
@@ -195,9 +197,26 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
   - 横屏（`wide`）：左控制栏 + 右主显示区。控制栏宽度两档：默认 `minmax(17rem, 24%)`；`panelWidth="narrow"` 给 `minmax(13rem, 17%)`，用于控制栏只有一个读数 + 一个入口的工具（炸弹克星的生命），省下的宽度让给主显示区。下限 13rem = 208px 是 `card` 的 p-5 之后仍能并排两个 56px 按钮的最小值，不要再往下调
   - 竖屏：`grid-rows-[1fr_auto]`，主显示区在上、控制栏贴底（拇指够得到），控制栏限 `max-h-[45dvh]` 且只在自己框里滚，页面级仍不滚动。DOM 顺序保持"控制在前"（Tab / 读屏顺序），视觉换序靠 `order-*`
 - **两个工具故意不套 `ToolLayout`，走「窄条」变体**：多轮计分（[ScorePage](../src/tools/score/ScorePage.tsx)）与手指抽选（[TouchPickPage](../src/tools/touch-pick/TouchPickPage.tsx)）的全局操作只有几个按钮，装不满 `minmax(17rem, 24%)` 的控制栏（横屏要吃掉近 280px），而计分卡的合计数字靠的正是那点宽度。改成主区吃满整宽 + 操作压成 **80px 竖条**（竖屏是贴底横条，见 [ScoreBar](../src/tools/score/ScoreBar.tsx) / [PickBar](../src/tools/touch-pick/PickBar.tsx)）。代价是 80px 条里放不下确认文案，破坏性操作只能再套一层浮层（[ScoreSettings](../src/tools/score/ScoreSettings.tsx)）—— **新工具优先套 `ToolLayout`**，只有"控制项少到撑不满一栏、而主区又吃紧"时才照这个变体做
-- **朝向判据只有 `wide` variant**（`@custom-variant wide (@media (orientation: landscape))`，定义在 [index.css](../src/index.css)）。**不许用宽度断点判横竖屏**：安卓平板横屏的 CSS 视口宽常只有 800–962px，iPad 分屏后更窄，旧代码的 `lg`（≥1024px）会把这批横屏平板整批误判成竖屏，这是"横屏还是竖屏布局"这个 bug 的根因。首页宫格的 `sm:` / `lg:` 是**列数密度**不是朝向，不在此约束内
+- **朝向判据只有 `wide` variant**（`@custom-variant wide (@media (orientation: landscape))`，定义在 [index.css](../src/index.css)）。**不许用宽度断点判横竖屏**：安卓平板横屏的 CSS 视口宽常只有 800–962px，iPad 分屏后更窄，旧代码的 `lg`（≥1024px）会把这批横屏平板整批误判成竖屏，这是"横屏还是竖屏布局"这个 bug 的根因。首页的三个分区也只用 `wide:` 切列数，别为了"再密一点"补宽度断点回来
 - **矮屏判据是 `short` variant**（`@media (max-height: 480px)`），与 `wide` 正交：`wide` 判朝向决定布局方向，`short` 判可视高决定尺寸档位，手机横屏同时命中两者。`480px` 的依据：手机横屏可视高 320–430px（浏览器 UI 吃掉一截），而最小的 8" 平板横屏也有 600px+，不会被误判。命中 `short` 意味着手持、视距 ≈30cm，所以**只有这一档**允许把触控目标从 56px 降到 44px（iOS HIG 下限），别扩散到别处
-- **首页宫格是横向大卡（图左文右）而不是小方卡**：可用高 ≈740px 而旧方卡只有 165px，一行卡片下方全空。横卡把靶子做到 ≈500×176、封面/emoji 从 40px 提到 144px，代价是一屏放不下更多工具 —— 首页允许滚动（见 §8）
+- **首页是三段式导航，三段共用同一档卡**（[Home.tsx](../src/pages/Home.tsx) 的 `CARD` / `GRID`，分区靠 `ToolMeta.category`）。分段的起因是入口从 4 个涨到 20 多个：quick 工具原来在首页完全不露出，计分纸的 17 个模板全藏在工具页浮层里
+
+  | 区 | 内容 | 入口行为 |
+  |---|---|---|
+  | 快捷工具 | quick 注册表里 `onHome: true` 的（骰子 / 计时器 / 指针） | 弹 dialog，**不跳路由** |
+  | 通用工具 | `category: 'general'` | 跳工具页 |
+  | 游戏专用工具 | `category: 'game'` + 计分纸每个模板一个虚拟入口 | 跳工具页，模板入口带 `?tpl=<id>` |
+
+  卡片一档：图槽 48px（`short` 40）+ 名字 `text-base` + 描述 `text-xs`，`p-3`、`gap-3`，网格 `grid-cols-2 gap-3 wide:grid-cols-3`。**三个区不许各自调尺寸** —— 桌上是斜视扫的，同屏三种卡尺寸等于要重新对焦三次。早先版本按"权重递减"给了大/中/小三档，扫起来反而更累，已废弃
+
+  - 快捷区点开只弹 dialog：浮层是 App 层常驻的 [QuickLayer](../src/quick/QuickLayer.tsx)，首页只 dispatch
+  - **快捷区不是 quick 注册表全量**：玩家名单与设置是开局前配一次的东西，`onHome: false` 只留顶栏入口 —— 首页给它们一张同等大小的卡，会把真正随手用的三个挤下去
+  - 描述行三个区各说各的：工具用自己的 `descKey`，模板卡用 `home.sheetDesc`（「计分纸 · N 项条目」）—— 游戏专用区里两类入口并列，这行得担起「点进去是干什么」。**单行截断而非换行**：换行会让同一排的卡高矮不齐，一档卡就没了。代价是英文描述吃紧，四条工具 `desc` 因此压到三个词以内（`Defuse · gear · lives`）
+  - 游戏专用区横屏 **3 列**（列宽约 336px，图槽与内距之后留给文字约 250px）。**试过 4 列，退回来了**：250px 列宽下英文长名（"Lost Ruins of Arnak"、"Great Western Trail"）与描述行同时截断，整区看着发挤
+  - 项数一多光靠扫不够了，所以标题行右侧有个**筛选框**（只筛这一区）。判据与计分纸的模板搜索共用 [i18n/search.ts](../src/shared/i18n/search.ts)：比对串含**两个语言**的名字与别名（中文界面下打 `catan`、或桌上口头的「农家乐」都命中），多个词要全部命中。输入框样式共用 [components/fieldStyle.ts](../src/shared/components/fieldStyle.ts) 的 `FIELD`，**尺寸不覆盖**：56px 的框才装得下 48px 的清除键（次要按钮下限），压到 48px 会连带把清除键挤到 40px
+  - **不做垂直居中**：旧版的 `content-center` + `min-h-full` 在内容溢出时会把第一区推到滚动区外且滚不回来
+  - 游戏专用区里混着两类入口，除了身份色（炸弹克星 rose / 模板 violet）与描述行，还给模板卡一个 📝 角标 —— 颜色不许是唯一编码
+  - 高度：统一成一档卡之后 1180×820 横屏约 780px，超出可用高（约 740）**开始轻微滚动**。这是拿走了"横屏一屏放完"换来的形态统一 —— 首页是全站唯一允许纵向滚动的页面（见 §8），别为了这 40px 再把某一区的卡调小。真要恢复不滚，只有"游戏专用区退回 4 列"或"去掉描述行"两条路，两条都已经比较过并被否
 - 主显示区要放两块信息时用 [Split](../src/shared/components/Split.tsx)（横屏并排、竖屏上下等分），别自己写朝向类。`ratio` 只描述横屏的宽度比 —— 竖屏一律等分，因为横向挤压只是变窄仍可读，纵向挤压会直接切掉整行
 - 左栏放参数与破坏性操作，右栏放**全桌要看的那块信息**
 - 次要列表（历史记录等）在自己的框里 `overflow-y-auto` —— 局部滚动不算翻页
@@ -238,7 +257,7 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 - **锁横屏只能尽力而为，所以竖屏必须是一等布局**。能做的两半都做了：PWA manifest `orientation: 'landscape'`（[vite.config.ts](../vite.config.ts)，装成 PWA 的 Android 生效）+ 进全屏后 `screen.orientation.lock('landscape')`（[useFullscreen](../src/shared/hooks/useFullscreen.ts)，Android Chrome 生效）。**iOS Safari 两条都拿不到**，全靠 `catch` 静默兜住。仍然不做「请旋转设备」提示 —— 挡内容，而且竖屏现在本来就能用
 - **竖屏控制栏允许框内滚**：竖屏底栏只有 45dvh，控制项多的工具会在栏内滚。页面级不滚这条底线没破，但比横屏多一次滚动动作
 - **矩形格子优于正方形**：拆弹网格在高度受限时拉成矩形，是为了不翻页
-- **首页允许滚动**：工具变多后宫格会超一屏，首页翻页比工具页翻页可接受
+- **首页允许滚动**：入口分了三区、又给计分纸每个模板配了虚拟入口，三区还共用同一档卡（不给游戏专用区压小），连 1180×820 横屏都会溢出约 40px。首页翻页比工具页翻页可接受，形态统一比省这 40px 重要
 - **顶栏自动隐藏**：换回约 57px 高度（820px 屏的 7%），代价是返回键不常显、要学一次唤出动作 —— 用一次性文字提示 + 全宽热区补偿。不做「点任意处唤出」，那会跟工具本身的点按抢事件
 - **计时器运行中不做任何残留指示**：dialog 关掉后既没有顶栏角标（顶栏会自动收起，角标跟着消失），也没有角落浮标 —— 少一个常驻浮层，代价是桌上看不到还剩多久，靠到时的震动 + 提示音 + 全屏红字补偿
 - **`!` important 前缀**（`!min-h-12`）在 Tailwind 4.3 仍生效，沿用旧代码风格，只用于覆盖 `btn-base` 的尺寸

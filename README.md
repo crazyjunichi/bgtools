@@ -24,11 +24,11 @@ DevTools 只能模拟单个指针，多点触摸测不了。手指抽选因此�
 ## 新增一个工具
 
 1. 建 `src/tools/<id>/` 目录
-2. `meta.ts` 导出 `ToolMeta`（id / nameKey / descKey / icon / accent），文案本身写进 [locales/zh.ts](src/shared/i18n/locales/zh.ts) 与 [en.ts](src/shared/i18n/locales/en.ts) 的 `tools.<id>.*` —— 两边不同构会在 `tsc` 阶段报错
+2. `meta.ts` 导出 `ToolMeta`（id / nameKey / descKey / icon / accent / category —— `category` 决定落首页的「通用工具」还是「游戏专用工具」区），文案本身写进 [locales/zh.ts](src/shared/i18n/locales/zh.ts) 与 [en.ts](src/shared/i18n/locales/en.ts) 的 `tools.<id>.*` —— 两边不同构会在 `tsc` 阶段报错
 3. 页面组件默认导出，状态放同目录 `store.ts`（`persist` 的 name 用 `bgtools:<id>` 前缀）
 4. 在 [src/tools/registry.ts](src/tools/registry.ts) 追加一行
 
-首页宫格和路由会自动生成，页面组件按需懒加载。顶栏常驻的通用小工具（骰子、计时器一类）流程类似，目录是 `src/quick/<id>/`，注册表是 [src/quick/registry.ts](src/quick/registry.ts)。完整约束见 [CLAUDE.md](CLAUDE.md)。
+首页入口和路由会自动生成，页面组件按需懒加载。顶栏常驻的通用小工具（骰子、计时器一类）流程类似，目录是 `src/quick/<id>/`，注册表是 [src/quick/registry.ts](src/quick/registry.ts)，入口常驻顶栏；`onHome` 一个字段同时决定两处露出 —— `true` 在首页宫格的「快捷工具」区放一张卡，`false` 则在首页顶栏放一个直达按钮（工具页顶栏两类都收进 tile 面板）。完整约束见 [CLAUDE.md](CLAUDE.md)。
 
 ## 目录结构
 
@@ -40,7 +40,7 @@ src/
   index.css            # @theme 主题 token + card/btn-base 等 utility + wide/short variant
   main.tsx             # 由 registry 生成 hash 路由
   pages/               # 首页、404
-  tools/               # 首页宫格里的工具
+  tools/               # 首页「通用 / 游戏专用」两区里的工具
     registry.ts        # 工具注册表 —— 唯一真源
     types.ts           # ToolMeta / ToolEntry 契约
     score/             # 多轮计分
@@ -62,7 +62,9 @@ src/
 
 ## 已实现
 
-首页宫格里的工具：
+首页分三区：**快捷工具**（骰子 / 计时器 / 指针，点开即弹窗，不离开首页）· **通用工具**（任何游戏都用得上）· **游戏专用工具**（炸弹克星 + 计分纸的每个模板各一个入口，点进去直接落到那张表；项数多，标题行带筛选框，中英文名与别名都能搜）。
+
+有独立页面的工具：
 
 - **多轮计分**：人数不设上限（临时席位，可逐个换成全局名单里的人）、一人一张卡（合计大字 + 领先者王冠 + 本轮得分 + 最近三轮），点卡片开浮层记分（±1/±10/±100 或直接改本轮那个大数字）、「记录」浮层里是完整的逐轮矩阵（新轮在上）、撤销
 - **计分纸**：固定条目逐项结算的矩阵（横向是人、纵向是条目），点格子用右侧键盘输入；条目可设「每个 N 分」，格子里填数量、得分自动折算；自带 17 款游戏模板（通用空白 + 农场主、卡坦岛、阿纳克遗迹、喀斯喀迪亚、火星殖民地、大西部之路…，可搜中英文名与别名），切模板不清分数，只是把用不到的条目收起来

@@ -26,6 +26,14 @@ export type QuickTool = {
   id: string
   /** 存 key 而不存文案：本表在模块顶层求值，切语言时要跟着变 */
   nameKey: I18nKey
+  /** 只有首页的快捷区用得到（顶栏与 tile 面板放不下一行描述） */
+  descKey: I18nKey
+  /**
+   * 是否在首页的「快捷工具」区露出。**刻意必填**：新增小工具时要自己做这个判断。
+   * 判据是「开局中会不会随手用一下」—— 名单与设置是开局前配一次的东西，
+   * 首页给它们一张同等大小的卡会把真正常用的三个挤下去；顶栏入口照旧全量。
+   */
+  onHome: boolean
   /** 顶栏是功能入口而非内容，所以走 shared/icons 而不是 emoji */
   icon: LucideIcon
   accent: QuickAccent
@@ -42,6 +50,8 @@ export const quickTools: QuickTool[] = [
   {
     id: 'dice',
     nameKey: 'quick.dice.name',
+    descKey: 'quick.dice.desc',
+    onHome: true,
     icon: IconDice,
     accent: 'amber',
     Component: QuickDice,
@@ -50,6 +60,8 @@ export const quickTools: QuickTool[] = [
   {
     id: 'timer',
     nameKey: 'quick.timer.name',
+    descKey: 'quick.timer.desc',
+    onHome: true,
     icon: IconTimer,
     accent: 'sky',
     Component: QuickTimer,
@@ -58,6 +70,8 @@ export const quickTools: QuickTool[] = [
   {
     id: 'pointer',
     nameKey: 'quick.pointer.name',
+    descKey: 'quick.pointer.desc',
+    onHome: true,
     icon: IconCompass,
     accent: 'violet',
     Component: QuickPointer,
@@ -67,6 +81,8 @@ export const quickTools: QuickTool[] = [
   {
     id: 'players',
     nameKey: 'quick.players.name',
+    descKey: 'quick.players.desc',
+    onHome: false,
     icon: IconPlayers,
     accent: 'teal',
     Component: QuickPlayers,
@@ -76,6 +92,8 @@ export const quickTools: QuickTool[] = [
   {
     id: 'settings',
     nameKey: 'quick.settings.name',
+    descKey: 'quick.settings.desc',
+    onHome: false,
     icon: IconSettings,
     accent: 'neutral',
     Component: QuickSettings,
