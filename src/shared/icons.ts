@@ -8,14 +8,14 @@
  *
  * **分工**：只有「功能按钮 / chrome UI」走这里。工具身份（`meta.icon`）、
  * 装备卡图示、生命档位文案的 ⚠️💥⚡ 仍是 emoji —— 那些是**内容标识**，
- * 彩色 emoji 的轮廓差异在桌上斜视 45° 时比单色线条更好认。
+ * 彩色 emoji 的轮廓差异在桌上斜视时比单色线条更好认。
  *
  * 用法约定：
  * - 新增图标先在这里加一个语义名，业务文件不直接 import 'lucide-react'
  *   （换库或调档位只改这一处，也避免同一动作在不同页面挑了不同图标）
- * - 尺寸走 `size-*` 不靠 `text-*`：默认 `size-6`(24px)，`short` 档降一级
- * - `strokeWidth` 由 [main.tsx](../main.tsx) 的 `LucideProvider` 统一给 2.25，
- *   比默认 2 更实 —— 视距 50–70cm 斜视下细线会糊断
+ * - 尺寸走 `size-*` 不靠 `text-*`，`short` 档降一级（档位见 docs/DESIGN.md §3）
+ * - `strokeWidth` **不在调用点写**，由 [main.tsx](../main.tsx) 的 `LucideProvider`
+ *   统一给一档比 lucide 默认更粗的描边 —— 桌上的视距下细线会糊断
  */
 export {
   AlarmClock as IconAlarm,

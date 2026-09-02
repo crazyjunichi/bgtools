@@ -45,7 +45,7 @@ type Props = {
 /** 行首列：条目名要放得下「未使用空地」这种五字词，横屏再宽一点 */
 const LEAD = 'w-28 wide:w-32'
 
-/** 每列 96px：`text-2xl` 的等宽三位数约 54px，加 padding 后仍留得下四位 */
+/** 每人一列，宽度按「三位数还留得下一位余量」定，容量校核见 docs/DESIGN.md §3 */
 const COL = 'w-24'
 
 /** 列头胶囊。只读态用 span、可编辑态用 button，尺寸必须一致，否则两种视图行高会差一截 */
@@ -122,8 +122,8 @@ export function SheetGrid({
               <th key={s.id} scope="col" className={`sticky top-0 z-10 bg-surface p-1 ${COL}`}>
                 {/*
                  * 列头整块是按钮：要改的正是这个名字，指到它本身比另起一个笔图标更直接。
-                 * 改名/换人/移除都收在它打开的浮层里（[SeatPicker](../../shared/players/SeatPicker.tsx)），
-                 * 列宽只有 96px，摆不下、也经不起桌上手一抖
+                 * 改名/换人/移除都收在它打开的浮层里（[SeatPicker](../../shared/players/SeatPicker.tsx)）：
+                 * 列宽摆不下这些按钮，桌上手一抖也点不准
                  */}
                 {readOnly ? (
                   <span className={`${SEAT_CHIP} ${PLAYER_SOLID[s.color]}`}>
@@ -279,7 +279,7 @@ export function SheetGrid({
 }
 
 /**
- * 开局时刻。**掐掉年与秒**：行首列只有 112–128px，完整的 `toLocaleString` 一定被截断，
+ * 开局时刻。**掐掉年与秒**：行首列窄，完整的 `toLocaleString` 一定被截断，
  * 而桌上要认的只是「是不是刚开的那局」。跨天回看落在历史浮层，那里给的是全量时间。
  */
 function fmtStarted(at: number, lang: string): string {

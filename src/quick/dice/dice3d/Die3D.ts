@@ -8,7 +8,7 @@ const SCREEN_UP = new THREE.Vector3(0, 1, 0)
 const ORIGIN = new THREE.Vector3()
 /**
  * 结果面正对镜头会看着像张卡片，统一偏一点让顶面和右侧面露出来才有立体感
- * （偏离视轴 ≈18°，也正好把这两面转向 (2.5,4,5) 的主光）。
+ * （偏转量也正好把这两面转向主光）。
  * 别再加大：这里偏多少，数字就少读多少，而可读性是这个场景的硬指标。
  */
 const TILT = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.2, 0.24, 0))

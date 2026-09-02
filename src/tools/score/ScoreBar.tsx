@@ -22,7 +22,7 @@ const SMALL =
   'btn-quiet shrink-0 flex-col gap-1 px-1 text-sm min-w-20 !min-h-16 short:!min-h-11 short:min-w-16 short:gap-0.5 short:py-1 short:text-xs'
 
 /**
- * 操作条：横屏是右侧 80px 竖条，竖屏是贴底横条。
+ * 操作条：横屏是右侧窄竖条，竖屏是贴底横条（宽度档见 DESIGN.md §5 的「窄条变体」）。
  *
  * 顶上是「加人」—— 摆桌是每局的第一个动作，埋在浮层里等于开局先找设置。
  * 「下一轮」吃掉主轴上的全部余量（`flex-1` 在竖条里是高、在横条里是宽，一个类管两个朝向）。

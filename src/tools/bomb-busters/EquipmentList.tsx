@@ -14,17 +14,16 @@ type Props = {
  * 整个道具区是一块 violet 领地：色相在这里表示"这是道具信息"，不再表示"能不能用"，
  * 所以三态在同一色系里靠饱和度拉开，而不是靠"有色 / 无色"。
  * 未激活保持正常亮度 —— 它是待满足条件的牌，玩家得读清条件，压暗反而误导；
- * 真该被忽略的只有已用，整卡透明度砍到 45% 直接退场。
- */
-/**
+ * 真该被忽略的只有已用，整卡压透明直接退场。
+ *
  * 三态靠"质地"区分而不是靠明度档位：淡底实线 / 实心 + 光环 / 无底虚线半透明。
  * 未激活和已用都做成"暗紫底"时会糊成同一个状态（这是原来两档灰的老问题换了色相重演），
- * 所以已用干脆不给底色，直接露出区块底 + 虚线 + 40% 透明退场；
+ * 所以已用干脆不给底色，直接露出区块底 + 虚线 + 压透明；
  * 可用则是全卡里唯一的实心块，隔着桌子第一眼就该落在它上面。
  */
 const TONE: Record<EquipState, string> = {
   0: 'border-violet-400/50 bg-violet-500/15',
-  // ring 只给 2px：卡间距 10px，4px 光环会把相邻两张卡挤到几乎贴一起
+  // 光环不能再粗：它是往外长的，加宽会把相邻两张卡挤到几乎贴一起
   1: 'border-violet-200 bg-violet-600 ring-2 ring-violet-300/60',
   2: 'border-dashed border-violet-500/25 opacity-40',
 }
@@ -42,7 +41,7 @@ const NUMBER: Record<EquipState, string> = {
   2: 'text-violet-300 line-through',
 }
 
-/** 描述在可用态是压在实心 violet-600 上的，白字才够（violet-100/80 只有 3.5:1） */
+/** 描述在可用态是压在实心 violet-600 上的，只有纯白够对比度，淡紫不行 */
 const DESC: Record<EquipState, string> = {
   0: 'text-violet-100/80',
   1: 'text-white',
@@ -72,7 +71,7 @@ const BADGE_ICON: Record<EquipState, LucideIcon | null> = {
 
 /**
  * 道具牌竖排、卡内横向排布。竖排是为了把整个栏宽让给名称和描述 ——
- * 横排 5 张时每张只剩 160px，描述会碎成五六行。
+ * 5 张横排时每张分到的宽度会把描述碎成五六行。
  * 卡内两列：左边文字（图示 + 名称一行、描述一行），右边纵向的编号 + 状态徽章。
  * 图示不再单独占一列 —— 独立列会把它的宽度从描述里也扣掉一份，塞进名称行只影响名称。
  * 编号是"桌上那张牌是哪张"的唯一锚点，所以它独占一列且字号最大；
@@ -107,7 +106,7 @@ export function EquipmentList({ hand, onCycle }: Props) {
                 buzz()
                 onCycle(i)
               }}
-              // 竖屏下限降到 64px（仍高于 56px 触控下限），5 张才塞得进半屏
+              // 竖屏下限比横屏低一档（仍高于触控下限），5 张才塞得进半屏
               className={`flex min-h-16 flex-1 items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-transform duration-75 active:scale-95 wide:min-h-20 ${TONE[card.state]}`}
             >
               <span className="flex min-w-0 flex-1 flex-col gap-1">

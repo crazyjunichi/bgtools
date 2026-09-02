@@ -37,7 +37,7 @@ export function colorLabelKey(color: PlayerColor): I18nKey | undefined {
 }
 
 // 三张显式映射表而非拼接类名：Tailwind 编译期只扫静态字符串。
-// 档位按 DESIGN.md §2：实心 -400 + text-ink（≈9~11:1），淡底 -500/15 + border-500/60。
+// 档位按 DESIGN.md §2：实心 -400 + text-ink，淡底 -500/15 + border-500/60。
 // brown 不在 Tailwind 色板里，三档定义在 index.css 的 @theme。
 // 两处必要的破例，都在 black 上：深底上「黑」只能靠**近黑底 + 亮描边**成形，
 // 所以它的实心档是白字（text-ink 在 zinc-950 上等于看不见），淡底档也不能用 /15。

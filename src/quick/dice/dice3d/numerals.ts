@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 
 const SIZE = 128
-/** 与 text-ink 同色：琥珀骰身上的深字对比度 ≈9:1，斜视下也不糊 */
+/** 与 text-ink 同色：琥珀骰身配深字走的正是「实心底 + text-ink」那一档（DESIGN.md §2） */
 const INK = '#0a0a0a'
 
 const cache = new Map<number, THREE.Texture>()

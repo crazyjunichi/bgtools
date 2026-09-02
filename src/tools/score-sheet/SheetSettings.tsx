@@ -34,7 +34,7 @@ const EXIT_BTN = 'btn-base gap-2 border border-line bg-surface-2 text-base short
 
 /**
  * 模板选择 + 新一局。新一局收在浮层里而不直插键盘的动作行：
- * 那一行两格各约 120px，放不下 [ConfirmButton] 武装后的确认文案，
+ * 那一行两格都太窄，放不下 [ConfirmButton] 武装后的确认文案，
  * 而清空整局分数正是最不能省二次确认的操作。
  *
  * 模板过十个之后平铺按钮就不够看了，所以这里是「搜索框 + 框内纵滚的列表」：

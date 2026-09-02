@@ -54,9 +54,9 @@ export default function ScorePage() {
 
   return (
     /*
-     * 这个工具**故意不套 [ToolLayout]**：它的左栏是 minmax(17rem, 24%)，横屏下要吃掉近
-     * 280px，而卡片网格的每张卡都靠那点宽度把合计数字撑到 74px。全局操作只有五个按钮，
-     * 装不满一整栏 —— 所以网格吃满整宽，操作压成 80px 窄条。
+     * 这个工具**故意不套 [ToolLayout]**：全局操作只有五个按钮，装不满它的左栏，
+     * 而卡片网格的每张卡都靠那点宽度把合计数字撑大 —— 所以网格吃满整宽，操作压成窄条。
+     * 这是 DESIGN.md §5 登记过的「窄条变体」，新工具别照抄。
      * 朝向判据仍只用 wide（横屏右栏 / 竖屏贴底），不引入宽度断点。
      */
     <div className="flex h-full min-h-0 flex-col gap-3 wide:flex-row short:gap-2">

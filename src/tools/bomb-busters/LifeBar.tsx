@@ -47,7 +47,7 @@ const CAPTION_KEY: Record<Level, I18nKey> = {
 
 /**
  * 生命指示器。只留数字不做格子进度条 —— 桌上要的是一眼读数。
- * 高度按内容算（`shrink-0`，约 210px）而不是 `flex-1` 撑满左栏：
+ * 高度按内容算（`shrink-0`）而不是 `flex-1` 撑满左栏：
  * 撑满时中间会空出一大片，那片高度给下面的快捷操作更值。
  */
 export function LifeBar({ lives, onChange }: Props) {

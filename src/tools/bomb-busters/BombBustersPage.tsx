@@ -29,7 +29,7 @@ export default function BombBustersPage() {
 
   return (
     <ToolLayout
-      // 左栏只有一个生命读数 + 设置入口，撑不满默认 24%；省下的宽度给拆弹区与道具区
+      // 左栏只有一个生命读数 + 几个入口，撑不满默认档；省下的宽度给拆弹区与道具区
       panelWidth="narrow"
       panel={
         <>

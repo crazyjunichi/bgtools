@@ -62,15 +62,16 @@ export function QuickPlayers() {
   return (
     /*
      * 高度必须显式给：QuickDialog 的高度由内容决定，内层再写 h-full 就没有锚点、会塌缩。
-     * 竖屏（含手机竖屏）改上下堆叠 —— 编辑区那 336px 在 390px 宽的屏上并排就没名单的位置了。
-     * 竖屏比横屏留得高（48rem）：堆叠时编辑区的高度是相加而非取最大值，
+     * 竖屏（含手机竖屏）改上下堆叠 —— 编辑区是刚性的，并排就没名单的位置了。
+     * **竖屏比横屏留得高**：堆叠时各块高度是相加而非取各块最大值，
      * 4×4 色板比横屏多吃掉两行，不加高名单就只剩两行可见。
+     * 预算算法见 CLAUDE.md 的 quick 横竖屏布局一节。
      */
     <div className="flex h-[min(48rem,72vh)] flex-col gap-4 wide:h-[min(36rem,72vh)] wide:flex-row short:gap-2">
       {/* 横屏下名单是唯一的弹性块，余量全归它：编辑区内容是刚性的，宽了只会把色板拉散 */}
       <div className="flex min-h-0 flex-1 flex-col gap-2 wide:min-w-0">
-        {/* 标题行兼作操作行：添加是次要按钮，min-h-12 —— 压到 44 以下会点不准，
-            单独占一行又要吃掉列表 56px。只报当前人数、不报上限（人数没有上限） */}
+        {/* 标题行兼作操作行：添加按钮是次要档，再压就点不准，单独占一行又要吃掉列表的高度。
+            只报当前人数、不报上限（人数没有上限） */}
         <div className="flex shrink-0 items-center gap-2">
           <span className="section-label">
             {t('quick.players.roster')}{' '}

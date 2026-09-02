@@ -36,7 +36,7 @@ const RING: Record<RingKind, string> = {
   waiting: 'border-line bg-surface-2/70',
   pending: 'border-emerald-400/70 bg-emerald-500/15',
   winner: 'border-emerald-300 bg-emerald-500/35 shadow-[0_0_40px_-4px] shadow-emerald-400/70',
-  // 落选压暗到 30%：屏幕上同时有 emerald 实心亮环，这个反差才够斜视时一眼分出来
+  // 落选压得很透：屏幕上同时有 emerald 实心亮环，反差要够大才在斜视时一眼分出来
   loser: 'border-line bg-surface-2/50 opacity-30',
   rank: 'border-sky-400/80 bg-sky-500/20',
   group: '',
@@ -64,7 +64,7 @@ const FLIP_Y = 116
  * 一个触点的呈现：手指下的圆环 + 环外的结果胶囊。
  *
  * 数字/皇冠**必须画在环外**（默认上方，贴顶时翻到下方）—— 圆心正好被手指压着，
- * 画在里面等于没画。环直径 144px 比指腹大一圈，压住也看得见颜色。
+ * 画在里面等于没画。环直径取"比指腹大一圈"，被压住也露得出颜色。
  *
  * 环与数字都是**固定 px 而不是 vmin**，这是 DESIGN.md 第 4 条的有意例外：
  * 这里的尺寸基准是指腹（物理尺寸，不随屏幕大小变），跟着视口放大只会让环互相叠在一起。

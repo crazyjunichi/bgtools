@@ -41,7 +41,7 @@ export function ConfirmButton({ onConfirm, children, confirmText, className, dis
       disabled={disabled}
       // gap-2 给「图标 + 文字」的 children 留间距；armed 态只有纯文字，是 no-op
       className={`btn-base gap-2 px-5 text-base short:!min-h-11 ${
-        // 深底上 rose-500 + 白字只有 3.75:1，靠 600 档 + 加粗补足
+        // 危险实心档：深底上 rose-500 + 白字对比度不够，要 600 档 + 加粗才补得上（DESIGN.md §2）
         armed && !disabled ? 'bg-rose-600 font-bold text-white' : 'bg-surface-2 text-text'
       } ${className ?? ''}`}
     >

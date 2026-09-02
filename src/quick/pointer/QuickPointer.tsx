@@ -86,7 +86,7 @@ export function QuickPointer() {
           onClick={handleSpin}
           disabled={spinning}
           aria-label={t('quick.pointer.spin')}
-          // vmin 而非 vh：竖屏下 vh 取的是长边，42vh 会算出 288px 顶着 shrink-0 硬溢出
+          // 表盘宽高同时受限，所以只能用 vmin：换 vh 竖屏会取长边，顶着 shrink-0 硬溢出
           className="relative size-[min(18rem,42vmin)] shrink-0 rounded-full transition-transform duration-75 active:scale-[0.97]"
         >
           {/* 落定后整圈发光，是"停下来了"最外围的一层反馈 */}

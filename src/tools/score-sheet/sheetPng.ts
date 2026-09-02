@@ -8,7 +8,7 @@ import { fmtScore } from './store'
  * 添加条目行）一概不画。
  *
  * 返回 Blob 而非 dataURL：`navigator.share({ files })` 要的就是 `File`，
- * 而 base64 串比二进制多占 33% 内存。
+ * 而 base64 串比二进制明显更占内存。
  */
 
 /** 导出图固定 2x，**不跟设备 DPR** —— 同一局在手机和平板上导出该得到同一张图 */

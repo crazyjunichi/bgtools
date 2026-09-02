@@ -9,7 +9,7 @@ type Props = {
 }
 
 /**
- * 只有「新一局」一个动作。留着这层浮层而不把按钮直插操作条：80px 宽的条里放不下
+ * 只有「新一局」一个动作。留着这层浮层而不把按钮直插操作条：那条窄条放不下
  * [ConfirmButton] 武装后的确认文案，而清空整晚历史正是最不能省二次确认的操作。
  */
 export function ScoreSettings({ onNewGame, onClose }: Props) {

@@ -20,8 +20,8 @@ const HOLD_DELAY = 400
 const HOLD_INTERVAL = 90
 
 /**
- * 大号 +/- 数字步进器。触控目标 ≥ 44px，支持长按连续增减
- * （计分板一次加 10 分不该点 10 次）。
+ * 大号 +/- 数字步进器，支持长按连续增减（计分板加十分不该点十次）。
+ * 触控目标不低于矮屏档下限，见 docs/DESIGN.md §3。
  */
 export function Stepper({
   value,

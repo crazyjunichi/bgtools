@@ -5,11 +5,11 @@ import { formatMS, useQuickTimerStore } from './store'
 
 /**
  * 到时提醒。全屏红底是刻意的：平板平放在桌上、没人盯着屏幕，
- * 只有整屏变色才能在斜视 45° 下被立刻注意到。
+ * 只有整屏变色才能在斜视下被立刻注意到。
  *
- * 这是 DESIGN.md「rose 仅限破坏性语义」的一处例外 —— 它全屏独占且瞬时，
- * 不会与工具内的 rose 同屏，用的仍是 rose-600 + 白字加粗（4.5:1）这一档。
- * z-40 压住 dialog(z-30)：计时器 dialog 开着时到时，提醒必须在最上层。
+ * 这是 DESIGN.md「rose 仅限破坏性语义」的一处**已登记例外** —— 它全屏独占且瞬时，
+ * 不会与工具内的 rose 同屏，档位仍是那里定的「危险实心」。
+ * 层级取最高那一档（见 DESIGN.md §5 的 z 表）：计时器 dialog 开着时到时，提醒必须压住它。
  */
 export function TimerAlarm() {
   const { t } = useTranslation()

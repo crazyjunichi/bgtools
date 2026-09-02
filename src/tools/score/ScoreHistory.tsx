@@ -15,7 +15,7 @@ type Props = {
 /** 轮次号列，窄到只放两位数 —— 横向每一像素都该留给分数 */
 const LEAD = 'w-9'
 
-/** 每列 80px：`text-lg` 的等宽四位数约 43px，加 padding 后仍留得下五位 */
+/** 每人一列，宽度按「四位数还留得下一位余量」定，容量校核见 docs/DESIGN.md §3 */
 const COL = 'w-20'
 
 /**

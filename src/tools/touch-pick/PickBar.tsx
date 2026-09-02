@@ -15,7 +15,7 @@ const MODES = [
   { mode: 'group', nameKey: 'tools.touchPick.mode.group', Icon: IconGroups },
 ] as const satisfies readonly { mode: PickMode; nameKey: I18nKey; Icon: LucideIcon }[]
 
-/** 抄 [ScoreBar](../score/ScoreBar.tsx)：横屏是 80px 竖条里的一格，竖屏是贴底横条里的一格 */
+/** 抄 [ScoreBar](../score/ScoreBar.tsx)：横屏是窄竖条里的一格，竖屏是贴底横条里的一格 */
 const BTN =
   'btn-base relative shrink-0 flex-col gap-1 px-1 text-sm min-w-20 !min-h-16 short:!min-h-11 short:min-w-16 short:gap-0.5 short:py-1 short:text-xs'
 
