@@ -21,17 +21,19 @@ const levelOf = (lives: number): Level =>
  * 这也是左栏唯一一块信息，颜色给得比拆弹/装备区更满。
  */
 const CARD: Record<Level, string> = {
-  dead: 'border-rose-400 bg-rose-600/45 animate-pulse',
-  critical: 'border-rose-400 bg-rose-500/30',
-  low: 'border-amber-400 bg-amber-500/20',
-  ok: 'border-emerald-400/70 bg-emerald-500/15',
+  // 墨水屏下淡底收白、边框收黑：15% 灰只是装饰，-400 档保留色相（灰阶屏上是浅灰，卡界会糊）
+  dead: 'border-rose-400 bg-rose-600/45 animate-pulse eink:border-black eink:bg-white',
+  critical: 'border-rose-400 bg-rose-500/30 eink:border-black eink:bg-white',
+  low: 'border-amber-400 bg-amber-500/20 eink:border-black eink:bg-white',
+  ok: 'border-emerald-400/70 bg-emerald-500/15 eink:border-black eink:bg-white',
 }
 
 const TONE: Record<Level, string> = {
-  dead: 'text-rose-100',
+  // -100/-200 是深底专属亮度，白底上要换 -700（见 index.css 浅色块的重映射说明）
+  dead: 'text-rose-100 light:text-rose-700',
   critical: 'text-rose-300',
   low: 'text-amber-300',
-  ok: 'text-emerald-200',
+  ok: 'text-emerald-200 light:text-emerald-700',
 }
 
 /**
@@ -73,8 +75,8 @@ export function LifeBar({ lives, onChange }: Props) {
           <span style={DATA_FONT.lives} className={`font-bold ${TONE[level]}`}>
             {lives}
           </span>
-          {/* 分母不用 text-dim：灰字压在彩色底上会显脏 */}
-          <span className="text-2xl text-white/45">/{MAX_LIVES}</span>
+          {/* 分母不用 text-dim：灰字压在彩色底上会显脏。白底主题下换墨色，墨水屏归零黑 */}
+          <span className="text-2xl text-white/45 light:text-ink/45 eink:text-black">/{MAX_LIVES}</span>
         </span>
       </div>
 
@@ -86,7 +88,7 @@ export function LifeBar({ lives, onChange }: Props) {
           aria-label={t('tools.bombBusters.lives.minus')}
           disabled={lives <= 0}
           onClick={() => bump(-1)}
-          className="btn-base border-2 border-rose-400/70 bg-rose-500/25 text-rose-100"
+          className="btn-base border-2 border-rose-400/70 bg-rose-500/25 text-rose-100 light:text-rose-700 eink:border-black eink:bg-white"
         >
           <IconMinus className="size-8" aria-hidden />
         </button>
@@ -95,7 +97,7 @@ export function LifeBar({ lives, onChange }: Props) {
           aria-label={t('tools.bombBusters.lives.plus')}
           disabled={lives >= MAX_LIVES}
           onClick={() => bump(1)}
-          className="btn-base border-2 border-emerald-400/70 bg-emerald-500/20 text-emerald-100"
+          className="btn-base border-2 border-emerald-400/70 bg-emerald-500/20 text-emerald-100 light:text-emerald-700 eink:border-black eink:bg-white"
         >
           <IconPlus className="size-8" aria-hidden />
         </button>

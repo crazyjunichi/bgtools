@@ -20,6 +20,10 @@ type Props = {
  * 亮格必须是不透明色，否则叠在不同暗底上合成结果不同，未拆与半拆的亮格就对不上了；
  * 暗底反过来**故意**分三档，它是"拆到哪了"的第二层量编码。
  * 各档的实际明度见 [docs/DESIGN.md](../../../docs/DESIGN.md) §6，调之前先看那张表。
+ *
+ * 这个网格在浅色/墨水屏主题下**保持深色**（自包含的暗色面板）：三态的全部区分编码
+ * （亮格数 / 虚线边框 / ✓ 删除线）都在网格内部完成，不依赖页面底色；墨水屏上
+ * sky-950 渲染成深灰块 + 白字，对比度反而最高。别为了"跟着主题变白"去动它。
  */
 const TONE: Record<DefuseState, string> = {
   0: 'border-sky-300 bg-sky-950 text-sky-50',
@@ -74,7 +78,8 @@ export function WireGrid({ wires, onCycle }: Props) {
   const { t } = useTranslation()
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-2 rounded-3xl border-2 border-sky-500/40 bg-sky-950/40 p-3">
+    // 外框只是分区底：浅色系里收成淡色、墨水屏收白（格子本体所有主题都保持深色，见 TONE 注释）
+    <section className="flex min-h-0 flex-1 flex-col gap-2 rounded-3xl border-2 border-sky-500/40 bg-sky-950/40 p-3 light:bg-sky-500/10 eink:bg-white">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1">
         <span className="text-sm font-semibold tracking-wide text-sky-200">
           {t('tools.bombBusters.wires.title')}

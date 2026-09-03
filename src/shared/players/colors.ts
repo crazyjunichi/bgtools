@@ -36,11 +36,14 @@ export function colorLabelKey(color: PlayerColor): I18nKey | undefined {
   return PLAYER_COLORS.find((c) => c.id === color)?.labelKey
 }
 
-// 三张显式映射表而非拼接类名：Tailwind 编译期只扫静态字符串。
+// 两张显式映射表而非拼接类名：Tailwind 编译期只扫静态字符串。
 // 档位按 DESIGN.md §2：实心 -400 + text-ink，淡底 -500/15 + border-500/60。
 // brown 不在 Tailwind 色板里，三档定义在 index.css 的 @theme。
-// 两处必要的破例，都在 black 上：深底上「黑」只能靠**近黑底 + 亮描边**成形，
+// 必要的破例都在中性色上：深底上「黑」只能靠**近黑底 + 亮描边**成形，
 // 所以它的实心档是白字（text-ink 在 zinc-950 上等于看不见），淡底档也不能用 /15。
+// 浅色主题反过来：「白」的实心/色点要补灰描边（白块在白卡上隐形），
+// soft 档的浅灰文字（zinc-100/300）在白底上不可读，用 light: 例外换成深灰 ——
+// 中性色不走 index.css 的全局重映射（同一档在不同处要的东西相反），例外都收在这三张表里。
 
 /** `--color-ink`。canvas 那张表要字面量，抄两遍不如提一个常量 */
 const INK = '#0a0a0a'
@@ -60,28 +63,30 @@ export const PLAYER_SOLID: Record<PlayerColor, string> = {
   fuchsia: 'bg-fuchsia-400 text-ink',
   pink: 'bg-pink-400 text-ink',
   brown: 'bg-brown-400 text-ink',
-  white: 'bg-zinc-100 text-ink',
+  white: 'bg-zinc-100 text-ink light:ring-2 light:ring-zinc-400',
   gray: 'bg-zinc-400 text-ink',
-  black: 'bg-zinc-950 text-text ring-2 ring-zinc-400',
+  // text-text 在浅色下是深字，近黑底上要换回白字
+  black: 'bg-zinc-950 text-text ring-2 ring-zinc-400 light:text-white',
 }
 
-/** 淡底态：未选中但要带身份色的行/卡 */
+/** 淡底态：未选中但要带身份色的行/卡。eink 收白：灰阶屏上 15% 灰只是装饰，身份由文字/色名承载 */
 export const PLAYER_SOFT: Record<PlayerColor, string> = {
-  red: 'border-red-500/60 bg-red-500/15 text-red-300',
-  orange: 'border-orange-500/60 bg-orange-500/15 text-orange-300',
-  yellow: 'border-yellow-500/60 bg-yellow-500/15 text-yellow-300',
-  lime: 'border-lime-500/60 bg-lime-500/15 text-lime-300',
-  green: 'border-green-500/60 bg-green-500/15 text-green-300',
-  teal: 'border-teal-500/60 bg-teal-500/15 text-teal-300',
-  cyan: 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300',
-  blue: 'border-blue-500/60 bg-blue-500/15 text-blue-300',
-  indigo: 'border-indigo-500/60 bg-indigo-500/15 text-indigo-300',
-  violet: 'border-violet-500/60 bg-violet-500/15 text-violet-300',
-  fuchsia: 'border-fuchsia-500/60 bg-fuchsia-500/15 text-fuchsia-300',
-  pink: 'border-pink-500/60 bg-pink-500/15 text-pink-300',
-  brown: 'border-brown-500/60 bg-brown-500/15 text-brown-300',
-  white: 'border-zinc-300/60 bg-zinc-300/15 text-zinc-100',
-  gray: 'border-zinc-400/60 bg-zinc-400/15 text-zinc-300',
+  red: 'border-red-500/60 bg-red-500/15 text-red-300 eink:bg-white',
+  orange: 'border-orange-500/60 bg-orange-500/15 text-orange-300 eink:bg-white',
+  yellow: 'border-yellow-500/60 bg-yellow-500/15 text-yellow-300 eink:bg-white',
+  lime: 'border-lime-500/60 bg-lime-500/15 text-lime-300 eink:bg-white',
+  green: 'border-green-500/60 bg-green-500/15 text-green-300 eink:bg-white',
+  teal: 'border-teal-500/60 bg-teal-500/15 text-teal-300 eink:bg-white',
+  cyan: 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300 eink:bg-white',
+  blue: 'border-blue-500/60 bg-blue-500/15 text-blue-300 eink:bg-white',
+  indigo: 'border-indigo-500/60 bg-indigo-500/15 text-indigo-300 eink:bg-white',
+  violet: 'border-violet-500/60 bg-violet-500/15 text-violet-300 eink:bg-white',
+  fuchsia: 'border-fuchsia-500/60 bg-fuchsia-500/15 text-fuchsia-300 eink:bg-white',
+  pink: 'border-pink-500/60 bg-pink-500/15 text-pink-300 eink:bg-white',
+  brown: 'border-brown-500/60 bg-brown-500/15 text-brown-300 eink:bg-white',
+  white: 'border-zinc-300/60 bg-zinc-300/15 text-zinc-100 light:border-zinc-400/60 light:text-zinc-600 eink:bg-white',
+  gray: 'border-zinc-400/60 bg-zinc-400/15 text-zinc-300 light:text-zinc-600 eink:bg-white',
+  // 近黑底两个主题下都成立，文字保持亮
   black: 'border-zinc-400/60 bg-zinc-950 text-zinc-200',
 }
 
@@ -128,7 +133,7 @@ export const PLAYER_DOT: Record<PlayerColor, string> = {
   fuchsia: 'bg-fuchsia-400',
   pink: 'bg-pink-400',
   brown: 'bg-brown-400',
-  white: 'bg-zinc-100',
+  white: 'bg-zinc-100 light:ring-1 light:ring-zinc-400',
   gray: 'bg-zinc-400',
   black: 'bg-zinc-950 ring-1 ring-zinc-400',
 }

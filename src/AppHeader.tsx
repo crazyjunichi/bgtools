@@ -26,9 +26,9 @@ export function AppHeader({ tool }: Props) {
     <header
       className={`safe-t safe-x ${
         tool
-          ? 'shrink-0 border-b border-line bg-ink wide:h-full wide:border-r wide:border-b-0'
+          ? 'shrink-0 border-b border-line bg-canvas wide:h-full wide:border-r wide:border-b-0'
           : // 首页是印刷版式：页眉那条规则线要粗且亮，跟区块的细分隔线分出层级
-            'shrink-0 border-b-2 border-text bg-ink'
+            'shrink-0 border-b-2 border-text bg-canvas'
       }`}
     >
       {/* 宽度给内层而不是 header：safe-x 的刘海 padding 才能加在 64px 之外，

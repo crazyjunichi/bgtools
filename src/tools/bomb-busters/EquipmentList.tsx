@@ -28,30 +28,30 @@ type Props = {
  * 可用则是全卡里唯一的实心块，隔着桌子第一眼就该落在它上面。
  */
 const TONE: Record<EquipState, string> = {
-  0: 'border-violet-400/50 bg-violet-500/15',
+  0: 'border-violet-400/50 bg-violet-500/15 eink:border-black eink:bg-white',
   // 光环不能再粗：它是往外长的，加宽会把相邻两张卡挤到几乎贴一起
-  1: 'border-violet-200 bg-violet-600 ring-2 ring-violet-300/60',
+  1: 'border-violet-200 bg-violet-600 ring-2 ring-violet-300/60 light:border-violet-400',
   2: 'border-dashed border-violet-500/25 opacity-40',
 }
 
 const TITLE: Record<EquipState, string> = {
   0: 'text-text',
   1: 'text-white',
-  2: 'text-violet-200 line-through',
+  2: 'text-violet-200 line-through light:text-violet-700',
 }
 
 /** 编号是隔着桌子找牌的锚点，未激活也要看得清，只有已用才划掉 */
 const NUMBER: Record<EquipState, string> = {
-  0: 'text-violet-200',
+  0: 'text-violet-200 light:text-violet-700',
   1: 'text-white',
   2: 'text-violet-300 line-through',
 }
 
 /** 描述在可用态是压在实心 violet-600 上的，只有纯白够对比度，淡紫不行 */
 const DESC: Record<EquipState, string> = {
-  0: 'text-violet-100/80',
+  0: 'text-violet-100/80 light:text-violet-700/80',
   1: 'text-white',
-  2: 'text-violet-200/80',
+  2: 'text-violet-200/80 light:text-violet-700/80',
 }
 
 /** 白实心 / 暗实心 / 空心三种质地，跟颜色无关的那层编码 */
@@ -93,8 +93,8 @@ export function EquipmentList({ hand, onCycle }: Props) {
   const { t } = useTranslation()
 
   return (
-    <section className="flex min-h-0 flex-col gap-2 rounded-3xl border-2 border-violet-500/40 bg-violet-950/40 p-3">
-      <span className="shrink-0 text-sm font-semibold tracking-wide text-violet-200">
+    <section className="flex min-h-0 flex-col gap-2 rounded-3xl border-2 border-violet-500/40 bg-violet-950/40 p-3 light:bg-violet-500/10 eink:bg-white">
+      <span className="shrink-0 text-sm font-semibold tracking-wide text-violet-200 light:text-violet-700">
         {t('tools.bombBusters.equip.title')}
       </span>
       {/* 卡片 flex-1：人数决定张数（2–5），少的时候摊开占满，不留一截空框。

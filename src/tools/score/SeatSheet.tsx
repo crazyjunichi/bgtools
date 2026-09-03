@@ -106,7 +106,7 @@ export function SeatSheet({
     >
       <div className="flex items-stretch gap-3 short:gap-2">
         {/* label 包住数字与标题：点"本轮"两个字也能聚焦，靶面比输入框本身大一圈 */}
-        <label className="flex flex-1 cursor-text flex-col items-center rounded-xl bg-sky-500/15 py-2 short:py-1">
+        <label className="flex flex-1 cursor-text flex-col items-center rounded-xl bg-sky-500/15 py-2 short:py-1 eink:bg-white">
           <span className="section-label text-sky-300">{t('tools.score.thisRound')}</span>
           <input
             value={raw ?? String(delta)}
@@ -122,7 +122,7 @@ export function SeatSheet({
             }}
             inputMode="numeric"
             enterKeyHint="done"
-            className="w-full bg-transparent text-center font-mono text-data font-bold leading-none tabular-nums text-sky-200 caret-sky-300 outline-none"
+            className="w-full bg-transparent text-center font-mono text-data font-bold leading-none tabular-nums text-sky-200 caret-sky-300 outline-none light:text-sky-700"
           />
         </label>
         <div className="flex shrink-0 flex-col items-center justify-center rounded-xl bg-surface-3 px-4 short:px-3">

@@ -74,7 +74,7 @@ export function ScoreRounds({ seats, rounds, draft, box = 'min-h-0 flex-1' }: Pr
 
           <tbody>
             {drafted && (
-              <tr className="border-t border-line bg-sky-500/15">
+              <tr className="border-t border-line bg-sky-500/15 eink:bg-white">
                 <td
                   className={`sticky left-0 bg-surface-3 p-1 text-center text-xs font-semibold text-sky-300 ${LEAD}`}
                 >

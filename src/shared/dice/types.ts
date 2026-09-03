@@ -66,11 +66,11 @@ const GLYPH_INK = '#0a0a0a'
  * 锁定态会整块换成 emerald —— 锁比「这是哪种骰」更需要一眼看见
  */
 export const DIE_CHIP: Record<DieHue, string> = {
-  amber: 'border-amber-500/60 bg-amber-500/15 text-amber-300',
-  sky: 'border-sky-500/60 bg-sky-500/15 text-sky-300',
-  violet: 'border-violet-500/60 bg-violet-500/15 text-violet-300',
-  red: 'border-red-500/60 bg-red-500/15 text-red-300',
-  stone: 'border-stone-400/60 bg-stone-400/15 text-stone-200',
+  amber: 'border-amber-500/60 bg-amber-500/15 text-amber-300 eink:bg-white',
+  sky: 'border-sky-500/60 bg-sky-500/15 text-sky-300 eink:bg-white',
+  violet: 'border-violet-500/60 bg-violet-500/15 text-violet-300 eink:bg-white',
+  red: 'border-red-500/60 bg-red-500/15 text-red-300 eink:bg-white',
+  stone: 'border-stone-400/60 bg-stone-400/15 text-stone-200 light:text-stone-700 eink:bg-white',
 }
 
 /** 骰名。数字骰没有 nameKey，退回 `d6` 这类通行记号 —— 那不是界面中文，不入 i18n */

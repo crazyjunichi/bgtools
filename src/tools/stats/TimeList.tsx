@@ -42,7 +42,7 @@ export function TimeList({ matches, onOpen }: Props) {
         <div key={group.day} className="flex shrink-0 flex-col gap-1.5">
           {/* top-13 = 吸顶 tab 的总高（见 StatsPage 的 StatsNav 注释）；
               横屏下 tab 在左栏、本列表自己滚，日期头吸自己顶（top-0） */}
-          <h3 className="sticky top-13 z-10 bg-ink py-1 text-xs font-semibold text-text-dim wide:top-0">
+          <h3 className="sticky top-13 z-10 bg-canvas py-1 text-xs font-semibold text-text-dim wide:top-0">
             {group.day}
           </h3>
 

@@ -14,13 +14,13 @@ export const ACCENT_SOLID: Record<DealAccent, string> = {
   rose: 'bg-rose-400 text-ink',
 }
 
-/** 淡底档：已加了张数的身份格、揭示卡的边框 */
+/** 淡底档：已加了张数的身份格、揭示卡的边框。eink 收白：灰阶屏上 15% 灰只是装饰 */
 export const ACCENT_SOFT: Record<DealAccent, string> = {
-  amber: 'border-amber-500/60 bg-amber-500/15',
-  emerald: 'border-emerald-500/60 bg-emerald-500/15',
-  sky: 'border-sky-500/60 bg-sky-500/15',
-  violet: 'border-violet-500/60 bg-violet-500/15',
-  rose: 'border-rose-500/60 bg-rose-500/15',
+  amber: 'border-amber-500/60 bg-amber-500/15 eink:bg-white',
+  emerald: 'border-emerald-500/60 bg-emerald-500/15 eink:bg-white',
+  sky: 'border-sky-500/60 bg-sky-500/15 eink:bg-white',
+  violet: 'border-violet-500/60 bg-violet-500/15 eink:bg-white',
+  rose: 'border-rose-500/60 bg-rose-500/15 eink:bg-white',
 }
 
 /** 文字档：淡底上的强调文字 */

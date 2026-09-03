@@ -39,8 +39,8 @@ function StatsNav({
       className={
         vertical
           ? 'flex shrink-0 flex-col gap-1'
-          : // bg-ink 兜住从下面滚过的列表行
-            'sticky top-0 z-10 flex gap-1 bg-ink py-1 wide:hidden'
+          : // bg-canvas 兜住从下面滚过的列表行
+            'sticky top-0 z-10 flex gap-1 bg-canvas py-1 wide:hidden'
       }
     >
       {VIEWS.map((v) => {

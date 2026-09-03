@@ -10,6 +10,8 @@ import LoadError from './pages/LoadError'
 import NotFound from './pages/NotFound'
 import StyleLab from './pages/StyleLab'
 import { reloadOnceForStaleChunk } from './shared/staleChunk'
+// 副作用模块：主题要在 React 树外就生效（监听系统偏好），见 shared/theme/store.ts
+import './shared/theme/store'
 import { tools } from './tools/registry'
 
 /*

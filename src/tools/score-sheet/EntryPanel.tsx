@@ -206,7 +206,7 @@ function Mode({
       <button
         type="button"
         aria-pressed
-        className={`${MODE} border-sky-500/60 bg-sky-500/15 text-sky-200`}
+        className={`${MODE} border-sky-500/60 bg-sky-500/15 text-sky-200 light:text-sky-700`}
       >
         {label}
         <IconSelected className="size-5 shrink-0" aria-hidden />

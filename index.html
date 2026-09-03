@@ -1,7 +1,27 @@
 <!doctype html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
+    <!--
+      首帧前定主题，避免闪烁。与 src/shared/theme/store.ts 的 persist 格式和
+      resolveTheme 逻辑是**两份手写同步**，改任一边要带上另一边。
+      解析失败静默回退深色（无 data-theme 时的 CSS 默认值）。
+    -->
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem('bgtools:theme') || '{}').state || {}
+        var eink = s.eink || 'auto'
+        var theme = s.theme || 'system'
+        if (eink === 'on' || (eink === 'auto' && matchMedia('(update: slow)').matches)) {
+          document.documentElement.dataset.theme = 'eink'
+        } else if (
+          theme === 'light' ||
+          (theme === 'system' && matchMedia('(prefers-color-scheme: light)').matches)
+        ) {
+          document.documentElement.dataset.theme = 'light'
+        }
+      } catch {}
+    </script>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <!-- viewport-fit=cover 让页面铺满刘海屏，配合 safe-area-inset-* 避让 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />

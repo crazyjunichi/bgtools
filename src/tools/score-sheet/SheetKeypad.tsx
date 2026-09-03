@@ -116,7 +116,7 @@ export function SheetKeypad({
         <div className="flex items-baseline justify-center gap-2">
           <span
             className={`font-mono text-data-sm font-bold leading-none tabular-nums ${
-              active ? 'text-violet-200' : 'text-text-dim'
+              active ? 'text-violet-200 light:text-violet-700' : 'text-text-dim'
             }`}
           >
             {shown}
@@ -231,7 +231,7 @@ function Key({
       aria-label={label}
       className={`btn-base min-h-14 gap-2 border disabled:opacity-40 short:!min-h-11 ${
         span ? 'col-span-2' : ''
-      } ${accent ? 'border-violet-500/60 bg-violet-500/15 text-violet-200' : 'border-line bg-surface-2'}`}
+      } ${accent ? 'border-violet-500/60 bg-violet-500/15 text-violet-200 light:text-violet-700' : 'border-line bg-surface-2'}`}
     >
       {children}
     </button>

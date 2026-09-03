@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IconCheck, IconClose, IconCopy, IconNext, IconOrder, IconPrev, IconSave, IconShare } from '../icons'
+import { IconCheck, IconClose, IconCopy, IconOrder, IconSave, IconShare } from '../icons'
 import type { MatchExport } from './detail'
+import { durationText } from './format'
+import { gameLabel } from './label'
 import { boardFromMatch } from './share/board'
 import { renderRank } from './share/rank'
 import { canShareBlob, saveBlob, shareBlob, stampName } from './share/save'
@@ -64,14 +66,19 @@ export function MatchShare({ match, exports, onClose }: Props) {
 
   const forms = useMemo(() => [...(exports ?? []), RANK], [exports])
   /*
+   * 形态选择只收**能预览的**（png）：它回答「这局摆成什么样给人看」。
+   * CSV 这类文件形态回答的是「拿什么格式拿走」，归到操作区做直接下载按钮，
+   * 不进预览也不占选择的位子
+   */
+  const visualForms = useMemo(() => forms.filter((f) => f.ext === 'png'), [forms])
+  const fileForms = useMemo(() => forms.filter((f) => f.ext !== 'png'), [forms])
+  /*
    * 都过一遍兜底而不是直接拿 store 里的值比：persist 下来的 id 可能失效
    * （换了工具、改过名的旧值），渲染那边兜回首项，这里不跟着兜就会出现
    * 「按钮一个都没亮，图却已经是第一种」
    */
-  const form = forms.find((f) => f.id === formId) ?? forms[0]
-  const si = SHARE_SKINS.indexOf(findSkin(skin))
-  // 外观数量以后还会加，所以循环切而不是到头禁用 —— 两个箭头永远都能按
-  const stepSkin = (d: number) => setSkin(SHARE_SKINS[(si + d + SHARE_SKINS.length) % SHARE_SKINS.length].id)
+  const form = visualForms.find((f) => f.id === formId) ?? visualForms[0]
+  const currentSkin = findSkin(skin).id
 
   /**
    * 画好的东西，**成功与失败同一个 state**：出错要把上一张撤下来，两者互斥。
@@ -92,8 +99,7 @@ export function MatchShare({ match, exports, onClose }: Props) {
    */
   useEffect(() => {
     let alive = true
-    // 外观只影响画出来的图，CSV 这类形态不该因为切了外观就换个文件名
-    const parts = form.ext === 'png' ? [form.id, skin] : [form.id]
+    const parts = [form.id, skin]
     form
       .build(match, findSkin(skin).palette, t)
       .then((blob) => {
@@ -146,166 +152,206 @@ export function MatchShare({ match, exports, onClose }: Props) {
     })
   }
 
-  return (
-    <div className="safe-b safe-t fixed inset-0 z-30 flex flex-col gap-2 bg-ink/95 p-3 backdrop-blur-sm">
-      <div className="flex shrink-0 items-center justify-between gap-3">
-        <span className="section-label">{t('match.share.title')}</span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={t('common.close')}
-          className="btn-quiet !min-h-12 w-12 shrink-0 short:!min-h-11 short:w-11"
-        >
-          <IconClose className="size-5" aria-hidden />
-        </button>
-      </div>
+  /*
+   * 文件形态（CSV 等）点了直接存，不进预览、也不动正在看的那张图。
+   * build 失败只 warn：反解不出的是旧版本写下的局面，预览那条主路径不受影响
+   */
+  const onSaveFile = (f: MatchExport) => {
+    void f
+      .build(match, findSkin(skin).palette, t)
+      .then((blob) => saveBlob(blob, stampName(match.toolId, match.endAt, f.ext, f.id)))
+      .catch((e) => console.warn('[share] file export failed', e))
+  }
 
-      <div className="flex shrink-0 flex-col gap-2 wide:flex-row wide:items-center">
-        {/*
-          外观：只换配色，候选少而且以后还会加，用箭头翻不占版面。
-          容器底色压到 surface —— 箭头是 btn-quiet（surface-2），同底色会让它俩糊成一片
-        */}
-        <div
-          role="group"
-          aria-label={t('match.share.skin')}
-          className="flex items-center gap-1 rounded-xl border border-line bg-surface px-1 wide:w-56 wide:shrink-0"
-        >
-          <button
-            type="button"
-            onClick={() => stepSkin(-1)}
-            aria-label={t('match.share.prevSkin')}
-            className="btn-quiet !min-h-12 w-12 shrink-0 short:!min-h-11 short:w-11"
-          >
-            <IconPrev className="size-5" aria-hidden />
-          </button>
-          <span className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
-            <span className="truncate text-sm text-text">{t(SHARE_SKINS[si].nameKey)}</span>
-            {/* 有几种、现在是第几种：只给一个名字看不出还能不能再按 */}
-            <span className="shrink-0 font-mono text-xs tabular-nums text-text-dim">
-              {si + 1}/{SHARE_SKINS.length}
+  const { name: gameName } = gameLabel(t, match.gameId)
+
+  return (
+    <div className="safe-b safe-t fixed inset-0 z-30 flex flex-col gap-3 bg-ink/95 p-3 backdrop-blur-sm wide:flex-row">
+      {/* 左/上区：头部 + 预览。预览是全页唯一的弹性块，控制区全刚性 */}
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <header className="flex shrink-0 items-center gap-3 pt-2">
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="text-lg font-bold">{t('match.share.title')}</span>
+            {/* 让人确认「这是哪一局」：图会脱离应用流传，面板自己得带上下文 */}
+            <span className="truncate text-sm text-text-muted">
+              {gameName} · {durationText(t, Math.max(0, match.endAt - match.startedAt))}
             </span>
           </span>
           <button
             type="button"
-            onClick={() => stepSkin(1)}
-            aria-label={t('match.share.nextSkin')}
+            onClick={onClose}
+            aria-label={t('common.close')}
             className="btn-quiet !min-h-12 w-12 shrink-0 short:!min-h-11 short:w-11"
           >
-            <IconNext className="size-5" aria-hidden />
+            <IconClose className="size-5" aria-hidden />
           </button>
-        </div>
+        </header>
 
-        {/*
-          形态：换的是导出什么，属于并列的几种选择，只能单选平铺。
-          用 flex-wrap 而不是固定列数 —— 各工具注册的形态个数不一样，
-          写死列数会在只有两种时留一半空白
-        */}
-        <div
-          role="group"
-          aria-label={t('match.share.form')}
-          className="flex flex-wrap gap-2 wide:min-w-0 wide:flex-1"
-        >
-          {forms.map((f) => {
-            const on = f.id === form.id
-            const Icon = f.icon
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          {/* 点图外空白关闭：一张全屏图上最自然的退出动作就是点旁边 */}
+          <div
+            className="flex min-h-0 flex-1 items-center justify-center"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) onClose()
+            }}
+          >
+            {failed ? (
+              <span className="max-w-sm text-center text-sm leading-relaxed text-amber-300">
+                {t('match.share.failed')}
+              </span>
+            ) : done === null ? (
+              <span className="text-sm text-text-dim">{t('match.share.rendering')}</span>
+            ) : (
+              /*
+               * **必须 select-text**：`body` 上有 `user-select: none`，
+               * iOS 会连带把长按图片的系统菜单一起抑制掉 —— 而那正是这一层的主路径
+               */
+              <img
+                src={done.url}
+                alt={t('match.share.title')}
+                className="max-h-full max-w-full select-text rounded-lg object-contain ring-1 ring-line"
+              />
+            )}
+          </div>
+          {/* 说的是图，就贴着图 */}
+          {!failed && (
+            <span className="shrink-0 text-center text-xs text-text-dim">
+              {t('match.share.hint')}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* 右/下区：控制与操作，竖屏贴底、横屏成右栏 */}
+      <div className="flex shrink-0 flex-col gap-2 wide:w-80 wide:justify-center">
+        {/* 只有一种形态时整行不渲染：没注册明细导出的工具只剩战绩榜，单段控件是纯噪音 */}
+        {visualForms.length > 1 && (
+          <div
+            role="group"
+            aria-label={t('match.share.form')}
+            className="flex gap-1 rounded-xl bg-surface-2 p-1"
+          >
+            {visualForms.map((f) => {
+              const on = f.id === form.id
+              const Icon = f.icon
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => setForm(f.id)}
+                  className={`btn-base !min-h-12 min-w-0 flex-1 gap-1.5 !rounded-lg px-2 text-sm short:!min-h-11 ${
+                    on ? 'bg-sky-400 font-bold text-ink' : 'text-text-muted'
+                  }`}
+                >
+                  {/* 选中态是实心块对纯文字，形态差已够强 —— 不再叠勾，把宽度让给名字 */}
+                  <Icon className="size-5 shrink-0 short:size-4" aria-hidden />
+                  <span className="truncate">{t(f.nameKey)}</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {/* 外观直选：缩略块直接画出那档配色的长相，不再箭头盲翻 */}
+        <div role="group" aria-label={t('match.share.skin')} className="flex gap-2">
+          {SHARE_SKINS.map((s) => {
+            const on = s.id === currentSkin
             return (
               <button
-                key={f.id}
+                key={s.id}
                 type="button"
                 aria-pressed={on}
-                onClick={() => setForm(f.id)}
-                className={`btn-base min-w-0 flex-1 basis-28 gap-1.5 px-2 text-sm short:!min-h-11 ${
-                  on ? 'bg-sky-400 font-bold text-ink' : 'border border-line bg-surface-2 text-text'
+                onClick={() => setSkin(s.id)}
+                className={`btn-base !min-h-0 min-w-0 flex-1 flex-col gap-1.5 border px-2 py-2 ${
+                  on ? 'border-sky-500/60 bg-sky-500/15' : 'border-line bg-surface-2'
                 }`}
               >
-                {/* 选中态不只靠颜色：桌上斜视时实心底与淡底的差别不够稳 */}
-                <Icon className="size-5 shrink-0 short:size-4" aria-hidden />
-                <span className="truncate">{t(f.nameKey)}</span>
-                {on && <IconCheck className="size-5 shrink-0 short:size-4" aria-hidden />}
+                <span
+                  aria-hidden
+                  className="flex h-10 w-full flex-col justify-center gap-1 rounded-md px-2"
+                  style={{ background: s.palette.bg }}
+                >
+                  <span
+                    className="h-1 w-2/5 rounded-full"
+                    style={{ background: s.palette.text }}
+                  />
+                  <span
+                    className="h-0.5 w-3/5 rounded-full"
+                    style={{ background: s.palette.muted }}
+                  />
+                  <span className="h-px w-full" style={{ background: s.palette.rule }} />
+                </span>
+                <span className="flex items-center gap-1 text-xs">
+                  {on && <IconCheck className="size-3.5 shrink-0" aria-hidden />}
+                  {t(s.nameKey)}
+                </span>
               </button>
             )
           })}
         </div>
-      </div>
 
-      {/* 预览周围的留白也能点关：一张全屏图上最自然的退出动作就是点旁边 */}
-      <div
-        className="flex min-h-0 flex-1 items-center justify-center"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose()
-        }}
-      >
-        {failed ? (
-          <span className="max-w-sm text-center text-sm leading-relaxed text-amber-300">
-            {t('match.share.failed')}
-          </span>
-        ) : done === null ? (
-          <span className="text-sm text-text-dim">{t('match.share.rendering')}</span>
-        ) : form.ext === 'png' ? (
-          /*
-           * **必须 select-text**：`body` 上有 `user-select: none`，
-           * iOS 会连带把长按图片的系统菜单一起抑制掉 —— 而那正是这一层的主路径
-           */
-          <img
-            src={done.url}
-            alt={t('match.share.title')}
-            className="max-h-full max-w-full select-text object-contain"
-          />
-        ) : (
-          /* 表格类形态没法看图，给一块「已经生成好了、按下面的按钮拿走」的占位 */
-          <div className="flex flex-col items-center gap-2 rounded-xl border border-line bg-surface px-6 py-5">
-            <form.icon className="size-10 text-text-muted" aria-hidden />
-            <span className="max-w-64 break-all text-center font-mono text-xs text-text-muted">
-              {done.filename}
-            </span>
-            <span className="text-sm text-text-dim">{t('match.share.noPreview')}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="flex shrink-0 flex-col items-center gap-2">
-        {form.ext === 'png' && (
-          <span className="text-xs leading-relaxed text-text-dim">{t('match.share.hint')}</span>
-        )}
-        <div className="flex w-full max-w-md gap-2">
-          <button
-            type="button"
-            disabled={done === null}
-            onClick={() => {
-              if (done) saveBlob(done.blob, done.filename)
-            }}
-            className="btn-base min-w-0 flex-1 gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
-          >
-            <IconSave className="size-6 shrink-0 short:size-5" aria-hidden />
-            <span className="truncate">{t('match.share.save')}</span>
-          </button>
-          {/* 只有真能分享文件时才出这个按钮：桌面 Chrome 有 share 却不收文件，点了必然失败 */}
-          {shareable && done && (
+        {/*
+          一主两次：主按钮是能直接把图发出去的那个动作。系统分享不可用的设备
+          （桌面浏览器多半不收文件）上「保存」升主。复制文本不依赖画出来的图，画失败也能按
+        */}
+        <div className="flex gap-2">
+          {shareable && done ? (
+            <>
+              <button
+                type="button"
+                onClick={() => void shareBlob(done.blob, done.filename, t('match.share.title'))}
+                className="btn-base min-w-0 flex-1 gap-2 bg-sky-400 text-base font-bold text-ink short:!min-h-11"
+              >
+                <IconShare className="size-6 shrink-0 short:size-5" aria-hidden />
+                <span className="truncate">{t('match.share.shareBtn')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => saveBlob(done.blob, done.filename)}
+                aria-label={t('match.share.save')}
+                className="btn-quiet w-14 shrink-0 short:!min-h-11 short:w-11"
+              >
+                <IconSave className="size-6 short:size-5" aria-hidden />
+              </button>
+            </>
+          ) : (
             <button
               type="button"
-              onClick={() => void shareBlob(done.blob, done.filename, t('match.share.title'))}
-              className="btn-base min-w-0 flex-1 gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
+              disabled={done === null}
+              onClick={() => {
+                if (done) saveBlob(done.blob, done.filename)
+              }}
+              className="btn-base min-w-0 flex-1 gap-2 bg-sky-400 text-base font-bold text-ink short:!min-h-11"
             >
-              <IconShare className="size-6 shrink-0 short:size-5" aria-hidden />
-              <span className="truncate">{t('match.share.shareBtn')}</span>
+              <IconSave className="size-6 shrink-0 short:size-5" aria-hidden />
+              <span className="truncate">{t('match.share.save')}</span>
             </button>
           )}
-          {/*
-            文本摘要与图并列而不是它的降级：很多群只看得到文字预览。
-            这条路径不依赖上面画出来的东西，所以画失败了它照样能按
-          */}
+          {/* 文件形态（CSV 等）：不是「摆成什么样」，点了直接存 */}
+          {fileForms.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              aria-label={t(f.nameKey)}
+              onClick={() => onSaveFile(f)}
+              className="btn-quiet w-14 shrink-0 short:!min-h-11 short:w-11"
+            >
+              <f.icon className="size-6 short:size-5" aria-hidden />
+            </button>
+          ))}
           {canCopyText() && (
             <button
               type="button"
               onClick={onCopy}
-              className="btn-base min-w-0 flex-1 gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
+              aria-label={t(copied ? 'match.share.copied' : 'match.share.copyText')}
+              className="btn-quiet w-14 shrink-0 short:!min-h-11 short:w-11"
             >
               {copied ? (
-                <IconCheck className="size-6 shrink-0 text-emerald-300 short:size-5" aria-hidden />
+                <IconCheck className="size-6 text-emerald-300 short:size-5" aria-hidden />
               ) : (
-                <IconCopy className="size-6 shrink-0 short:size-5" aria-hidden />
+                <IconCopy className="size-6 short:size-5" aria-hidden />
               )}
-              <span className="truncate">{t(copied ? 'match.share.copied' : 'match.share.copyText')}</span>
             </button>
           )}
         </div>

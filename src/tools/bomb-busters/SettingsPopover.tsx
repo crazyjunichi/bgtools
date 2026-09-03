@@ -112,8 +112,8 @@ export function SettingsPopover({ players, started, onSetPlayers }: Props) {
             </div>
 
             {pending !== null && (
-              <div className="flex flex-col gap-2 rounded-xl border border-rose-500 bg-rose-500/15 p-3">
-                <span className="text-sm leading-relaxed text-rose-200">
+              <div className="flex flex-col gap-2 rounded-xl border border-rose-500 bg-rose-500/15 p-3 eink:bg-white">
+                <span className="text-sm leading-relaxed text-rose-200 light:text-rose-700">
                   {t('tools.bombBusters.settings.warn', { n: pending })}
                 </span>
                 <div className="flex gap-2">

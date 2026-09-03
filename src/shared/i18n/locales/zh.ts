@@ -253,16 +253,12 @@ export const zh = {
       copied: '已复制',
       /** 换形态时新图还没画完那一小会儿 */
       rendering: '正在生成…',
-      /** 表格类形态没图可看，占位块里说明「已经好了，按下面的按钮拿走」 */
-      noPreview: '这种形式不预览，直接保存或分享',
       /** payload 反解不出来（别的版本记下的局面）时的一句人话，不出堆栈 */
       failed: '这一局出不了这种形式，可能是旧版本记下的。换一种试试，战绩榜总是出得来。',
       /** 画在图片页脚：图会脱离应用流传，得留一句它是什么出的 */
       brand: 'BGTools',
       /** 外观：只换配色，不影响画哪些数 */
       skin: '外观',
-      prevSkin: '上一种外观',
-      nextSkin: '下一种外观',
       /** 形态：决定导出什么、怎么摆 */
       form: '内容',
       skins: {
@@ -271,7 +267,7 @@ export const zh = {
       },
       /** 各工具自己的形态在它们的 key 下，这里只有跨工具通用的两种 */
       forms: {
-        rank: '战绩榜',
+        rank: '仅排名',
         csv: 'CSV',
       },
     },
@@ -357,6 +353,14 @@ export const zh = {
       name: '设置',
       desc: '界面语言',
       language: '语言',
+      theme: '主题',
+      themeSystem: '跟随系统',
+      themeLight: '浅色',
+      themeDark: '深色',
+      eink: '墨水屏',
+      einkAuto: '自动',
+      einkOn: '开',
+      einkOff: '关',
     },
   },
 
@@ -726,9 +730,8 @@ export const zh = {
         /** 画在图片页脚：图会脱离应用流传，得留一句它是什么出的 */
         brand: 'BGTools 计分纸',
         forms: {
-          /** 用「×」而不是「乘」：它读作「谁当行、谁当列」，两个词都得出现才分得清转置 */
-          matrix: '条目×人',
-          transposed: '人×条目',
+          matrix: '标准',
+          transposed: '转置',
         },
       },
       /** 行首浮层（[EntryPanel](../../../tools/score-sheet/EntryPanel.tsx)）：换算表 + 输入方式 */

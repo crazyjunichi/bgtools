@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
+import { isEink } from '../../theme/store'
 import { createDie, type DieRender } from './Die3D'
 
 /** 相邻骰子中心距：外接球直径 2 + 间隙 */
@@ -216,8 +217,9 @@ export function DiceCanvas({ dice, onPick, className }: Props) {
         axis: randomAxis(),
         sweep: randomSweep(),
         pose: die.poses.get(item.face) ?? new THREE.Quaternion(),
-        // 不该转的直接把起转时刻推到过去，第一帧就落在姿态上
-        start: rolled ? now + staggered++ * STAGGER_MS : now - SPIN_MS,
+        // 不该转的直接把起转时刻推到过去，第一帧就落在姿态上。
+        // 墨水屏（eink 档）一切滚动动画都是残影，全部按"不该转"处理
+        start: rolled && !isEink() ? now + staggered++ * STAGGER_MS : now - SPIN_MS,
         x: 0,
         y: 0,
       }

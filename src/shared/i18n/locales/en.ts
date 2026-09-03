@@ -215,19 +215,16 @@ export const en: Resources = {
       copyText: 'Copy text',
       copied: 'Copied',
       rendering: 'Rendering…',
-      noPreview: 'No preview — save or share it directly',
       failed: 'This game cannot be exported that way, probably saved by an older version. Try another form — standings always works.',
       brand: 'BGTools',
       skin: 'Look',
-      prevSkin: 'Previous look',
-      nextSkin: 'Next look',
       form: 'Content',
       skins: {
         print: 'Print',
         dark: 'Dark',
       },
       forms: {
-        rank: 'Ranking',
+        rank: 'Ranks only',
         csv: 'CSV',
       },
     },
@@ -306,6 +303,14 @@ export const en: Resources = {
       name: 'Settings',
       desc: 'Interface language',
       language: 'Language',
+      theme: 'Theme',
+      themeSystem: 'System',
+      themeLight: 'Light',
+      themeDark: 'Dark',
+      eink: 'E-ink',
+      einkAuto: 'Auto',
+      einkOn: 'On',
+      einkOff: 'Off',
     },
   },
 
@@ -621,8 +626,8 @@ export const en: Resources = {
       image: {
         brand: 'BGTools Score Pad',
         forms: {
-          matrix: 'Items × Players',
-          transposed: 'Players × Items',
+          matrix: 'Standard',
+          transposed: 'Transposed',
         },
       },
       entry: {

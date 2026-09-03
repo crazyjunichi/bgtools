@@ -113,7 +113,7 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
                 }}
                 // 选中态除了 sky 底色还带一个箭头：颜色不许是唯一编码
                 className={`btn-base shrink-0 justify-between gap-3 border px-3 text-base short:!min-h-11 ${
-                  on ? 'border-sky-500/60 bg-sky-500/15 text-sky-200' : 'border-line bg-surface-2'
+                  on ? 'border-sky-500/60 bg-sky-500/15 text-sky-200 light:text-sky-700' : 'border-line bg-surface-2'
                 }`}
               >
                 <span className="flex min-w-0 items-center gap-3">

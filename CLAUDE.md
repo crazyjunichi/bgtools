@@ -130,7 +130,7 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 - 多态控件**不许只靠颜色区分**，至少再加一种编码（角标/删除线/文案）
 - 需要长时间盯屏的工具必须调 [useWakeLock](src/shared/hooks/useWakeLock.ts)
 - 贴边布局用 `safe-t` / `safe-b` / `safe-x` utility 避让刘海
-- 深色单一主题，不做主题切换
+- 主题三态（深色默认 / 浅色 / 墨水屏），机制与档位约定见 [docs/DESIGN.md](docs/DESIGN.md) §2「主题」：**浅色靠 [index.css](src/index.css) 的变量重映射，业务组件不写浅色平行样式**；只有中性色与 `-50/-100/-200` 低档位文字允许 `light:` 类名级例外。导出图与主题无关，不做主题感知
 
 ## 文案与 i18n
 
@@ -147,7 +147,7 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 ## 样式约束
 
 - **禁止动态拼接 Tailwind 类名**（`` `bg-${color}-500` `` 编译期扫不到）。按 [Home.tsx](src/pages/Home.tsx) 的写法用显式 `Record` 映射表
-- 自定义色只用 `@theme` 里的 `ink` / `surface` / `surface-2` / `surface-3` / `line` / `text` / `text-muted` / `text-dim`，其余用 Tailwind 内置色板
+- 自定义色只用 `@theme` 里的 `ink` / `canvas` / `surface` / `surface-2` / `surface-3` / `line` / `text` / `text-muted` / `text-dim`，其余用 Tailwind 内置色板。**`ink` 是常量近黑**（亮块上的深字、遮罩），页面/容器底色一律用随主题翻转的 `canvas`，别再拿 `bg-ink` 当页面底
 - **`text-dim` 是最暗档，不许再往下**（`slate-500` 及更暗在桌上等于看不见）
 - 语义色档位：文字用 `-300`，实心底用 `-400 + text-ink`，淡底用 `-500/15 + border-<c>-500/60`；危险实心用 `bg-rose-600 text-white font-bold`（**不要 `rose-500` + 白字**，只有 3.75:1）
 - 语义色分工：`rose` 只给破坏性/危险，`emerald` 完成，`sky` 信息与中性选中，`amber` 警告。**不设全局主色**，主操作色取各工具 `meta.accent`；若与语义撞车让 accent 让位（见炸弹克星人数选择器用 `sky`）

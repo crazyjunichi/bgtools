@@ -170,7 +170,7 @@ export function MatchFinish({ draft, exports, onDone, onClose }: Props) {
               onClick={() => setGameId(null)}
               aria-pressed={gameId === null}
               className={`btn-base min-w-24 flex-1 border px-3 text-base short:!min-h-11 ${
-                gameId === null ? 'border-sky-500/60 bg-sky-500/15 text-sky-200' : ROW_OFF
+                gameId === null ? 'border-sky-500/60 bg-sky-500/15 text-sky-200 light:text-sky-700' : ROW_OFF
               }`}
             >
               {t('match.gameNone')}
@@ -182,7 +182,7 @@ export function MatchFinish({ draft, exports, onDone, onClose }: Props) {
                 onClick={() => setGameId(g.id)}
                 aria-pressed={gameId === g.id}
                 className={`btn-base min-w-32 flex-1 gap-2 border px-3 text-base short:!min-h-11 ${
-                  gameId === g.id ? 'border-sky-500/60 bg-sky-500/15 text-sky-200' : ROW_OFF
+                  gameId === g.id ? 'border-sky-500/60 bg-sky-500/15 text-sky-200 light:text-sky-700' : ROW_OFF
                 }`}
               >
                 <span aria-hidden>{g.icon}</span>
@@ -296,7 +296,7 @@ export function MatchFinish({ draft, exports, onDone, onClose }: Props) {
                         aria-label={`${p.name} · ${t(team.nameKey)}`}
                         className={`btn-base min-w-24 flex-1 gap-2 border px-3 text-sm short:!min-h-11 ${
                           p.teamId === team.id
-                            ? 'border-sky-500/60 bg-sky-500/15 text-sky-200'
+                            ? 'border-sky-500/60 bg-sky-500/15 text-sky-200 light:text-sky-700'
                             : ROW_OFF
                         }`}
                       >

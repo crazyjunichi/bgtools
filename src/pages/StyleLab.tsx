@@ -127,7 +127,7 @@ function SolidCard({ row }: { row: Row }) {
     <div
       className={`flex min-h-[4.5rem] items-center gap-3 rounded-2xl p-3 ${SOLID[row.accent]} transition-transform duration-75 active:scale-95`}
     >
-      <Slot row={row} className="rounded-xl bg-ink/15" />
+      <Slot row={row} className="rounded-xl bg-canvas/15" />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-base font-bold">{row.name}</span>
         {/* opacity 而不是具体文字色：neutral 卡是白字，写死 ink/70 会失效 */}
@@ -428,7 +428,7 @@ function PrintSkin() {
         <IconSettings className="size-6 text-text-muted" aria-hidden />
         <IconFullscreen className="size-5 text-text-muted" aria-hidden />
       </div>
-      {section(t('home.quick'), quick, 'bg-surface-2', 'bg-ink/40')}
+      {section(t('home.quick'), quick, 'bg-surface-2', 'bg-canvas/40')}
       {section(t('home.general'), general, 'bg-surface', 'bg-surface-2')}
       {section(t('home.game'), game, '', 'bg-surface')}
     </div>
@@ -450,7 +450,7 @@ export default function StyleLab() {
   return (
     <div className="h-full overflow-y-auto">
       <div className="mx-auto flex max-w-5xl flex-col gap-4">
-        <div className="sticky top-0 z-10 -mx-4 flex gap-2 overflow-x-auto bg-ink/95 px-4 py-2 backdrop-blur">
+        <div className="sticky top-0 z-10 -mx-4 flex gap-2 overflow-x-auto bg-canvas/95 px-4 py-2 backdrop-blur">
           {SKINS.map((skin) => (
             <button
               key={skin.id}

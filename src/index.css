@@ -16,8 +16,18 @@
  */
 @custom-variant short (@media (max-height: 480px));
 
+/* 主题例外写法：墨水屏是浅色族的一员（eink = light + 变量级收口），所以 `light:`
+   **同时命中 light 与 eink** —— 类名级例外只写一遍。`eink:` 留给只有墨水屏要的情况。
+   主题的主干是下面两块的变量重映射，这两个变体只给重映射盖不住的个别例外用 */
+@custom-variant light (
+  &:where([data-theme='light'] *, [data-theme='light'], [data-theme='eink'] *, [data-theme='eink'])
+);
+@custom-variant eink (&:where([data-theme='eink'] *, [data-theme='eink']));
+
 /*
- * 深色单一主题。运行场景是平板平放桌面、多人从不同角度斜视，所有取值的下限是
+ * 深色是默认主题（无 data-theme 属性时下面 @theme 的值直接生效）；
+ * 浅色 / 墨水屏是 @theme 之后的变量重映射块，业务组件不写平行样式。
+ * 运行场景是平板平放桌面、多人从不同角度斜视，所有取值的下限是
  * "倾斜看仍能分辨"，而非仅满足 WCAG AA。
  *
  * 深底配色规范（档位取值与对比度实测见 docs/DESIGN.md §2，改色前先看那张表）：
@@ -29,8 +39,12 @@
  * 工具身份色由各自 meta.accent 决定，不设全局主色。
  */
 @theme {
-  /* 表面阶梯：相邻两级都要拉开到"斜视时卡片边界不糊在一起" */
+  /* ink 是**常量近黑**：页面底色与「亮块上的深字」曾经是同一个 token，
+     浅色主题把这两个角色拆开 —— 底色走 canvas（随主题翻转），text-ink 保持深字 */
   --color-ink: #0a0a0a;
+  /* 页面/大容器底色：sticky 头、AppHeader 这类「兜住滚动内容」的底都用它 */
+  --color-canvas: #0a0a0a;
+  /* 表面阶梯：相邻两级都要拉开到"斜视时卡片边界不糊在一起" */
   --color-surface: #17181a;
   --color-surface-2: #262829;
   --color-surface-3: #343739;
@@ -65,6 +79,122 @@
   --text-data-sm: clamp(1.5rem, 4.5vmin, 3rem);
 }
 
+/*
+ * 浅色主题。**主走变量重映射，业务组件不改**：深底语法里写死的档位（-300 文字 /
+ * -400 实心 / -500/15 淡底）保持类名不动，只让变量在白底下解析到不同的值。
+ * - `-300` 文字档 → 各色相 `-700`：白底上 300 只剩 1.5:1，700 才够读
+ * - `-400` 实心 / `-500` 淡底与描边不动：亮块+深字、浅色相 wash 在白底下天然成立
+ * - 中性色（zinc）**不参与全局重映射**：同一档在不同处要的东西相反（黑玩家的软标签底
+ *   仍是近黑，上面的文字必须保持亮），一律走 colors.ts 里的 `light:` 类名级例外
+ * 取值与对比度实测见 docs/DESIGN.md §2。
+ */
+:root[data-theme='light'] {
+  --color-canvas: #ffffff;
+  --color-surface: #f4f4f5;
+  --color-surface-2: #e4e4e7;
+  --color-surface-3: #d4d4d8;
+  --color-line: #a0a4ab;
+
+  --color-text: #17181a;
+  --color-text-muted: #4c5157;
+  --color-text-dim: #6d7278;
+
+  --color-red-300: var(--color-red-700);
+  --color-orange-300: var(--color-orange-700);
+  --color-yellow-300: var(--color-yellow-700);
+  --color-lime-300: var(--color-lime-700);
+  --color-green-300: var(--color-green-700);
+  --color-teal-300: var(--color-teal-700);
+  --color-cyan-300: var(--color-cyan-700);
+  --color-blue-300: var(--color-blue-700);
+  --color-indigo-300: var(--color-indigo-700);
+  --color-violet-300: var(--color-violet-700);
+  --color-fuchsia-300: var(--color-fuchsia-700);
+  --color-pink-300: var(--color-pink-700);
+  --color-emerald-300: var(--color-emerald-700);
+  --color-sky-300: var(--color-sky-700);
+  --color-amber-300: var(--color-amber-700);
+  --color-rose-300: var(--color-rose-700);
+  --color-brown-300: #7a5636;
+}
+
+/*
+ * 墨水屏档：在浅色值上收口成纯黑白。灰阶设备的彩色文字会渲染成中间灰（不可读），
+ * 所以文字档全部归零黑、描边纯黑、表面阶梯压平成白；状态区分靠项目既有的
+ * 非颜色第二编码（角标/删除线/文案，见 DESIGN.md §6）。
+ * `-500` 也归零黑：淡底态变成浅灰 wash、描边变黑，整片彩色面板（如装备卡区）
+ * 在灰阶屏上收敛成「白卡黑边」。
+ * -400 实心块保留色相：彩色墨水屏能用，灰阶上是中灰块+黑字，仍然可读。
+ * 危险实心 rose-600 → 纯黑：白字压在灰化后的红上对比度不够。
+ */
+:root[data-theme='eink'] {
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #ffffff;
+  --color-surface-3: #ffffff;
+  --color-line: #000000;
+
+  --color-text: #000000;
+  --color-text-muted: #000000;
+  --color-text-dim: #000000;
+
+  --color-red-300: #000000;
+  --color-orange-300: #000000;
+  --color-yellow-300: #000000;
+  --color-lime-300: #000000;
+  --color-green-300: #000000;
+  --color-teal-300: #000000;
+  --color-cyan-300: #000000;
+  --color-blue-300: #000000;
+  --color-indigo-300: #000000;
+  --color-violet-300: #000000;
+  --color-fuchsia-300: #000000;
+  --color-pink-300: #000000;
+  --color-emerald-300: #000000;
+  --color-sky-300: #000000;
+  --color-amber-300: #000000;
+  --color-rose-300: #000000;
+  --color-brown-300: #000000;
+
+  --color-red-500: #000000;
+  --color-orange-500: #000000;
+  --color-yellow-500: #000000;
+  --color-lime-500: #000000;
+  --color-green-500: #000000;
+  --color-teal-500: #000000;
+  --color-cyan-500: #000000;
+  --color-blue-500: #000000;
+  --color-indigo-500: #000000;
+  --color-violet-500: #000000;
+  --color-fuchsia-500: #000000;
+  --color-pink-500: #000000;
+  --color-emerald-500: #000000;
+  --color-sky-500: #000000;
+  --color-amber-500: #000000;
+  --color-rose-500: #000000;
+  --color-brown-500: #000000;
+
+  --color-rose-600: #000000;
+}
+
+/* 慢刷新屏上一切动效都是残影：动画/过渡/毛玻璃全关 */
+[data-theme='eink'] *,
+[data-theme='eink'] *::before,
+[data-theme='eink'] *::after {
+  animation: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+}
+
+/*
+ * 淡底在墨水屏**不做全局收白**：试过一个 `[class*='-500/']` 的中央规则，
+ * 但它匹配的是整个 class 字符串 —— WireGrid 半拆格只因为带了 border-sky-500/70
+ * 就被压成白底（白字当场隐形）。「这个 tint 是不是装饰」只有调用点知道，
+ * 所以收白用 per-spot 的 eink:bg-white，集中在 colors.ts / dice/types.ts 这类
+ * 映射表里。选中态小色块的 15% 灰**保留**：eink 下选中/未选中边框同为黑色，
+ * 那层灰是唯一的底色区分。
+ */
+
 @layer base {
   /*
    * 高度锁在 html/body 上，而不是只靠内层的 dvh。
@@ -82,15 +212,20 @@
   }
 
   html {
-    background-color: var(--color-ink);
+    background-color: var(--color-canvas);
     color-scheme: dark;
     /* 消除移动端 300ms 点击延迟，同时保留手势缩放 */
     touch-action: manipulation;
     -webkit-text-size-adjust: 100%;
   }
 
+  html[data-theme='light'],
+  html[data-theme='eink'] {
+    color-scheme: light;
+  }
+
   body {
-    @apply bg-ink text-text font-sans antialiased;
+    @apply bg-canvas text-text font-sans antialiased;
     /* 工具型界面，误选文本比选中文本更常见 */
     user-select: none;
     -webkit-tap-highlight-color: transparent;
