@@ -1,6 +1,7 @@
 import { bombBustersMeta } from './bomb-busters/meta'
 import { scoreSheetMeta } from './score-sheet/meta'
 import { scoreMeta } from './score/meta'
+import { statsMeta } from './stats/meta'
 import { touchPickMeta } from './touch-pick/meta'
 import type { ToolEntry } from './types'
 import { werewolfMeta } from './werewolf/meta'
@@ -16,6 +17,7 @@ export const tools: ToolEntry[] = [
   { ...scoreSheetMeta, load: () => import('./score-sheet/ScoreSheetPage') },
   { ...bombBustersMeta, load: () => import('./bomb-busters/BombBustersPage') },
   { ...touchPickMeta, load: () => import('./touch-pick/TouchPickPage') },
+  { ...statsMeta, load: () => import('./stats/StatsPage') },
   { ...yahtzeeMeta, load: () => import('./yahtzee/YahtzeePage') },
   { ...werewolfMeta, load: () => import('./werewolf/WerewolfPage') },
 ]

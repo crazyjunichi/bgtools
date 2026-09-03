@@ -3,12 +3,14 @@ import type { I18nKey } from '../shared/i18n/types'
 import {
   IconCompass,
   IconDice,
+  IconPick,
   IconPlayers,
   IconSettings,
   IconTimer,
   type LucideIcon,
 } from '../shared/icons'
 import { QuickDice } from './dice/QuickDice'
+import { QuickPick } from './pick/QuickPick'
 import { QuickPlayers } from './players/QuickPlayers'
 import { QuickPointer } from './pointer/QuickPointer'
 import { QuickSettings } from './settings/QuickSettings'
@@ -19,7 +21,7 @@ import { QuickTimer } from './timer/QuickTimer'
  * （骰子 amber、计时器 sky、指针 violet、名单 teal）—— 点开前后色相不变，
  * 面板认色和界面认色是同一套记忆。`neutral` 留给设置：它不是"用一下"的工具。
  */
-export type QuickAccent = 'amber' | 'sky' | 'violet' | 'teal' | 'neutral'
+export type QuickAccent = 'amber' | 'sky' | 'violet' | 'teal' | 'fuchsia' | 'neutral'
 
 /** 所有游戏都可能临时要用的小工具，入口常驻顶栏，点开是 dialog */
 export type QuickTool = {
@@ -40,6 +42,13 @@ export type QuickTool = {
   Component: ComponentType
   /** 横向双栏布局（左控制 + 右结果）的工具需要更宽的面板 */
   wide?: boolean
+  /**
+   * 只在「当前工具页正在打的一局里有席位」时才露出（见
+   * [active](../shared/match/active.ts)）。给候选必须是**这局在打的人**的工具用：
+   * 退回全局名单是错的 —— 桌上 6 人名单、这局只 4 人时会点到没在玩的人。
+   * 首页两处入口因此都不显示它（首页没有当前局）。
+   */
+  needsMatch?: boolean
 }
 
 /**
@@ -76,6 +85,18 @@ export const quickTools: QuickTool[] = [
     accent: 'violet',
     Component: QuickPointer,
     wide: true,
+  },
+  // 候选来自当前这一局，所以只在工具页里有席位时才出现（onHome 因此也无从谈起）
+  {
+    id: 'pick',
+    nameKey: 'quick.pick.name',
+    descKey: 'quick.pick.desc',
+    onHome: false,
+    icon: IconPick,
+    accent: 'fuchsia',
+    Component: QuickPick,
+    wide: true,
+    needsMatch: true,
   },
   // 名单不是"临时用一下"，但入口性质相同：任何工具页里都要能随手改，且不占版面
   {

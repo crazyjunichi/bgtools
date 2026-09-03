@@ -7,8 +7,11 @@ import { TimerChip } from './timer/TimerChip'
 /**
  * 首页顶栏直达的那几个。判据借 `onHome` 的**反面**：不进首页宫格的正是配置类工具，
  * 首页顶栏本来就该只放它们 —— 别在这里另写一份 id 名单，注册表才是真源。
+ *
+ * `needsMatch` 的再排除掉：首页不存在"当前这一局"，那些工具在这儿没有候选。
+ * 可以在模块顶层算完，因为首页永远不会有席位。
  */
-const DIRECT = quickTools.filter((tool) => !tool.onHome)
+const DIRECT = quickTools.filter((tool) => !tool.onHome && !tool.needsMatch)
 
 const BTN =
   'flex size-12 shrink-0 items-center justify-center rounded-xl text-text transition-transform duration-75 active:scale-95'

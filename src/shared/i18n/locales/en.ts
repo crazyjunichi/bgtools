@@ -18,6 +18,7 @@ export const en: Resources = {
     confirmDelete: 'Delete?',
     cancel: 'Cancel',
     close: 'Close',
+    loading: 'Loading…',
     reset: 'Reset',
     delete: 'Delete',
     clear: 'Clear',
@@ -238,6 +239,17 @@ export const en: Resources = {
       oclock: "≈ {{hour}} o'clock",
       hint: 'Tap the needle or the button',
       spin: 'Spin',
+    },
+    pick: {
+      name: 'Pick One',
+      desc: 'Pick from who is playing',
+      candidates: 'This match',
+      hint: 'Tap “Pick” to draw',
+      spinning: 'Drawing…',
+      result: 'It’s them',
+      spin: 'Pick',
+      again: 'Pick again',
+      empty: 'Nobody in this match yet. Seat the players in a scoring tool first.',
     },
     players: {
       name: 'Players',
@@ -525,7 +537,6 @@ export const en: Resources = {
       },
       history: {
         title: 'History',
-        loading: 'Loading…',
         unavailable: 'This device cannot store local archives — private mode, perhaps. Everything else still works.',
         empty: 'Nothing saved yet. Finish a game, tap “Wrap up”, and it lands here.',
         more: 'Show earlier',
@@ -758,6 +769,33 @@ export const en: Resources = {
         order: '{{n}} touches ordered at random',
         group: '{{n}} touches split into {{g}} random teams',
       },
+    },
+
+    stats: {
+      name: 'Stats',
+      desc: 'Past matches by player or game',
+      view: {
+        players: 'By player',
+        games: 'By game',
+      },
+      overview: 'Overview',
+      totalGames: 'Matches',
+      totalTime: 'Total time',
+      gameKinds: 'Games played',
+      legacyHint:
+        '{{n}} older score sheet records have no results or scores, so they only show in the score sheet history.',
+      unavailable: 'This device cannot read local archives — private mode, perhaps. Everything else still works.',
+      empty: 'Nothing recorded yet. Finish a game in a scoring tool, tap “Wrap up”, and it lands here.',
+      playerEmpty: 'Every seat on record was temporary. Add people via 👥 in the top bar to track them.',
+      // 不用复数变体：'{{n}} played' / '{{n}} won' 在 1 和 5 上都读得通
+      gameCount: '{{n}} played',
+      winCount: '{{n}} won',
+      rate: '{{n}}% win',
+      avg: 'Avg {{score}}',
+      avgTime: 'Avg {{time}}',
+      openPlayer: 'View {{name}}’s record',
+      noWinner: 'No results yet',
+      byGame: 'By game',
     },
 
     yahtzee: {

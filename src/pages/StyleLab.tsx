@@ -118,6 +118,7 @@ const SOLID: Record<Accent, string> = {
   violet: 'bg-violet-400 text-ink',
   rose: 'bg-rose-400 text-ink',
   teal: 'bg-teal-400 text-ink',
+  fuchsia: 'bg-fuchsia-400 text-ink',
   neutral: 'bg-surface-3 text-text',
 }
 
@@ -190,6 +191,7 @@ const BAR: Record<Accent, string> = {
   violet: 'bg-violet-400',
   rose: 'bg-rose-400',
   teal: 'bg-teal-400',
+  fuchsia: 'bg-fuchsia-400',
   neutral: 'bg-surface-3',
 }
 
@@ -292,6 +294,12 @@ const HARD: Record<Accent, { edge: string; block: string; shadow: string; press:
     shadow: 'shadow-[5px_5px_0_0_var(--color-teal-500,#14b8a6)]',
     press: 'active:shadow-[2px_2px_0_0_var(--color-teal-500,#14b8a6)]',
   },
+  fuchsia: {
+    edge: 'border-fuchsia-400',
+    block: 'bg-fuchsia-400 text-ink',
+    shadow: 'shadow-[5px_5px_0_0_var(--color-fuchsia-500,#d946ef)]',
+    press: 'active:shadow-[2px_2px_0_0_var(--color-fuchsia-500,#d946ef)]',
+  },
   neutral: {
     edge: 'border-line',
     block: 'bg-surface-3 text-text',
@@ -370,6 +378,7 @@ const UNDER: Record<Accent, string> = {
   violet: 'border-violet-400',
   rose: 'border-rose-400',
   teal: 'border-teal-400',
+  fuchsia: 'border-fuchsia-400',
   neutral: 'border-line',
 }
 

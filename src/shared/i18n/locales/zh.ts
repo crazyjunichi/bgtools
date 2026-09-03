@@ -20,6 +20,8 @@ export const zh = {
     confirmDelete: '确认删除',
     cancel: '取消',
     close: '关闭',
+    /** 从 IDB 读盘期间的占位（计分纸历史、统计页） */
+    loading: '正在读取…',
     reset: '重置',
     delete: '删除',
     clear: '清空',
@@ -271,6 +273,19 @@ export const zh = {
       oclock: '≈ {{hour}} 点方向',
       hint: '点指针或按钮开始',
       spin: '随机指向',
+    },
+    /** 随机点人。候选只能是当前这一局的席位，所以入口只在工具页里有人时才出现 */
+    pick: {
+      name: '随机点人',
+      desc: '从这局的人里抽一个',
+      candidates: '这局的人',
+      hint: '点「抽一个」出人',
+      spinning: '抽…',
+      result: '就是这位',
+      spin: '抽一个',
+      again: '再抽一个',
+      /** 浮层开着时切回首页会走到这里 */
+      empty: '这局还没有人。在计分工具里选好参与者，就能从他们里面抽了。',
     },
     players: {
       name: '玩家名单',
@@ -602,7 +617,6 @@ export const zh = {
       /** 历史浮层（[SheetHistory](../../../tools/score-sheet/SheetHistory.tsx)）：列表 + 单局详情 */
       history: {
         title: '历史记录',
-        loading: '正在读取…',
         /** IndexedDB 被禁（隐私模式等）时只关掉这一块，其余功能照用 */
         unavailable: '这台设备不能保存本地存档，可能开着隐私模式。其余功能不受影响。',
         empty: '还没有存档。一局填完后按「本局结算」，记录就会存到这里。',
@@ -879,6 +893,35 @@ export const zh = {
         order: '{{n}} 个触点已随机排序',
         group: '{{n}} 个触点已随机分成 {{g}} 组',
       },
+    },
+
+    /** 战绩统计（[tools/stats](../../../tools/stats/StatsPage.tsx)），只读 match 存档 */
+    stats: {
+      name: '战绩统计',
+      desc: '按玩家 / 按游戏看历史对局',
+      view: {
+        players: '按玩家',
+        games: '按游戏',
+      },
+      overview: '总览',
+      totalGames: '记录局数',
+      totalTime: '累计时长',
+      gameKinds: '玩过的游戏',
+      /** 旧版计分纸的存档没有胜负与分数，进不了统计，得说清为什么这里的局数少 */
+      legacyHint: '另有 {{n}} 条旧版计分纸记录没有胜负与分数，只出现在计分纸自己的历史里。',
+      unavailable: '这台设备不能读本地存档，可能开着隐私模式。其余功能不受影响。',
+      empty: '还没有记录。在计分工具里打完一局，按「本局结算」存下来就会出现在这里。',
+      /** 有记录但一个都没绑名单玩家 */
+      playerEmpty: '记录里都是临时席位。去顶栏 👥 把人加进名单，之后的对局才能算进个人战绩。',
+      gameCount: '{{n}} 局',
+      winCount: '{{n}} 胜',
+      rate: '胜率 {{n}}%',
+      /** 均分只在同一盒游戏内平均，跨游戏不是一个量纲 */
+      avg: '均分 {{score}}',
+      avgTime: '均 {{time}}',
+      openPlayer: '查看 {{name}} 的战绩',
+      noWinner: '还没有胜负记录',
+      byGame: '按游戏拆分',
     },
 
     yahtzee: {

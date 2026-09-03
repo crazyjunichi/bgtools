@@ -168,9 +168,7 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
       onClose={onClose}
     >
       {status === 'loading' && (
-        <span className="px-1 py-2 text-sm text-text-muted">
-          {t('tools.scoreSheet.history.loading')}
-        </span>
+        <span className="px-1 py-2 text-sm text-text-muted">{t('common.loading')}</span>
       )}
 
       {/* IndexedDB 被禁只关掉这一块，其余功能照用 —— 不是崩点 */}

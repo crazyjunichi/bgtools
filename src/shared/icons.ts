@@ -58,6 +58,8 @@ export {
   ChevronLeft as IconPrev,
   ListOrdered as IconOrder,
   Pause as IconPause,
+  /** 随机点一个人。带勾的单人像才读得出「点到的是他」，与 IconPlayers 的一群人分开 */
+  UserRoundCheck as IconPick,
   Play as IconPlay,
   UserPlus as IconPlayerAdd,
   Users as IconPlayers,

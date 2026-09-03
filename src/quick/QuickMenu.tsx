@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useActiveMatch } from '../shared/match/active'
 import { type QuickAccent, quickTools } from './registry'
 import { useQuickUI } from './store'
 
@@ -13,6 +14,7 @@ const ACCENT: Record<QuickAccent, string> = {
   sky: 'bg-sky-500/15 text-sky-300',
   violet: 'bg-violet-500/15 text-violet-300',
   teal: 'bg-teal-500/15 text-teal-300',
+  fuchsia: 'bg-fuchsia-500/15 text-fuchsia-300',
   neutral: 'bg-surface-3 text-text-muted',
 }
 
@@ -33,6 +35,9 @@ export function QuickMenu({ sidebar }: Props) {
   const { t } = useTranslation()
   const openTool = useQuickUI((s) => s.openTool)
   const close = useQuickUI((s) => s.close)
+  // 这一局没人在打时，`needsMatch` 的工具没有候选，入口也就不该在
+  const hasSeats = useActiveMatch((s) => (s.active?.seats.length ?? 0) > 0)
+  const tools = hasSeats ? quickTools : quickTools.filter((tool) => !tool.needsMatch)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -59,7 +64,7 @@ export function QuickMenu({ sidebar }: Props) {
         }`}
       >
         <div className="card mt-2 grid w-72 grid-cols-3 gap-2 !p-3 wide:ml-2 short:!p-2">
-          {quickTools.map((tool) => (
+          {tools.map((tool) => (
             <button
               key={tool.id}
               type="button"
