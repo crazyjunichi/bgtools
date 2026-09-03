@@ -22,9 +22,9 @@ type Props = {
   entries: Entry[]
   cells: Record<string, number>
   /**
-   * 只读：列头 / 行首 / 格子全退化成静态元素，不渲染「添加条目」行，也没有选中环。
-   * 历史回看走这个（[SheetHistory](SheetHistory.tsx)）—— 和当前局**长得一模一样**，
-   * 桌上认知负担最低，而下面那批回调在只读时一个都不需要
+   * 只读：列头 / 行首 / 格子全退化成静态元素并收紧成阅读态（无矩形底、行高由文字决定），
+   * 不渲染「添加条目」行，也没有选中环。历史回看（统计页、[SheetHistory](SheetHistory.tsx)）
+   * 走这个 —— 是近距阅读不是桌上操作，下面那批回调在只读时一个都不需要
    */
   readOnly?: boolean
   /**
@@ -57,12 +57,20 @@ const COL = 'w-24'
  */
 const ADD_COL = 'sticky right-0 w-12'
 
-/** 列头胶囊。只读态用 span、可编辑态用 button，尺寸必须一致，否则两种视图行高会差一截 */
+/** 列头胶囊（可编辑态）：整格是改名/换人按钮 */
 const SEAT_CHIP =
   'flex min-h-12 w-full items-center justify-center rounded-lg px-1 text-sm font-bold short:min-h-11'
 
-/** 格子。同上，只读态换成 div 但外形不变 */
+/** 格子（可编辑态）：整格是填分按钮 */
 const CELL = 'flex min-h-14 w-full flex-col items-center justify-center rounded-lg short:!min-h-11'
+
+/*
+ * 只读回看是近距阅读（统计页 / 历史浮层），不是桌上操作：
+ * 没有触控目标，不画矩形底，行高交给文字与分隔线
+ */
+const SEAT_CHIP_RO =
+  'flex min-h-8 w-full items-center justify-center rounded-md px-2 text-sm font-bold'
+const CELL_RO = 'flex w-full flex-col items-center justify-center gap-0.5 py-1'
 
 /**
  * 条目为行 × 玩家为列的矩阵 —— 就是桌上那张计分纸本身。
@@ -138,7 +146,7 @@ export function SheetGrid({
                  * 列宽摆不下这些按钮，桌上手一抖也点不准
                  */}
                 {readOnly ? (
-                  <span className={`${SEAT_CHIP} ${PLAYER_SOLID[s.color]}`}>
+                  <span className={`${SEAT_CHIP_RO} ${PLAYER_SOLID[s.color]}`}>
                     <span className="truncate">{s.name}</span>
                   </span>
                 ) : (
@@ -190,9 +198,13 @@ export function SheetGrid({
                       <EntryName name={name} scoring={e.scoring} />
                     </button>
                   ) : (
-                    // 空图标槽把条目名钉在与可点行同一条竖线上，否则整列名字左右参差
-                    <span className="flex min-h-12 w-full items-center gap-1.5 px-2 short:min-h-11">
-                      <span className="size-4 shrink-0" aria-hidden />
+                    // 可编辑态的空图标槽把条目名钉在与可点行同一条竖线上；只读态整列都没图标，不需要
+                    <span
+                      className={`flex w-full items-center gap-1.5 px-2 ${
+                        readOnly ? 'py-1.5' : 'min-h-12 short:min-h-11'
+                      }`}
+                    >
+                      {!readOnly && <span className="size-4 shrink-0" aria-hidden />}
                       <EntryName name={name} scoring={e.scoring} />
                     </span>
                   )}
@@ -206,9 +218,9 @@ export function SheetGrid({
                   const inner = (
                     <>
                       <span
-                        className={`font-mono text-2xl font-bold leading-none tabular-nums short:text-xl ${tone(
-                          score,
-                        )}`}
+                        className={`font-mono font-bold leading-none tabular-nums ${
+                          readOnly ? 'text-xl' : 'text-2xl short:text-xl'
+                        } ${tone(score)}`}
                       >
                         {fmtCell(raw === undefined ? undefined : score)}
                       </span>
@@ -223,12 +235,12 @@ export function SheetGrid({
                   return (
                     <td key={s.id} className={`p-1 ${COL}`}>
                       {/*
-                       * 只读态换成 div：外形与可点态完全一致，只是没有选中环、点了也没反应。
+                       * 只读态换成 div：没有选中环、点了也没反应。
                        * 读屏这边不再拼 aria-label —— 那是给按钮取名用的，
                        * 静态表格靠 `th scope="col"` 与行首文字关联，本来就是原生行为
                        */}
                       {readOnly ? (
-                        <div className={`${CELL} bg-surface-2`}>{inner}</div>
+                        <div className={CELL_RO}>{inner}</div>
                       ) : (
                         <button
                           type="button"

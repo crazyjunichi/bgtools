@@ -56,6 +56,9 @@ export function MatchDetail({ match, onClose }: Props) {
   const spent = match.endAt - match.startedAt
   const Detail = tool?.Detail
 
+  // 有细则可看时 chips 纯属重复（表头有名字颜色、合计有 👑 分数）；细则看不了它就是唯一内容，兜底
+  const showChips = loader === undefined || failed
+
   return (
     <Overlay
       maxWidth="max-w-3xl"
@@ -74,10 +77,12 @@ export function MatchDetail({ match, onClose }: Props) {
       }
       onClose={onClose}
     >
-      <div className="flex flex-col gap-2">
-        <span className="section-label">{t('match.players')}</span>
-        <MatchChips players={match.players} />
-      </div>
+      {showChips && (
+        <div className="flex flex-col gap-2">
+          <span className="section-label">{t('match.players')}</span>
+          <MatchChips players={match.players} />
+        </div>
+      )}
 
       {loader !== undefined && (
         <div className="flex min-h-0 flex-col gap-2">
@@ -97,25 +102,28 @@ export function MatchDetail({ match, onClose }: Props) {
       {/* 备注是记录里唯一能事后改的字段；旧存档没有入口，这个组件自己返回 null */}
       <MatchNote key={match.id} match={match} />
 
-      <button
-        type="button"
-        onClick={() => setSharing(true)}
-        className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
-      >
-        <IconShare className="size-6 short:size-5" aria-hidden />
-        {t('match.share.title')}
-      </button>
-
-      <ConfirmButton
-        onConfirm={() => {
-          void remove(match.id)
-          onClose()
-        }}
-        confirmText={t('common.confirmDelete')}
-      >
-        <IconDelete className="size-6 short:size-5" aria-hidden />
-        {t('common.delete')}
-      </ConfirmButton>
+      {/* 阅读页的操作就两个：分享是主路径，删除降级成小图标（仍走二次确认） */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setSharing(true)}
+          className="btn-base min-w-0 flex-1 gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
+        >
+          <IconShare className="size-6 short:size-5" aria-hidden />
+          {t('match.share.title')}
+        </button>
+        <ConfirmButton
+          aria-label={t('common.delete')}
+          confirmText={t('common.confirmDelete')}
+          className="shrink-0 !px-4"
+          onConfirm={() => {
+            void remove(match.id)
+            onClose()
+          }}
+        >
+          <IconDelete className="size-6 short:size-5" aria-hidden />
+        </ConfirmButton>
+      </div>
 
       {/* 明细导出跟着细则一起来：还没加载完就只有通用战绩榜，那也出得来 */}
       {sharing && (

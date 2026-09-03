@@ -6,8 +6,8 @@ import { entriesOf } from './store'
 
 type Props = { match: MatchDraft }
 
-/** 只读矩阵的框高：受约束的是高度，所以是 vh 不是 vmin（见 CLAUDE.md 的判据 C） */
-const GRID_BOX = 'flex h-[min(26rem,48vh)] flex-col short:h-[min(14rem,42vh)]'
+/** 框高只设上限：内容少就收成自然高，条目多才在框内纵滚；受约束的是高度，所以是 vh 不是 vmin（见 CLAUDE.md 的判据 C） */
+const GRID_BOX = 'flex max-h-[min(26rem,48vh)] flex-col short:max-h-[min(14rem,42vh)]'
 
 /**
  * 一局计分纸的细则视图（[MatchTool.Detail](../../shared/match/detail.ts)）：

@@ -5,8 +5,8 @@ import { readScorePayload } from './store'
 
 type Props = { match: MatchDraft }
 
-/** 矩阵框高：受约束的是高度，所以是 vh 不是 vmin（见 CLAUDE.md 的判据 C） */
-const BOX = 'h-[min(26rem,48vh)] short:h-[min(14rem,42vh)]'
+/** 矩阵框高只设上限：轮数少就收，多了才纵滚；受约束的是高度，所以是 vh 不是 vmin（见 CLAUDE.md 的判据 C） */
+const BOX = 'max-h-[min(26rem,48vh)] short:max-h-[min(14rem,42vh)]'
 
 /**
  * 一局多轮计分的细则视图（[MatchTool.Detail](../../shared/match/detail.ts)）：
