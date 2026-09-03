@@ -4,11 +4,14 @@ import { ConfirmButton } from '../components/ConfirmButton'
 import { FIELD } from '../components/fieldStyle'
 import { Overlay } from '../components/Overlay'
 import { findGame, GAMES } from '../games/registry'
-import { IconCheck, IconCrown } from '../icons'
+import { IconCheck, IconCrown, IconRepeat, IconShare } from '../icons'
 import { PLAYER_DOT } from '../players/colors'
 import { useArchiveStore } from './archive'
+import type { MatchExport } from './detail'
 import { durationText } from './format'
+import { MatchChips } from './MatchChips'
 import { NOTE_MAX } from './MatchNote'
+import { MatchShare } from './MatchShare'
 import { coopResult, teamResult } from './result'
 import type { MatchDraft } from './types'
 
@@ -19,6 +22,11 @@ type Props = {
    * 分数与名次由工具算（只有它知道怎么算），面板只让人调「谁算赢」这类规则外的判断。
    */
   draft: MatchDraft
+  /**
+   * 这个工具自己的明细导出，给「已记录」态那个分享按钮用。
+   * **由工具页传进来**：shared 不许去查 tools 的注册表，而工具页知道自己的
+   */
+  exports?: readonly MatchExport[]
   /** 记录成功（或用户选了不记录）之后开新局 */
   onDone: () => void
   onClose: () => void
@@ -35,7 +43,7 @@ const ROW_WIN = 'border-emerald-500/60 bg-emerald-500/15 text-emerald-300'
  * 它不持有「当前局」：谁参与了这一局只属于打开它的那个工具页，
  * 面板只是把那份状态收成一条 [Match](types.ts) 写进存档（见 [archive](archive.ts)）。
  */
-export function MatchFinish({ draft, onDone, onClose }: Props) {
+export function MatchFinish({ draft, exports, onDone, onClose }: Props) {
   const { t, i18n } = useTranslation()
   const status = useArchiveStore((s) => s.status)
   const load = useArchiveStore((s) => s.load)
@@ -47,6 +55,12 @@ export function MatchFinish({ draft, onDone, onClose }: Props) {
   const [coopWin, setCoopWin] = useState(true)
   const [winnerTeam, setWinnerTeam] = useState<string | null>(null)
   const [note, setNote] = useState('')
+  /**
+   * 已经写进存档的那一局。**记下来之后不立刻开新局** ——
+   * 刚打完那一下正是最想分享的时刻，而开了新局这一局的 draft 就没处拿了
+   */
+  const [saved, setSaved] = useState<MatchDraft | null>(null)
+  const [sharing, setSharing] = useState(false)
 
   // 读一次盘只为知道 IDB 能不能用：禁用时得当场告诉用户这局记不下来，而不是静默丢掉
   useEffect(() => {
@@ -86,23 +100,66 @@ export function MatchFinish({ draft, onDone, onClose }: Props) {
           ? teamResult(players, winnerTeam)
           : players
     const trimmed = note.trim()
-    void archive({ ...draft, gameId, players: final, note: trimmed === '' ? undefined : trimmed })
-    onDone()
+    const next: MatchDraft = {
+      ...draft,
+      gameId,
+      players: final,
+      note: trimmed === '' ? undefined : trimmed,
+    }
+    void archive(next)
+    setSaved(next)
+  }
+
+  const header = (
+    <span className="flex min-w-0 flex-col">
+      <span className="text-lg font-bold">{t('match.title')}</span>
+      <span className="truncate text-xs text-text-dim">
+        {t('match.duration')} · {durationText(t, Math.max(0, endAt - startedAt))}
+      </span>
+    </span>
+  )
+
+  /*
+   * 已记录态：这一局已经落盘，所以那些选项不再可改（改了也写不回去），
+   * 只剩「拿走它」和「开下一局」两个去处
+   */
+  if (saved !== null) {
+    return (
+      <Overlay maxWidth="max-w-lg" title={header} onClose={onClose}>
+        <p className="flex items-center gap-2 text-base text-emerald-300">
+          <IconCheck className="size-6 shrink-0 short:size-5" aria-hidden />
+          {t('match.saved')}
+        </p>
+
+        <MatchChips players={saved.players} />
+
+        <button
+          type="button"
+          onClick={() => setSharing(true)}
+          className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
+        >
+          <IconShare className="size-6 short:size-5" aria-hidden />
+          {t('match.share.title')}
+        </button>
+
+        <button
+          type="button"
+          onClick={onDone}
+          className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink short:!min-h-11"
+        >
+          <IconRepeat className="size-6 short:size-5" aria-hidden />
+          {t('match.newGame')}
+        </button>
+
+        {sharing && (
+          <MatchShare match={saved} exports={exports} onClose={() => setSharing(false)} />
+        )}
+      </Overlay>
+    )
   }
 
   return (
-    <Overlay
-      maxWidth="max-w-lg"
-      title={
-        <span className="flex min-w-0 flex-col">
-          <span className="text-lg font-bold">{t('match.title')}</span>
-          <span className="truncate text-xs text-text-dim">
-            {t('match.duration')} · {durationText(t, Math.max(0, endAt - startedAt))}
-          </span>
-        </span>
-      }
-      onClose={onClose}
-    >
+    <Overlay maxWidth="max-w-lg" title={header} onClose={onClose}>
       {draft.gameId === null && (
         <div className="flex flex-col gap-2">
           <span className="section-label">{t('match.gameLabel')}</span>

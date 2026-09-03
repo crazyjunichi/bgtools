@@ -232,6 +232,7 @@ export default function ScoreSheetPage() {
       {finish && (
         <MatchFinish
           draft={finish}
+          exports={sheetExports}
           onDone={() => {
             newGame()
             setFinish(null)

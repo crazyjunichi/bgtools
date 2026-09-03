@@ -8,12 +8,15 @@ import { durationText } from '../../shared/match/format'
 import { usePlayersStore } from '../../shared/players/store'
 import { gameRows, overview, playerRows, statsSource } from './aggregate'
 import { GameList } from './GameList'
+import { MatchDetail } from './MatchDetail'
 import { PlayerDetail } from './PlayerDetail'
 import { PlayerList } from './PlayerList'
+import { TimeList } from './TimeList'
 
 const VIEWS = [
   { id: 'players', labelKey: 'tools.stats.view.players' },
   { id: 'games', labelKey: 'tools.stats.view.games' },
+  { id: 'time', labelKey: 'tools.stats.view.time' },
 ] as const satisfies readonly { id: string; labelKey: I18nKey }[]
 
 type View = (typeof VIEWS)[number]['id']
@@ -40,6 +43,7 @@ export default function StatsPage() {
   const roster = usePlayersStore((s) => s.players)
   const [view, setView] = useState<View>('players')
   const [openId, setOpenId] = useState<string | null>(null)
+  const [openMatchId, setOpenMatchId] = useState<string | null>(null)
 
   // 这一页的全部内容都来自存档，所以进页面就读盘（别的工具是打开浮层才读）
   useEffect(() => {
@@ -52,10 +56,12 @@ export default function StatsPage() {
   const games = useMemo(() => gameRows(rows, roster), [rows, roster])
 
   const open = openId === null ? undefined : players.find((p) => p.playerId === openId)
+  const openMatch = openMatchId === null ? undefined : matches.find((m) => m.id === openMatchId)
 
   const panel = (
     <>
-      <div className="grid grid-cols-2 gap-2">
+      {/* 换行而不是固定列数：横屏左栏放不下三个并排，英文标签会被截断 */}
+      <div className="flex flex-wrap gap-2">
         {VIEWS.map((v) => (
           <button
             key={v.id}
@@ -63,14 +69,14 @@ export default function StatsPage() {
             onClick={() => setView(v.id)}
             aria-pressed={view === v.id}
             // 选中态是「淡底 + ✓」两重编码：斜视下只靠底色深浅分不出选没选
-            className={`btn-base gap-2 border px-3 text-base short:!min-h-11 ${
+            className={`btn-base min-w-0 flex-1 basis-24 gap-2 border px-3 text-base short:!min-h-11 ${
               view === v.id
                 ? 'border-sky-500/60 bg-sky-500/15 text-sky-200'
                 : 'border-line bg-surface-2 text-text'
             }`}
           >
             {view === v.id && <IconCheck className="size-5 shrink-0" aria-hidden />}
-            {t(v.labelKey)}
+            <span className="truncate">{t(v.labelKey)}</span>
           </button>
         ))}
       </div>
@@ -104,7 +110,8 @@ export default function StatsPage() {
           </p>
         )}
 
-        {status === 'ready' && sum.games === 0 && (
+        {/* 「按时间」连旧存档一起列，所以它的空判据是整张表空，不是「有几局进了统计」 */}
+        {status === 'ready' && (view === 'time' ? matches.length === 0 : sum.games === 0) && (
           <p className="px-1 py-2 text-sm leading-relaxed text-text-muted">
             {t('tools.stats.empty')}
           </p>
@@ -117,14 +124,15 @@ export default function StatsPage() {
           </p>
         )}
 
-        {view === 'players' ? (
-          <PlayerList rows={players} onOpen={setOpenId} />
-        ) : (
-          <GameList rows={games} />
-        )}
+        {view === 'players' && <PlayerList rows={players} onOpen={setOpenId} />}
+        {view === 'games' && <GameList rows={games} />}
+        {view === 'time' && <TimeList matches={matches} onOpen={setOpenMatchId} />}
       </div>
 
       {open && <PlayerDetail row={open} onClose={() => setOpenId(null)} />}
+      {openMatch && (
+        <MatchDetail key={openMatch.id} match={openMatch} onClose={() => setOpenMatchId(null)} />
+      )}
     </ToolLayout>
   )
 }

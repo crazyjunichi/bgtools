@@ -9,6 +9,7 @@ import { SeatPicker } from '../../shared/players/SeatPicker'
 import { resolveSeat, takenPlayerIds } from '../../shared/players/seats'
 import { SeatStart } from '../../shared/players/SeatStart'
 import { usePlayersStore } from '../../shared/players/store'
+import { scoreExports } from './match'
 import { scoreMeta } from './meta'
 import { ScoreBar } from './ScoreBar'
 import { ScoreGrid } from './ScoreGrid'
@@ -125,6 +126,7 @@ export default function ScorePage() {
       {finish && (
         <MatchFinish
           draft={finish}
+          exports={scoreExports}
           onDone={() => {
             newGame()
             setFinish(null)

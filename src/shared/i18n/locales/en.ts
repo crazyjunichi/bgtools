@@ -199,10 +199,13 @@ export const en: Resources = {
     note: 'Note',
     notePlaceholder: 'Anything worth remembering (optional)',
     tempHint: 'Temp seats are left out of player stats — add them to the roster via 👥 to track them.',
-    save: 'Save and start next',
+    save: 'Save this game',
     discard: 'Skip saving, start next',
     confirmDiscard: 'Discard this game',
     unavailable: 'Local database is disabled on this device, so this game cannot be saved.',
+    saved: 'This game is saved',
+    newGame: 'Next game',
+    open: '{{date}} · {{name}}, tap to view',
 
     share: {
       title: 'Share game',
@@ -230,7 +233,9 @@ export const en: Resources = {
     },
 
     detail: {
+      title: 'Details',
       unreadable: 'The details of this game cannot be read, probably saved by an older version. Places and scores are still above.',
+      failed: 'Details did not load, probably a fresh update. Reload the page and try again.',
     },
 
     summary: {
@@ -605,7 +610,6 @@ export const en: Resources = {
         unavailable: 'This device cannot store local archives — private mode, perhaps. Everything else still works.',
         empty: 'Nothing saved yet. Finish a game, tap “Wrap up”, and it lands here.',
         more: 'Show earlier',
-        open: '{{date}} · {{name}}, tap to view',
         back: 'Back to list',
         load: 'Load this game',
         confirmLoad: 'Load it? Replaces current',
@@ -828,13 +832,14 @@ export const en: Resources = {
       view: {
         players: 'By player',
         games: 'By game',
+        time: 'By time',
       },
       overview: 'Overview',
       totalGames: 'Matches',
       totalTime: 'Total time',
       gameKinds: 'Games played',
       legacyHint:
-        '{{n}} older score sheet records have no results or scores, so they only show in the score sheet history.',
+        '{{n}} older score sheet records have no results or scores, so they stay out of the overview above. They are still listed under “By time”.',
       unavailable: 'This device cannot read local archives — private mode, perhaps. Everything else still works.',
       empty: 'Nothing recorded yet. Finish a game in a scoring tool, tap “Wrap up”, and it lands here.',
       playerEmpty: 'Every seat on record was temporary. Add people via 👥 in the top bar to track them.',
@@ -847,6 +852,7 @@ export const en: Resources = {
       openPlayer: 'View {{name}}’s record',
       noWinner: 'No results yet',
       byGame: 'By game',
+      more: 'Show earlier',
     },
 
     yahtzee: {

@@ -2,16 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Overlay } from '../../shared/components/Overlay'
-import { IconBack, IconCrown, IconDelete, IconShare } from '../../shared/icons'
+import { IconBack, IconDelete, IconShare } from '../../shared/icons'
 import { useArchiveStore } from '../../shared/match/archive'
-import { durationText, fmtScore } from '../../shared/match/format'
+import { dateTimeText, durationText } from '../../shared/match/format'
 import { MatchNote } from '../../shared/match/MatchNote'
+import { MatchRow } from '../../shared/match/MatchRow'
 import type { Match } from '../../shared/match/types'
-import { PLAYER_SOLID } from '../../shared/players/colors'
 import { scoreSheetMeta } from './meta'
 import { readSheetPayload, type SheetPayload } from './payload'
 import { SheetDetail } from './SheetDetail'
-import { buildSnapshot } from './snapshot'
+import { findTemplate, templateIdentity } from './templates'
 
 type Props = {
   onLoad: (payload: SheetPayload, endAt: number) => void
@@ -48,8 +48,9 @@ export function SheetHistory({ onLoad, onShare, onClose }: Props) {
   /*
    * 单表混着所有工具的记录，这里只要计分纸的；payload 反解不出来的直接跳过
    * （别的版本写下的东西，与其显示半条不如不显示）。
-   * 列表行要的「谁多少分」和导出用的是同一个 buildSnapshot ——
-   * 行里显示的合计与导出图上的合计不可能对不上
+   *
+   * 标题按**模板**取而不是按 `gameId`：「通用空白」那种局没有对应的盒，
+   * 走游戏目录只会显示「不指定」，对不上桌上那张纸
    */
   const games = useMemo(
     () =>
@@ -57,25 +58,19 @@ export function SheetHistory({ onLoad, onShare, onClose }: Props) {
         .filter((m) => m.toolId === scoreSheetMeta.id)
         .flatMap((m) => {
           const payload = readSheetPayload(m.payload)
-          return payload ? [{ match: m, payload }] : []
+          if (payload === null) return []
+          const id = templateIdentity(findTemplate(payload.templateId))
+          return [{ match: m, payload, identity: { name: t(id.nameKey), icon: id.icon } }]
         }),
-    [matches],
+    [matches, t],
   )
 
-  const rows = useMemo(
-    () =>
-      (showAll ? games : games.slice(0, PAGE)).map((g) => ({
-        ...g,
-        snap: buildSnapshot(g.payload, g.match.endAt, t),
-      })),
-    [games, showAll, t],
-  )
+  const rows = showAll ? games : games.slice(0, PAGE)
 
   const open = openId ? games.find((g) => g.match.id === openId) : undefined
 
   if (open) {
-    const { match, payload } = open
-    const snap = buildSnapshot(payload, match.endAt, t)
+    const { match, payload, identity } = open
     const spent = match.endAt - match.startedAt
     return (
       <Overlay
@@ -91,9 +86,9 @@ export function SheetHistory({ onLoad, onShare, onClose }: Props) {
               <IconBack className="size-5" aria-hidden />
             </button>
             <span className="flex min-w-0 flex-col">
-              <span className="truncate text-base font-bold">{snap.title}</span>
+              <span className="truncate text-base font-bold">{identity.name}</span>
               <span className="truncate text-xs tabular-nums text-text-dim">
-                {snap.dateText}
+                {dateTimeText(match.endAt)}
                 {/* 旧局没记开局时刻，时长会是 0，那就不显示这一段 */}
                 {spent > 0 && ` · ${durationText(t, spent)}`}
               </span>
@@ -170,42 +165,14 @@ export function SheetHistory({ onLoad, onShare, onClose }: Props) {
       {rows.length > 0 && (
         // 列表自己滚，浮层整体仍不滚（滚整个浮层会把「清空历史」推出视野）
         <div className="flex max-h-[52vh] flex-col gap-2 overflow-y-auto short:max-h-[40vh]">
-          {rows.map(({ match, snap }) => (
-            <button
+          {/* 与统计页「按时间」共用一种行：分数与胜负都读归档好的那份，不再逐行复算局面 */}
+          {rows.map(({ match, identity }) => (
+            <MatchRow
               key={match.id}
-              type="button"
-              onClick={() => setOpenId(match.id)}
-              aria-label={t('tools.scoreSheet.history.open', {
-                date: snap.dateText,
-                name: snap.title,
-              })}
-              className="btn-base shrink-0 flex-col !items-stretch gap-2 border border-line bg-surface-2 px-3 py-2 short:!min-h-11"
-            >
-              <span className="flex items-baseline justify-between gap-3">
-                <span className="min-w-0 truncate text-base font-semibold">{snap.title}</span>
-                <span className="shrink-0 text-xs tabular-nums text-text-dim">{snap.dateText}</span>
-              </span>
-              {/* 名字与分数同框：玩家色允许被两人共用，色块不能是唯一识别 */}
-              <span className="flex flex-wrap gap-1">
-                {snap.seats.map((seat, i) => (
-                  <span
-                    key={i}
-                    className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs font-bold ${
-                      PLAYER_SOLID[seat.color]
-                    }`}
-                  >
-                    {snap.bestTotal !== null && snap.totals[i] === snap.bestTotal && (
-                      <IconCrown className="size-3.5 shrink-0" aria-hidden />
-                    )}
-                    <span className="max-w-24 truncate">{seat.name}</span>
-                    <span className="font-mono tabular-nums">{fmtScore(snap.totals[i])}</span>
-                  </span>
-                ))}
-              </span>
-              {match.note !== undefined && (
-                <span className="truncate text-left text-xs text-text-muted">{match.note}</span>
-              )}
-            </button>
+              match={match}
+              identity={identity}
+              onOpen={() => setOpenId(match.id)}
+            />
           ))}
 
           {!showAll && games.length > PAGE && (
