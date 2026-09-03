@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ToolLayout } from '../../shared/components/ToolLayout'
-import { IconCheck } from '../../shared/icons'
 import type { I18nKey } from '../../shared/i18n/types'
 import { useArchiveStore } from '../../shared/match/archive'
-import { durationText } from '../../shared/match/format'
 import { usePlayersStore } from '../../shared/players/store'
 import { gameRows, overview, playerRows, statsSource } from './aggregate'
 import { GameList } from './GameList'
 import { MatchDetail } from './MatchDetail'
-import { PlayerDetail } from './PlayerDetail'
+import { OverviewCards } from './OverviewCards'
 import { PlayerList } from './PlayerList'
 import { TimeList } from './TimeList'
 
@@ -21,12 +18,54 @@ const VIEWS = [
 
 type View = (typeof VIEWS)[number]['id']
 
-function Stat({ label, value }: { label: string; value: string }) {
+/**
+ * 视图切换。竖屏是吸顶的文字 tab（下划线 + 变色两重编码），横屏是左栏的竖排导航（淡底 + 变色）。
+ * **横向形态的总高固定为 52px**（h-11 + 容器 py-1）—— [TimeList](TimeList.tsx) 的日期头按这个值吸顶。
+ * 竖屏形态必须做滚动根的直接子级（sticky 只吸在祖先滚动容器里，再包一层就会被那层的高度卡住），
+ * 所以 `wide:hidden` 也写在它自己身上。
+ */
+function StatsNav({
+  view,
+  onChange,
+  vertical,
+}: {
+  view: View
+  onChange: (v: View) => void
+  vertical?: boolean
+}) {
+  const { t } = useTranslation()
   return (
-    <span className="flex items-baseline justify-between gap-2">
-      <span className="truncate text-sm text-text-muted">{label}</span>
-      <span className="shrink-0 font-mono text-base tabular-nums">{value}</span>
-    </span>
+    <nav
+      className={
+        vertical
+          ? 'flex shrink-0 flex-col gap-1'
+          : // bg-ink 兜住从下面滚过的列表行
+            'sticky top-0 z-10 flex gap-1 bg-ink py-1 wide:hidden'
+      }
+    >
+      {VIEWS.map((v) => {
+        const on = view === v.id
+        return (
+          <button
+            key={v.id}
+            type="button"
+            onClick={() => onChange(v.id)}
+            aria-pressed={on}
+            className={
+              vertical
+                ? `flex min-h-11 items-center rounded-lg px-3 text-left text-sm font-semibold ${
+                    on ? 'bg-sky-500/15 text-sky-300' : 'text-text-muted'
+                  }`
+                : `h-11 flex-1 border-b-2 px-2 text-sm font-semibold ${
+                    on ? 'border-sky-400 text-sky-300' : 'border-transparent text-text-muted'
+                  }`
+            }
+          >
+            {t(v.labelKey)}
+          </button>
+        )
+      })}
+    </nav>
   )
 }
 
@@ -36,13 +75,16 @@ function Stat({ label, value }: { label: string; value: string }) {
  *
  * 全量扫存档现算，不维护累计表：一晚几条、一年几百条，聚合成本可忽略，
  * 而累计表必然与「删掉某一局」脱节。
+ *
+ * 布局是阅读页而非工具页（不上桌、单人近距看）：不套 ToolLayout，页面级滚动 + 44px 行。
+ * 竖屏 = 概览卡 + 吸顶 tab + 列表整页滚；横屏 = 左栏（概览行 + 竖排导航）+ 右侧列表自滚。
+ * 概览与导航因此在 DOM 里各有两份（按朝向 hidden 互斥），hidden 不进读屏树，无重复播报。
  */
 export default function StatsPage() {
   const { t } = useTranslation()
   const { matches, status, load } = useArchiveStore()
   const roster = usePlayersStore((s) => s.players)
   const [view, setView] = useState<View>('players')
-  const [openId, setOpenId] = useState<string | null>(null)
   const [openMatchId, setOpenMatchId] = useState<string | null>(null)
 
   // 这一页的全部内容都来自存档，所以进页面就读盘（别的工具是打开浮层才读）
@@ -51,56 +93,31 @@ export default function StatsPage() {
   }, [load])
 
   const rows = useMemo(() => statsSource(matches), [matches])
-  const sum = useMemo(() => overview(matches), [matches])
+  const sum = useMemo(() => overview(matches, roster), [matches, roster])
   const players = useMemo(() => playerRows(rows, roster), [rows, roster])
   const games = useMemo(() => gameRows(rows, roster), [rows, roster])
 
-  const open = openId === null ? undefined : players.find((p) => p.playerId === openId)
   const openMatch = openMatchId === null ? undefined : matches.find((m) => m.id === openMatchId)
 
-  const panel = (
-    <>
-      {/* 换行而不是固定列数：横屏左栏放不下三个并排，英文标签会被截断 */}
-      <div className="flex flex-wrap gap-2">
-        {VIEWS.map((v) => (
-          <button
-            key={v.id}
-            type="button"
-            onClick={() => setView(v.id)}
-            aria-pressed={view === v.id}
-            // 选中态是「淡底 + ✓」两重编码：斜视下只靠底色深浅分不出选没选
-            className={`btn-base min-w-0 flex-1 basis-24 gap-2 border px-3 text-base short:!min-h-11 ${
-              view === v.id
-                ? 'border-sky-500/60 bg-sky-500/15 text-sky-200'
-                : 'border-line bg-surface-2 text-text'
-            }`}
-          >
-            {view === v.id && <IconCheck className="size-5 shrink-0" aria-hidden />}
-            <span className="truncate">{t(v.labelKey)}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="card flex flex-col gap-2 !p-3">
-        <span className="section-label">{t('tools.stats.overview')}</span>
-        <Stat label={t('tools.stats.totalGames')} value={String(sum.games)} />
-        <Stat label={t('tools.stats.totalTime')} value={durationText(t, sum.totalMs)} />
-        <Stat label={t('tools.stats.gameKinds')} value={String(sum.gameKinds)} />
-      </div>
-
-      {/* 说清为什么这里的局数比计分纸历史里少 */}
-      {sum.legacy > 0 && (
-        <p className="text-xs leading-relaxed text-text-dim">
-          {t('tools.stats.legacyHint', { n: sum.legacy })}
-        </p>
-      )}
-    </>
-  )
-
   return (
-    <ToolLayout panel={panel}>
-      {/* 列表自己滚，页面级不滚 */}
-      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto wide:grid wide:grid-cols-[15rem_minmax(0,1fr)] wide:gap-4 wide:overflow-hidden">
+      {/* 竖屏：概览卡网格，随页面滚走 */}
+      <div className="wide:hidden">
+        <OverviewCards sum={sum} layout="cards" />
+      </div>
+
+      {/* 竖屏：吸顶 tab（直接子级，见 StatsNav 注释） */}
+      <StatsNav view={view} onChange={setView} />
+
+      {/* 横屏：左栏（概览行 + 竖排导航），内容过高时自己滚 */}
+      <aside className="hidden min-h-0 flex-col gap-4 overflow-y-auto wide:flex">
+        <OverviewCards sum={sum} layout="rows" />
+        <StatsNav view={view} onChange={setView} vertical />
+      </aside>
+
+      {/* 竖屏不许有 min-h-0：那会丢掉「不小于内容高」的默认下限，
+          整页滚动的 flex 列里列表会被压缩而不是把页面撑出滚动 */}
+      <section className="flex flex-col gap-1.5 wide:min-h-0 wide:overflow-y-auto">
         {status === 'loading' && <p className="px-1 py-2 text-sm text-text-muted">{t('common.loading')}</p>}
 
         {/* IndexedDB 被禁（隐私模式等）就没有统计可看，其余工具照用 */}
@@ -124,15 +141,21 @@ export default function StatsPage() {
           </p>
         )}
 
-        {view === 'players' && <PlayerList rows={players} onOpen={setOpenId} />}
+        {/* 说清为什么这里的局数比计分纸历史里少 */}
+        {sum.legacy > 0 && (
+          <p className="px-1 pb-1 text-xs leading-relaxed text-text-dim">
+            {t('tools.stats.legacyHint', { n: sum.legacy })}
+          </p>
+        )}
+
+        {view === 'players' && <PlayerList rows={players} />}
         {view === 'games' && <GameList rows={games} />}
         {view === 'time' && <TimeList matches={matches} onOpen={setOpenMatchId} />}
-      </div>
+      </section>
 
-      {open && <PlayerDetail row={open} onClose={() => setOpenId(null)} />}
       {openMatch && (
         <MatchDetail key={openMatch.id} match={openMatch} onClose={() => setOpenMatchId(null)} />
       )}
-    </ToolLayout>
+    </div>
   )
 }

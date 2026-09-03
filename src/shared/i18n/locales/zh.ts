@@ -980,6 +980,13 @@ export const zh = {
       totalGames: '记录局数',
       totalTime: '累计时长',
       gameKinds: '玩过的游戏',
+      /** 滚动窗口，不按自然周/月（见 aggregate.ts 的 Overview） */
+      recent7: '近 7 天',
+      recent30: '近 30 天',
+      /** 局数最多的一盒游戏 */
+      topGame: '最常玩',
+      /** 局数最多的名单玩家 */
+      topPlayer: '最活跃',
       /** 旧版计分纸的存档没有胜负与分数，进不了统计，得说清为什么这里的局数少 */
       legacyHint: '另有 {{n}} 条旧版计分纸记录没有胜负与分数，不算进上面的总览，在「按时间」里仍能找到。',
       unavailable: '这台设备不能读本地存档，可能开着隐私模式。其余功能不受影响。',
@@ -992,9 +999,8 @@ export const zh = {
       /** 均分只在同一盒游戏内平均，跨游戏不是一个量纲 */
       avg: '均分 {{score}}',
       avgTime: '均 {{time}}',
-      openPlayer: '查看 {{name}} 的战绩',
+      openPlayer: '展开或收起 {{name}} 的分游戏战绩',
       noWinner: '还没有胜负记录',
-      byGame: '按游戏拆分',
       /** 「按时间」只渲染最近 50 条，更早的按需展开 */
       more: '显示更早的',
     },

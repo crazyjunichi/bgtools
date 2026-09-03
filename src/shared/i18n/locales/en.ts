@@ -838,6 +838,13 @@ export const en: Resources = {
       totalGames: 'Matches',
       totalTime: 'Total time',
       gameKinds: 'Games played',
+      /** 滚动窗口，不按自然周/月（见 aggregate.ts 的 Overview） */
+      recent7: 'Last 7 days',
+      recent30: 'Last 30 days',
+      /** 局数最多的一盒游戏 */
+      topGame: 'Most played',
+      /** 局数最多的名单玩家 */
+      topPlayer: 'Most active',
       legacyHint:
         '{{n}} older score sheet records have no results or scores, so they stay out of the overview above. They are still listed under “By time”.',
       unavailable: 'This device cannot read local archives — private mode, perhaps. Everything else still works.',
@@ -849,9 +856,8 @@ export const en: Resources = {
       rate: '{{n}}% win',
       avg: 'Avg {{score}}',
       avgTime: 'Avg {{time}}',
-      openPlayer: 'View {{name}}’s record',
+      openPlayer: 'Expand or collapse {{name}}’s per-game record',
       noWinner: 'No results yet',
-      byGame: 'By game',
       more: 'Show earlier',
     },
 

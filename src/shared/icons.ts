@@ -77,6 +77,8 @@ export {
   Download as IconSave,
   Search as IconSearch,
   ChevronRight as IconSelected,
+  /** 行内展开/收起的指示三角（收起朝右，展开时旋转朝下）。与 IconSelected 同字形不同语义 */
+  ChevronRight as IconExpand,
   Settings as IconSettings,
   /** 跳过当前这一步，不是「下一页」—— 带竖线的双三角才是「跳到下一个」 */
   SkipForward as IconSkip,

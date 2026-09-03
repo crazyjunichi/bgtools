@@ -8,7 +8,7 @@ import type { GameRow } from './aggregate'
 type Props = { rows: GameRow[] }
 
 /**
- * 按盒一行。**不是按钮** —— 一盒游戏没有比这三个数更细的下钻内容，
+ * 按盒一行。**不是按钮** —— 一盒游戏没有比这几个数更细的下钻内容，
  * 做成可点的会让人以为里面还有东西。
  */
 export function GameList({ rows }: Props) {
@@ -21,37 +21,32 @@ export function GameList({ rows }: Props) {
         return (
           <div
             key={row.gameId ?? ''}
-            className="flex shrink-0 flex-col gap-1 rounded-xl border border-line bg-surface-2 px-3 py-2"
+            className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-0.5 rounded-xl border border-line bg-surface-2 px-3 py-1.5"
           >
-            <span className="flex items-baseline justify-between gap-3">
-              <span className="flex min-w-0 items-baseline gap-2">
-                {icon !== null && <span aria-hidden>{icon}</span>}
-                <span className="truncate text-base font-semibold">{name}</span>
-              </span>
-              <span className="shrink-0 font-mono text-base tabular-nums">
-                {t('tools.stats.gameCount', { n: row.games })}
-              </span>
+            <span className="flex min-w-0 items-baseline gap-2">
+              {icon !== null && <span aria-hidden>{icon}</span>}
+              <span className="truncate text-sm font-semibold">{name}</span>
             </span>
 
-            <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-dim">
+            <span className="ml-auto flex shrink-0 items-center gap-3 text-xs tabular-nums text-text-dim">
+              <span className="font-mono text-sm text-text">
+                {t('tools.stats.gameCount', { n: row.games })}
+              </span>
               {row.avgMs !== null && (
-                <span className="tabular-nums">
-                  {t('tools.stats.avgTime', { time: durationText(t, row.avgMs) })}
-                </span>
+                <span>{t('tools.stats.avgTime', { time: durationText(t, row.avgMs) })}</span>
               )}
               {row.topWinner === null ? (
                 <span>{t('tools.stats.noWinner')}</span>
               ) : (
                 <span className="flex min-w-0 items-center gap-1">
                   <IconCrown className="size-3.5 shrink-0" aria-hidden />
+                  {/* 玩家色允许两人共用，名字必须同框 */}
                   <span
                     className={`size-2.5 shrink-0 rounded-full ${PLAYER_DOT[row.topWinner.color]}`}
                     aria-hidden
                   />
-                  <span className="max-w-24 truncate">{row.topWinner.name}</span>
-                  <span className="tabular-nums">
-                    {t('tools.stats.winCount', { n: row.topWinner.wins })}
-                  </span>
+                  <span className="max-w-20 truncate">{row.topWinner.name}</span>
+                  <span>{t('tools.stats.winCount', { n: row.topWinner.wins })}</span>
                 </span>
               )}
             </span>

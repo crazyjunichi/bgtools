@@ -26,6 +26,20 @@ export function dateTimeText(at: number): string {
   })
 }
 
+/** 按天分组的日期头（统计页时间线用）。含星期几 —— 「上周三那晚」比「8月27日」更好回忆 */
+export function dayText(at: number): string {
+  return new Date(at).toLocaleDateString(i18n.language, {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
+  })
+}
+
+/** 一天内的时刻。日期已经由分组头给了，行内只留 HH:mm */
+export function timeText(at: number): string {
+  return new Date(at).toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' })
+}
+
 /**
  * 分数的显示形式。负号用 U+2212 而非连字符：与 [Stepper](../components/Stepper.tsx) 一致，
  * 等宽字体下宽度也才对得上。**CSV 不能用它**（Excel 不认，整列会被当成文本）。

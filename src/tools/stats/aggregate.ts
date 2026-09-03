@@ -47,6 +47,13 @@ export type Overview = {
   gameKinds: number
   /** 被排除在统计外的旧存档条数，> 0 时得在界面上说明，否则总数与历史列表对不上 */
   legacy: number
+  /** 滚动窗口：此刻往前 7 / 30 天。不按自然周/自然月 —— 那种窗口的读数随星期几跳变 */
+  recent7: number
+  recent30: number
+  /** 局数最多的一盒；没有任何指定游戏的局时为 null */
+  topGame: { gameId: string; games: number } | null
+  /** 局数最多的名单玩家；全是临时席位时为 null */
+  topPlayer: { name: string; color: PlayerColor; games: number } | null
 }
 
 const emptyTally = (): Tally => ({ games: 0, decided: 0, wins: 0, scoreSum: 0, scored: 0 })
@@ -89,13 +96,47 @@ export function statsSource(matches: readonly Match[]): Match[] {
   return matches.filter((m) => !m.legacy)
 }
 
-export function overview(all: readonly Match[]): Overview {
+/**
+ * 页面顶部的概览。`matches` 必须是**按 endAt 倒序**的（取 topPlayer 快照时第一次遇到的才是最近身份）。
+ */
+export function overview(all: readonly Match[], roster: readonly Player[]): Overview {
   const rows = statsSource(all)
+  const now = Date.now()
+  const byGame = new Map<string, number>()
+  const byPlayer = new Map<string, { snap: MatchPlayer; games: number }>()
+  let totalMs = 0
+  let recent7 = 0
+  let recent30 = 0
+
+  for (const m of rows) {
+    totalMs += Math.max(0, m.endAt - m.startedAt)
+    if (m.gameId !== null) byGame.set(m.gameId, (byGame.get(m.gameId) ?? 0) + 1)
+    const age = now - m.endAt
+    if (age < 7 * 86_400_000) recent7 += 1
+    if (age < 30 * 86_400_000) recent30 += 1
+    for (const p of m.players) {
+      if (p.playerId === null) continue
+      const e = byPlayer.get(p.playerId)
+      if (e === undefined) byPlayer.set(p.playerId, { snap: p, games: 1 })
+      else e.games += 1
+    }
+  }
+
+  const topGame = [...byGame].sort((a, b) => b[1] - a[1])[0]
+  const topPlayer = [...byPlayer].sort((a, b) => b[1].games - a[1].games)[0]
+
   return {
     games: rows.length,
-    totalMs: rows.reduce((sum, m) => sum + Math.max(0, m.endAt - m.startedAt), 0),
-    gameKinds: new Set(rows.flatMap((m) => (m.gameId === null ? [] : [m.gameId]))).size,
+    totalMs,
+    gameKinds: byGame.size,
     legacy: all.length - rows.length,
+    recent7,
+    recent30,
+    topGame: topGame === undefined ? null : { gameId: topGame[0], games: topGame[1] },
+    topPlayer:
+      topPlayer === undefined
+        ? null
+        : { ...identity(topPlayer[0], topPlayer[1].snap, roster), games: topPlayer[1].games },
   }
 }
 
