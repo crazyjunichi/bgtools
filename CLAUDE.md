@@ -9,7 +9,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 - **Tailwind 4 无配置文件**：主题在 [src/index.css](src/index.css) 的 `@theme` 里，不要创建 `tailwind.config.js` 或 `postcss.config.js`
 - **hash 路由**（`createHashRouter`）：为了静态托管免配 rewrite，不要改成 BrowserRouter
 - **`base: './'`**：产物路径必须保持相对，新增静态资源引用不要写绝对路径 `/xxx`
-- **纯本地、无后端**：不引入网络请求。存储分两级，见下方「持久化」一节
+- **纯本地、无后端**：不引入网络请求。存储分两级，见下方「持久化」一节。**唯一例外是扫码发牌**（[deal-roles/online](src/shared/deal-roles/online)），它的约束见下方「扫码发牌」一节 —— 别把它当成"可以出网了"的口子
 - **PWA 更新走 `prompt`**：不要改回 `registerType: 'autoUpdate'` —— GH Pages 是整站全量替换，autoUpdate 的 skipWaiting 会在旧页面还开着时清掉它正在用的 chunk，懒加载的工具页当场 404。新版本由 [UpdatePrompt](src/UpdatePrompt.tsx) 交给用户择时更新，SW 还没接管时的兜底重载见 [shared/staleChunk.ts](src/shared/staleChunk.ts)
 
 ## 新增工具的机械流程
@@ -95,6 +95,23 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 - `note` 是 `Match` 上**唯一允许事后修改**的字段（回看时补一句，[MatchNote](src/shared/match/MatchNote.tsx) 落在 blur 写盘），其余字段只增删不改
 - 旧存档（计分纸 v1 的 `score-sheet-games`）靠 `archive.ts` 的**读时适配**保住并标 `legacy`：只进历史列表，不进统计、不给改备注、不写盘。**旧表不迁移也不删**
 
+## 扫码发牌（deal-roles/online）
+
+发身份有两种方式：**轮传**（一台设备沿桌传，零配置、不用网络，是默认那条路）和**扫码**（组织者举二维码，各人用自己手机扫，扫到即看到身份、零额外点击）。后者是全项目唯一出网的地方。组织者那一侧的准备工作（建库、要发布的数据库规则、隐私边界）在 [docs/DEAL-ONLINE.md](docs/DEAL-ONLINE.md) —— **改了协议或规则要求就要同步它**，那是组织者唯一的说明书。
+
+不许违反的：
+
+- **必须能完整降级到轮传**。没配后端、断网、后端报错，都只让「扫码发牌」这一个按钮走不通，其余功能与轮传**一个字不受影响**。不许因为它引入任何全局的在线判断
+- **后端地址不进仓库、不进构建产物、不进 CI**。它由组织者运行时粘贴，只存在他自己的浏览器（`bgtools:deal-online`），通过二维码的 fragment 传给玩家。代码里出现任何具体地址、API Key、token 都是错的
+- **组织者的设备不是服务器**：举完码就可能被拿去干别的。所以排队只能靠一个大家都能写的外部端点，见 [backend.ts](src/shared/deal-roles/online/backend.ts) 的契约
+- **数据库里不许出现"谁是什么"**：只有排队记录（rid → 服务端时间）和内容型游戏的内容池。牌堆配方（配比 + 种子）走二维码 —— 这样只拿到数据库地址的人看到的是一堆时间戳，要对上必须在场扫到码
+- **排队序号必须按 `(时间戳, rid)` 双键排**。同毫秒罕见但会发生，各设备排序不一致就会有两人拿到同一张牌
+- **牌堆展开顺序按 roleId 字典序**（[buildDeckSeeded](src/shared/deal-roles/deck.ts)），不按 `set.roles` 的数组顺序：那个数组一改，版本不同的两台设备就算出不同的牌堆
+- **内容池必须在显示二维码之前写完**。它的写权限是"不存在才能写"，抢先写入会锁死
+- **界面上不出异常堆栈**，一律走 `DealFault` + [messages.ts](src/shared/deal-roles/online/messages.ts) 的一句人话
+- 玩家落地页 [Join](src/pages/Join.tsx) **挂在 `App` 之外**（与 `/` 平级）：扫码进来的人不是来用工具箱的
+- 新增一款用发身份的游戏，记得在 [deal-roles/registry.ts](src/shared/deal-roles/registry.ts) 补一行，否则组织者发得出、玩家认不出
+
 ## 运行场景基线（每个工具都要满足）
 
 **平板平放在桌面中央、多人斜视、视距 50–70cm；竖屏更常见，横屏也照常用 —— 两个朝向都要成立，拿不准先按竖屏验。** 完整规范与取值依据见 [docs/DESIGN.md](docs/DESIGN.md)，以下是不许违反的部分：
@@ -162,6 +179,8 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 ## 随机数
 
 任何随机（骰子、抽签、洗牌、首位玩家）必须用 `crypto.getRandomValues` + 拒绝采样，参考 [shared/random.ts](src/shared/random.ts) 的 `rollDie`。**不要用 `Math.random`** —— 桌游场景下公平性会被玩家当场质疑。例外：纯视觉动画的假值可以用 `Math.random`。
+
+**需要多台设备算出同一个结果时**（目前只有扫码发牌：各人的手机彼此不通信，只能各自从同一个种子推出同一副牌）允许用确定性 PRNG，但**种子必须来自 `crypto`**（[online/seeded.ts](src/shared/deal-roles/online/seeded.ts) 的 `newSeed`），可复现的只是"种子 → 序列"这段展开。种子用 `Math.random` 生成等于把整副牌的随机性降到那个量级，绝对不行。
 
 ## 共享层
 

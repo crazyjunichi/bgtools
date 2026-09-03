@@ -5,6 +5,7 @@ import { createHashRouter, RouterProvider } from 'react-router-dom'
 import App from './App'
 import './index.css'
 import Home from './pages/Home'
+import Join from './pages/Join'
 import LoadError from './pages/LoadError'
 import NotFound from './pages/NotFound'
 import StyleLab from './pages/StyleLab'
@@ -37,6 +38,11 @@ const router = createHashRouter([
       { path: '*', element: <NotFound /> },
     ],
   },
+  /*
+   * 扫码发牌的落地页，**刻意与 `/` 平级、不在 App 里面**：扫码进来的人不是来用工具箱的，
+   * 顶栏的名单/设置按钮对他没有意义，他一进来就该看到自己那张牌。
+   */
+  { path: '/join', element: <Join /> },
 ])
 
 createRoot(document.getElementById('root')!).render(

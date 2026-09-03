@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { ConfirmButton } from '../components/ConfirmButton'
 import { Overlay } from '../components/Overlay'
 import { buzz } from '../haptics'
-import { IconDeal, IconEraser, IconMinus } from '../icons'
+import { IconDeal, IconEraser, IconMinus, IconQr } from '../icons'
 import { ACCENT_SOFT, ACCENT_SOLID, ACCENT_TEXT, type DealAccent } from './accent'
 import { matchesPreset, totalOf } from './deck'
 import { useDealRolesStore } from './store'
@@ -15,7 +15,10 @@ type Props = {
   set: RoleSet
   counts: RoleCounts
   accent: DealAccent
+  /** 轮传发牌：一台设备沿桌传 */
   onStart: () => void
+  /** 扫码发牌：各人用自己手机扫码领牌 */
+  onStartOnline: () => void
   onClose: () => void
 }
 
@@ -32,7 +35,7 @@ type Props = {
  * - 右列（身份池）走**网格**。每格只有"身份名 ×N"，长度封顶、格数不超过身份种数，
  *   横着排省下来的高度正好留给左边那两个列表
  */
-export function DealSetup({ set, counts, accent, onStart, onClose }: Props) {
+export function DealSetup({ set, counts, accent, onStart, onStartOnline, onClose }: Props) {
   const { t } = useTranslation()
   const { setCount, applyPreset, clear } = useDealRolesStore()
   const total = totalOf(counts)
@@ -216,6 +219,23 @@ export function DealSetup({ set, counts, accent, onStart, onClose }: Props) {
           >
             <IconDeal className="size-6 short:size-5" aria-hidden />
             {total < MIN_CARDS ? t('dealRoles.tooFew') : t('dealRoles.start', { n: total })}
+          </button>
+
+          {/*
+           * 扫码另起一行、且明显次一档：轮传零配置、不用网络，仍是默认那条路。
+           * 两个按钮横排会让主按钮被挤短，而它的文案带张数，压不得。
+           */}
+          <button
+            type="button"
+            disabled={total < MIN_CARDS}
+            onClick={() => {
+              onStartOnline()
+              buzz(20)
+            }}
+            className="btn-quiet shrink-0 gap-2 !text-base short:!min-h-11 short:!text-sm"
+          >
+            <IconQr className="size-5 short:size-4" aria-hidden />
+            {t('dealRoles.online.start')}
           </button>
         </div>
       </div>

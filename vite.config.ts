@@ -47,6 +47,15 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        runtimeCaching: [
+          {
+            // 扫码发牌的排队请求**绝不能进缓存**：领牌是一次写入，
+            // 拿到缓存里的旧快照就会算出别人那张牌。域名只匹配形态，
+            // 具体地址由组织者运行时填，不进构建产物
+            urlPattern: /^https:\/\/[^/]+\.(?:firebasedatabase\.app|firebaseio\.com)\//,
+            handler: 'NetworkOnly',
+          },
+        ],
       },
     }),
   ],
