@@ -188,13 +188,29 @@ export function scoreMatchDraft(): MatchDraft {
 
 /**
  * 存进 `Match.payload` 的局面。整份局面而不是算好的总分：回看要能看到逐轮明细，
- * 而分数细则（哪轮加了几分）只有这个工具知道怎么读。第一步还没有读它的地方
+ * 而分数细则（哪轮加了几分）只有这个工具知道怎么读（见 [match.ts](match.ts)）
  */
 export type ScorePayload = {
   seats: Seat[]
   rounds: Round[]
   draft: Record<string, number>
   startedAt: number
+}
+
+/**
+ * 从 `Match.payload` 反解。**这是个外部边界**（单表里躺着所有工具的 payload，
+ * 也可能是别的版本写下的东西），所以形状要校验而不是硬转。
+ */
+export function readScorePayload(payload: unknown): ScorePayload | null {
+  if (payload === null || typeof payload !== 'object') return null
+  const p = payload as Partial<ScorePayload>
+  if (!Array.isArray(p.seats) || !Array.isArray(p.rounds)) return null
+  return {
+    seats: p.seats,
+    rounds: p.rounds,
+    draft: p.draft ?? {},
+    startedAt: p.startedAt ?? 0,
+  }
 }
 
 export function totalOf(rounds: Round[], draft: Record<string, number>, seatId: string): number {

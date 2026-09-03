@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next'
+import type { ComponentType } from 'react'
 import type { I18nKey } from '../i18n/types'
 import type { LucideIcon } from '../icons'
 import type { SharePalette } from './share/paint'
@@ -28,4 +29,18 @@ export type MatchExport = {
   /** 落盘时的扩展名。只有 `png` 会在面板里预览，其余形态给一块占位 */
   ext: string
   build: (m: MatchDraft, p: SharePalette, t: TFunction) => Promise<Blob>
+}
+
+/**
+ * 一个工具为「回看它记的那一局」提供的东西。整份**懒加载**（同 `ToolEntry.load`）：
+ * 回看入口不该把各工具的模板常量与 canvas 渲染器一起打进首屏。
+ */
+export type MatchTool = {
+  /**
+   * 那一局的细则视图。**反解不出 `payload` 时自己渲染一句说明、不抛** ——
+   * 与 [MatchExport.build](#MatchExport) 相反：那边抛了还有战绩榜兜着，
+   * 这里抛了整个详情浮层就白了
+   */
+  Detail: ComponentType<{ match: MatchDraft }>
+  exports: readonly MatchExport[]
 }

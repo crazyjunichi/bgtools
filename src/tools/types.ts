@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import type { I18nKey } from '../shared/i18n/types'
+import type { MatchTool } from '../shared/match/detail'
 
 /** 工具的元数据，同时驱动首页宫格与路由生成 */
 export type ToolMeta = {
@@ -42,4 +43,10 @@ export type ToolMeta = {
 export type ToolEntry = ToolMeta & {
   /** 懒加载页面组件，保证首页首屏不打包所有工具 */
   load: () => Promise<{ default: ComponentType }>
+  /**
+   * 回看它记的一局：细则视图 + 明细导出（[MatchTool](../shared/match/detail.ts)）。
+   * **只有会归档的工具有**，缺省即「这个工具的局没有细则可看」。
+   * 同 `load` 一样懒加载：回看入口不该把各工具的渲染器打进首屏
+   */
+  match?: () => Promise<MatchTool>
 }

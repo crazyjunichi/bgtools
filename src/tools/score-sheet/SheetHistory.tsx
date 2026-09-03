@@ -10,9 +10,8 @@ import type { Match } from '../../shared/match/types'
 import { PLAYER_SOLID } from '../../shared/players/colors'
 import { scoreSheetMeta } from './meta'
 import { readSheetPayload, type SheetPayload } from './payload'
-import { SheetGrid } from './SheetGrid'
+import { SheetDetail } from './SheetDetail'
 import { buildSnapshot } from './snapshot'
-import { entriesOf } from './store'
 
 type Props = {
   onLoad: (payload: SheetPayload, endAt: number) => void
@@ -26,9 +25,6 @@ type Props = {
  * 攒了一年之后列表得能滚得动，所以默认只出最近这批，更早的按需展开。
  */
 const PAGE = 50
-
-/** 只读矩阵的框高：受约束的是高度，所以是 vh 不是 vmin（见 CLAUDE.md 的判据 C） */
-const GRID_BOX = 'flex h-[min(26rem,48vh)] flex-col short:h-[min(14rem,42vh)]'
 
 /**
  * 历史记录：列表 + 单局详情**两层视图共用一个浮层**，不叠第二层
@@ -79,7 +75,6 @@ export function SheetHistory({ onLoad, onShare, onClose }: Props) {
 
   if (open) {
     const { match, payload } = open
-    const entries = entriesOf(payload.templateId, payload.customEntries, payload.overrides)
     const snap = buildSnapshot(payload, match.endAt, t)
     const spent = match.endAt - match.startedAt
     return (
@@ -107,15 +102,8 @@ export function SheetHistory({ onLoad, onShare, onClose }: Props) {
         }
         onClose={onClose}
       >
-        {/* 只读态的矩阵与当前局长得一模一样，桌上不用重新认一套界面 */}
-        <div className={GRID_BOX}>
-          <SheetGrid
-            readOnly
-            seats={payload.seats.map((s) => ({ ...s, linked: false }))}
-            entries={entries}
-            cells={payload.cells}
-          />
-        </div>
+        {/* 与统计页回看用的是同一个细则视图 */}
+        <SheetDetail match={match} />
 
         {/* 备注是记录里唯一能事后改的字段 */}
         <MatchNote key={match.id} match={match} />

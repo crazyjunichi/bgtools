@@ -271,6 +271,12 @@ export const zh = {
       },
     },
 
+    /** 回看一局的细则视图（[MatchTool.Detail](../../match/detail.ts)），各工具自己画 */
+    detail: {
+      /** 反解不出那一局的局面时（别的版本记下的）只少这一块，名单与备注照显示 */
+      unreadable: '这一局的细则读不出来，可能是旧版本记下的。名次与分数仍在上面。',
+    },
+
     /** 纯文本摘要（[summary](../../match/share/summary.ts)），贴到群里用 */
     summary: {
       note: '备注：{{text}}',

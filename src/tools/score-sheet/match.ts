@@ -1,9 +1,10 @@
 import type { TFunction } from 'i18next'
 import { IconCsv, IconImage } from '../../shared/icons'
-import type { MatchExport } from '../../shared/match/detail'
+import type { MatchExport, MatchTool } from '../../shared/match/detail'
 import type { MatchDraft } from '../../shared/match/types'
 import { readSheetPayload } from './payload'
 import { renderMatrix, renderTransposed } from './png/matrix'
+import { SheetDetail } from './SheetDetail'
 import { buildSnapshot, toCsv } from './snapshot'
 
 /**
@@ -47,3 +48,5 @@ export const sheetExports: readonly MatchExport[] = [
       new Blob([toCsv(snapshotOf(m, t))], { type: 'text/csv;charset=utf-8' }),
   },
 ]
+
+export const matchTool: MatchTool = { Detail: SheetDetail, exports: sheetExports }

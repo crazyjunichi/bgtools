@@ -229,6 +229,10 @@ export const en: Resources = {
       },
     },
 
+    detail: {
+      unreadable: 'The details of this game cannot be read, probably saved by an older version. Places and scores are still above.',
+    },
+
     summary: {
       note: 'Note: {{text}}',
     },
