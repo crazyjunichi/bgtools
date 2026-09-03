@@ -24,7 +24,7 @@ const BEEP_MS = 900
  */
 export function HostRunner({ flow }: { flow: HostFlow }) {
   const { t } = useTranslation()
-  const { steps, index, endAt, remainMs, paused, next, pause, resume, restart, stop } =
+  const { steps, index, endAt, remainMs, paused, reveal, next, pause, resume, restart, stop } =
     useVoiceHostStore()
   const [now, setNow] = useState(() => Date.now())
 
@@ -149,12 +149,18 @@ export function HostRunner({ flow }: { flow: HostFlow }) {
           <span className="font-mono text-data font-bold tabular-nums text-text">
             {formatMS(left)}
           </span>
+        ) : step.kind === 'reveal' ? (
+          <>
+            <p className="text-lg font-bold text-balance text-text-muted">{stepText(step, t)}</p>
+            {/* 密件大字：全桌只有该看的人睁着眼，必须 50–70cm 斜视下可读 */}
+            <span className="text-data font-bold break-all text-text">{reveal}</span>
+          </>
         ) : (
           <p className="text-data-sm font-bold text-balance text-text">{stepText(step, t)}</p>
         )}
 
         {/* 「等你确认」的主操作放在显示区里而不是控制条：它是此刻唯一该按的东西 */}
-        {!done && step.kind === 'confirm' && (
+        {!done && (step.kind === 'confirm' || step.kind === 'reveal') && (
           <button
             type="button"
             onClick={() => {
@@ -164,7 +170,7 @@ export function HostRunner({ flow }: { flow: HostFlow }) {
             className="btn-base min-h-16 gap-2 bg-sky-400 px-6 text-xl font-bold text-ink short:!min-h-12 short:text-base"
           >
             <IconCheck className="size-6 short:size-5" aria-hidden />
-            {t('voiceHost.spoken')}
+            {t(step.kind === 'reveal' ? 'voiceHost.memorized' : 'voiceHost.spoken')}
           </button>
         )}
       </div>
@@ -174,7 +180,7 @@ export function HostRunner({ flow }: { flow: HostFlow }) {
         <button
           type="button"
           // 「等你确认」本身就是在等人，再给一个暂停只会让人以为流程卡住了
-          disabled={done || step.kind === 'confirm'}
+          disabled={done || step.kind === 'confirm' || step.kind === 'reveal'}
           onClick={() => {
             if (paused) resume()
             else pause()

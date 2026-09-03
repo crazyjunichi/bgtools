@@ -36,6 +36,8 @@ export function compile(flow: HostFlow, values: ParamValues): RunStep[] {
       out.push({ kind: 'wait', sec: num(step.sec, values) })
     } else if (step.kind === 'confirm') {
       out.push({ kind: 'confirm', textKey: step.textKey })
+    } else if (step.kind === 'reveal') {
+      out.push({ kind: 'reveal', textKey: step.textKey })
     } else {
       out.push({ kind: 'beep' })
     }

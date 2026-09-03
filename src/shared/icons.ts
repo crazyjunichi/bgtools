@@ -37,6 +37,8 @@ export {
   Pencil as IconEdit,
   /** 「整格清空」，与退格区分：退格删一位，橡皮擦整格 */
   Eraser as IconEraser,
+  /** 看密件（主持流程的 reveal 步）：睁眼正是「现在可以看」的字形 */
+  Eye as IconEye,
   Maximize as IconFullscreen,
   Boxes as IconGroups,
   History as IconHistory,

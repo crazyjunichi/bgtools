@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { QuickBar } from './quick/QuickBar'
+import { useBackOverride } from './shared/backOverride'
 import { canRotate, useOrientation } from './shared/hooks/useOrientation'
 import { IconBack, IconLogo, IconRotate } from './shared/icons'
 import type { ToolEntry } from './tools/types'
@@ -21,6 +22,8 @@ type Props = { tool?: ToolEntry }
 export function AppHeader({ tool }: Props) {
   const { t } = useTranslation()
   const { landscape, toggle } = useOrientation()
+  // 工具内子视图注册的返回接管（如狼人真言的主持页）：有它时返回回工具入口而非首页
+  const onBack = useBackOverride((s) => s.onBack)
 
   return (
     <header
@@ -41,13 +44,24 @@ export function AppHeader({ tool }: Props) {
         }`}
       >
         {tool ? (
-          <Link
-            to="/"
-            className="flex size-12 items-center justify-center rounded-xl text-text-muted active:scale-95"
-            aria-label={t('header.back')}
-          >
-            <IconBack className="size-6" aria-hidden />
-          </Link>
+          onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex size-12 items-center justify-center rounded-xl text-text-muted active:scale-95"
+              aria-label={t('header.backInTool')}
+            >
+              <IconBack className="size-6" aria-hidden />
+            </button>
+          ) : (
+            <Link
+              to="/"
+              className="flex size-12 items-center justify-center rounded-xl text-text-muted active:scale-95"
+              aria-label={t('header.back')}
+            >
+              <IconBack className="size-6" aria-hidden />
+            </Link>
+          )
         ) : (
           <IconLogo className="ml-2 size-6 text-text" aria-hidden />
         )}

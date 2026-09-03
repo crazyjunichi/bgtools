@@ -31,6 +31,8 @@ export const zh = {
 
   header: {
     back: '返回首页',
+    /** 顶栏返回被工具内子视图接管时（回工具入口而非首页），读屏不能说成「返回首页」 */
+    backInTool: '返回',
     toPortrait: '切换到竖屏',
     toLandscape: '切换到横屏',
   },
@@ -384,12 +386,15 @@ export const zh = {
     again: '再跑一遍',
     /** 「等你确认」那一步的主按钮：把屏上那句话说完了才点 */
     spoken: '说完了，继续',
+    /** reveal 步的主按钮：密件记在脑子里了才点 */
+    memorized: '记住了，继续',
     noSpeech: '这台设备不支持语音播报，流程改为屏幕显示',
     /** 每种步骤是什么。也当读屏文本用（流程预览里那排图标的 aria-label） */
     kind: {
       say: '播报',
       wait: '等待',
       confirm: '等你确认',
+      reveal: '看密件',
       beep: '提示音',
     },
   },
@@ -506,6 +511,60 @@ export const zh = {
           hunter: '猎人',
           guard: '守卫',
           idiot: '白痴',
+        },
+        team: {
+          wolf: '狼人阵营',
+          village: '好人阵营',
+        },
+      },
+    },
+
+    werewords: {
+      name: '狼人真言',
+      desc: '屏幕显词 · 语音主持 · 发身份',
+      flow: '标准流程',
+      home: {
+        dealDesc: '轮传或扫码，各看各的身份',
+        host: '主持',
+        hostDesc: '语音主持一整局，魔法词在屏幕上显',
+      },
+      difficulty: {
+        label: '词语难度',
+        easy: '简单',
+        standard: '标准',
+      },
+      param: {
+        daySec: '提问时长',
+      },
+      /** 这些是**要被念出来**的台词：写口语、带标点（TTS 靠标点断句和收尾） */
+      say: {
+        nightFall: '天黑请闭眼。村长请睁眼。',
+        mayorClose: '村长请闭眼。狼人请睁眼。',
+        wolvesClose: '狼人请闭眼。先知请睁眼。',
+        seerClose: '先知请闭眼。',
+        dayBreak:
+          '天亮了，请所有人睁眼。现在轮流向村长提问，猜出魔法词。村长只能回答：是、否、也许、很接近、差太远。',
+        discuss: '你们有 {{n}} 秒，时间到会有提示音。现在开始。',
+        timeUp: '时间到。',
+      },
+      /** 显词步的屏上指令：词本身在旁边大字显示，这句只是告诉该看的人看什么 */
+      reveal: {
+        mayor: '村长请记住这个魔法词',
+        wolves: '狼人请记住这个魔法词',
+        seer: '先知请记住这个魔法词',
+      },
+      /** 不念：结局内容每局都变，主持人自己宣布 */
+      do: {
+        ending:
+          '宣布结果：若有人猜中魔法词，狼人有最后一次指认先知翻盘的机会；若没人猜中，村民投票指认狼人',
+      },
+      /** 发身份用的身份集（[roles.ts](../../../../tools/werewords/roles.ts)）。村长是职责不是身份，不在牌堆里 */
+      roles: {
+        set: '标准身份',
+        role: {
+          wolf: '狼人',
+          seer: '先知',
+          villager: '村民',
         },
         team: {
           wolf: '狼人阵营',

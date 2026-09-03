@@ -5,6 +5,7 @@ import { statsMeta } from './stats/meta'
 import { touchPickMeta } from './touch-pick/meta'
 import type { ToolEntry } from './types'
 import { werewolfMeta } from './werewolf/meta'
+import { werewordsMeta } from './werewords/meta'
 import { yahtzeeMeta } from './yahtzee/meta'
 
 /**
@@ -31,6 +32,7 @@ export const tools: ToolEntry[] = [
   { ...statsMeta, load: () => import('./stats/StatsPage') },
   { ...yahtzeeMeta, load: () => import('./yahtzee/YahtzeePage') },
   { ...werewolfMeta, load: () => import('./werewolf/WerewolfPage') },
+  { ...werewordsMeta, load: () => import('./werewords/WerewordsPage') },
 ]
 
 export function findTool(pathname: string): ToolEntry | undefined {

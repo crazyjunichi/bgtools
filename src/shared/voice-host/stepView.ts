@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { I18nKey } from '../i18n/types'
-import { IconAlarm, IconCheck, IconSpeak, IconTimer, type LucideIcon } from '../icons'
+import { IconAlarm, IconCheck, IconEye, IconSpeak, IconTimer, type LucideIcon } from '../icons'
 import { formatMS } from '../time'
 import type { RunStep } from './types'
 
@@ -12,6 +12,7 @@ export const KIND_ICON: Record<RunStep['kind'], LucideIcon> = {
   say: IconSpeak,
   wait: IconTimer,
   confirm: IconCheck,
+  reveal: IconEye,
   beep: IconAlarm,
 }
 
@@ -19,6 +20,7 @@ export const KIND_LABEL: Record<RunStep['kind'], I18nKey> = {
   say: 'voiceHost.kind.say',
   wait: 'voiceHost.kind.wait',
   confirm: 'voiceHost.kind.confirm',
+  reveal: 'voiceHost.kind.reveal',
   beep: 'voiceHost.kind.beep',
 }
 
@@ -33,7 +35,7 @@ export function stepText(step: RunStep, t: TFunction): string {
     const say = t as (key: I18nKey, vars: Record<string, number>) => string
     return say(step.textKey, step.vars)
   }
-  if (step.kind === 'confirm') return t(step.textKey)
+  if (step.kind === 'confirm' || step.kind === 'reveal') return t(step.textKey)
   if (step.kind === 'wait') return formatMS(step.sec * 1000)
   return t(KIND_LABEL.beep)
 }

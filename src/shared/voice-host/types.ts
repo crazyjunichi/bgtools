@@ -7,7 +7,7 @@ import type { I18nKey } from '../i18n/types'
 export type NumRef = number | { param: string }
 
 /**
- * 流程里的一步。**只有这四种**，刻意不做嵌套分组、重复 N 次与并行倒计时 ——
+ * 流程里的一步。**只有这五种**，刻意不做嵌套分组、重复 N 次与并行倒计时 ——
  * 保持扁平数组，进度就是「第几步 / 共几步」，不必展开计算。
  */
 export type HostStep =
@@ -19,6 +19,11 @@ export type HostStep =
    * 不播报 —— 这一步存在的理由正是内容动态、TTS 说不出来（谁死了、投票结果）
    */
   | { kind: 'confirm'; textKey: I18nKey }
+  /**
+   * 同 confirm 一样等人点，但屏幕中央多出一段**动态密件**（本局魔法词之类），
+   * 内容在 `start(flow, reveal)` 时快照。不播报 —— 密件念出来就全场都知道了
+   */
+  | { kind: 'reveal'; textKey: I18nKey }
   | { kind: 'beep' }
 
 /**
@@ -61,4 +66,5 @@ export type RunStep =
   | { kind: 'say'; textKey: I18nKey; vars: Record<string, number> }
   | { kind: 'wait'; sec: number }
   | { kind: 'confirm'; textKey: I18nKey }
+  | { kind: 'reveal'; textKey: I18nKey }
   | { kind: 'beep' }

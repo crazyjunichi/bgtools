@@ -28,6 +28,7 @@ export const en: Resources = {
 
   header: {
     back: 'Back to home',
+    backInTool: 'Back',
     toPortrait: 'Switch to portrait',
     toLandscape: 'Switch to landscape',
   },
@@ -329,11 +330,13 @@ export const en: Resources = {
     done: 'Flow finished',
     again: 'Run again',
     spoken: 'Said it, go on',
+    memorized: 'Got it, go on',
     noSpeech: 'This device has no speech output — steps are shown on screen instead',
     kind: {
       say: 'Announce',
       wait: 'Wait',
       confirm: 'Waiting for you',
+      reveal: 'Secret glance',
       beep: 'Chime',
     },
   },
@@ -443,6 +446,56 @@ export const en: Resources = {
           hunter: 'Hunter',
           guard: 'Guard',
           idiot: 'Idiot',
+        },
+        team: {
+          wolf: 'Werewolf team',
+          village: 'Village team',
+        },
+      },
+    },
+
+    werewords: {
+      name: 'Werewords',
+      desc: 'On-screen word · voice host · role deal',
+      flow: 'Standard flow',
+      home: {
+        dealDesc: 'Pass around or scan — everyone peeks privately',
+        host: 'Host',
+        hostDesc: 'Voice-hosted game, the magic word shows on screen',
+      },
+      difficulty: {
+        label: 'Word difficulty',
+        easy: 'Easy',
+        standard: 'Standard',
+      },
+      param: {
+        daySec: 'Question time',
+      },
+      say: {
+        nightFall: 'Night falls. Everyone, close your eyes. Mayor, open your eyes.',
+        mayorClose: 'Mayor, close your eyes. Werewolves, open your eyes.',
+        wolvesClose: 'Werewolves, close your eyes. Seer, open your eyes.',
+        seerClose: 'Seer, close your eyes.',
+        dayBreak:
+          'Day breaks. Everyone, open your eyes. Take turns asking the mayor questions to guess the magic word. The mayor may only answer: yes, no, maybe, so close, or way off.',
+        discuss: 'You have {{n}} seconds. A chime will sound when time is up. Begin now.',
+        timeUp: "Time's up.",
+      },
+      reveal: {
+        mayor: 'Mayor, memorize the magic word',
+        wolves: 'Werewolves, memorize the magic word',
+        seer: 'Seer, memorize the magic word',
+      },
+      do: {
+        ending:
+          'Announce the result: if the word was guessed, the werewolves get one last chance to name the seer and steal the win; if not, the village votes to find a werewolf',
+      },
+      roles: {
+        set: 'Standard roles',
+        role: {
+          wolf: 'Werewolf',
+          seer: 'Seer',
+          villager: 'Villager',
         },
         team: {
           wolf: 'Werewolf team',

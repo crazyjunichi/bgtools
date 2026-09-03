@@ -23,6 +23,11 @@ type VoiceHostState = {
   /** 正在跑的流程 id。null = 没在跑，运行浮层不显示 */
   flowId: string | null
   steps: RunStep[]
+  /**
+   * `reveal` 步要在屏上显示的密件（本局魔法词之类），`start` 时快照。
+   * 快照而非回调去读宿主 store：开跑后词就定死了，宿主那边重抽也不该影响这一局
+   */
+  reveal: string | null
   /** 当前步下标。`=== steps.length` 表示跑完了 */
   index: number
   /** `wait` 步的绝对结束时刻。存时刻而非累减剩余：后台节流会让累减漂移 */
@@ -32,7 +37,7 @@ type VoiceHostState = {
   paused: boolean
 
   setParam: (flowId: string, paramId: string, value: number | boolean) => void
-  start: (flow: HostFlow) => void
+  start: (flow: HostFlow, reveal?: string) => void
   /** 推进一步。自动推进（念完 / 到时）与手动「跳过」是同一个动作 */
   next: () => void
   restart: () => void
@@ -60,6 +65,7 @@ export const useVoiceHostStore = create<VoiceHostState>()(
       values: {},
       flowId: null,
       steps: [],
+      reveal: null,
       index: 0,
       endAt: null,
       remainMs: null,
@@ -70,9 +76,9 @@ export const useVoiceHostStore = create<VoiceHostState>()(
         set({ values: { ...values, [flowId]: { ...values[flowId], [paramId]: value } } })
       },
 
-      start: (flow) => {
+      start: (flow, reveal) => {
         const steps = compile(flow, valuesOf(flow, get().values[flow.id]))
-        set({ flowId: flow.id, steps, paused: false, ...enterAt(steps, 0) })
+        set({ flowId: flow.id, steps, reveal: reveal ?? null, paused: false, ...enterAt(steps, 0) })
       },
 
       next: () => {
@@ -107,7 +113,8 @@ export const useVoiceHostStore = create<VoiceHostState>()(
         })
       },
 
-      stop: () => set({ flowId: null, steps: [], index: 0, endAt: null, remainMs: null, paused: false }),
+      stop: () =>
+        set({ flowId: null, steps: [], reveal: null, index: 0, endAt: null, remainMs: null, paused: false }),
     }),
     {
       name: 'bgtools:voice-host',

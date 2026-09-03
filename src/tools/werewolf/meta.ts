@@ -5,6 +5,7 @@ export const werewolfMeta: ToolMeta = {
   nameKey: 'tools.werewolf.name',
   descKey: 'tools.werewolf.desc',
   icon: '🐺',
+  cover: 'covers/werewolf.png',
   // violet 不在四个语义色里，够当主操作色；夜晚流程的色相也对得上
   accent: 'violet',
   category: 'game',
