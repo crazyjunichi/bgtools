@@ -5,23 +5,20 @@ import { buzz } from '../../shared/haptics'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
 import { useActiveMatch } from '../../shared/match/active'
 import { MatchFinish } from '../../shared/match/MatchFinish'
-import { saveText, stampName } from '../../shared/match/share/save'
+import { MatchShare } from '../../shared/match/MatchShare'
 import type { MatchDraft } from '../../shared/match/types'
 import { SeatPicker } from '../../shared/players/SeatPicker'
 import { resolveSeat, takenPlayerIds } from '../../shared/players/seats'
 import { SeatStart } from '../../shared/players/SeatStart'
 import { usePlayersStore } from '../../shared/players/store'
 import { EntryPanel } from './EntryPanel'
+import { sheetExports } from './match'
 import { scoreSheetMeta } from './meta'
-import type { SheetPayload } from './payload'
-import { renderSheetImage } from './png/layouts'
 import { SheetGrid } from './SheetGrid'
 import { SheetHistory } from './SheetHistory'
-import { SheetImage } from './SheetImage'
 import { SheetKeypad } from './SheetKeypad'
 import { SheetMore } from './SheetMore'
 import { SheetSettings } from './SheetSettings'
-import { buildSnapshot, type SheetSnapshot, toCsv } from './snapshot'
 import {
   cellKey,
   entriesOf,
@@ -69,10 +66,6 @@ export default function ScoreSheetPage() {
     removeEntry,
     newGame,
     loadGame,
-    imageSkin,
-    imageForm,
-    setImageSkin,
-    setImageForm,
   } = useSheetStore()
   const players = usePlayersStore((s) => s.players)
 
@@ -111,55 +104,11 @@ export default function ScoreSheetPage() {
    */
   const [finish, setFinish] = useState<MatchDraft | null>(null)
   /**
-   * 要出图的那一局，**在点导出那一刻就快照下来**：之后在 lightbox 里换排版重画的是同一份数据，
-   * 桌上继续填分不该改变已经打开的那张图。历史局导出更是如此（那局早结束了）。
-   *
-   * 与 `image` 分成两段而不是一个 state：换排版时变的只有渲染参数，
-   * 合成一个就得在每个切换回调里重新 buildSnapshot 一次
+   * 要分享的那一局，**在点分享那一刻就快照下来**：面板里换形态重画的是同一份数据，
+   * 桌上继续填分不该改变已经打开的那张图。**不算 Panel** —— 它是 z-30 的独立层，
+   * 从「更多」或历史浮层里打开、关掉后要回到底下那一层，两者能同时在屏上
    */
-  const [target, setTarget] = useState<{ snapshot: SheetSnapshot; at: number } | null>(null)
-  /**
-   * 画好的 PNG。**不算 Panel** —— 它是 z-30 的独立 lightbox，
-   * 从设置或历史浮层里打开、关掉后要回到底下那一层，两者能同时在屏上。
-   * objectURL 与 blob 一起进 state：建在子组件的 effect 里会被 StrictMode 的
-   * 「setup → cleanup → setup」撤掉（cleanup 一 revoke 就没了）
-   */
-  const [image, setImage] = useState<{ blob: Blob; url: string; filename: string } | null>(null)
-
-  /*
-   * 排版一变就重画。**不先清 image**：让上一张留在屏上直到新的就绪，
-   * 否则每次点箭头都闪一下空白（画一张只要几十毫秒，闪比等更难受）。
-   *
-   * alive 防的是后发先至：连点箭头时两次渲染并行，先完成的那次不一定是最后选的那种。
-   */
-  useEffect(() => {
-    if (!target) return
-    let alive = true
-    renderSheetImage(target.snapshot, imageForm, imageSkin, t('tools.scoreSheet.image.brand'))
-      .then((blob) => {
-        if (!alive) return
-        setImage({
-          blob,
-          url: URL.createObjectURL(blob),
-          filename: stampName(scoreSheetMeta.id, target.at, 'png', imageForm, imageSkin),
-        })
-      })
-      // 画布失败（极老 Safari、内存不足）不该连页面一起带走，桌上分数还在表里
-      .catch((e) => console.warn('[score-sheet] render failed', e))
-    return () => {
-      alive = false
-    }
-  }, [target, imageForm, imageSkin, t])
-
-  /*
-   * 回收 objectURL。写成 effect 而不是塞进关闭回调：路由切走（浏览器返回）时
-   * 这一层会直接卸载，那条路径上没有「关闭」这个动作。
-   * 换成另一张图时 cleanup 也会先跑，撤掉的正是上一张，不会漏。
-   */
-  useEffect(() => {
-    const url = image?.url
-    return url ? () => URL.revokeObjectURL(url) : undefined
-  }, [image])
+  const [share, setShare] = useState<MatchDraft | null>(null)
   /**
    * 每次点格子都递增，只为参与键盘的 `key`：**再点一次同一个格子也要把输入缓冲清掉**
    * （报错了想重打一遍，最顺手的动作就是再点它一下）。光靠 pick 做 key 认不出这种重复选中。
@@ -193,19 +142,6 @@ export default function ScoreSheetPage() {
   const pickCell = (seatId: string, entryId: string) => {
     setPick({ seatId, entryId })
     setSeq((n) => n + 1)
-  }
-
-  /** 当前局的可导出形态，与归档进存档的是同一个形状 —— 导出路径因此不分「当前局 / 历史局」 */
-  const current: SheetPayload = { templateId, customEntries, overrides, seats, cells, startedAt }
-
-  /** 只负责定下「画哪一局」，画哪种排版由上面那个 effect 跟着 store 里的选择走 */
-  const exportImage = (game: SheetPayload, at: number) => {
-    setTarget({ snapshot: buildSnapshot(game, at, t), at })
-  }
-
-  const exportCsv = (game: SheetPayload, at: number) => {
-    const csv = toCsv(buildSnapshot(game, at, t))
-    saveText(csv, stampName(scoreSheetMeta.id, at, 'csv'), 'text/csv;charset=utf-8')
   }
 
   const next = () => {
@@ -283,10 +219,9 @@ export default function ScoreSheetPage() {
 
       {panel?.kind === 'more' && (
         <SheetMore
-          canExport={Object.keys(cells).length > 0}
+          canShare={Object.keys(cells).length > 0}
           canFinish={isComplete(seats, cells)}
-          onExportImage={() => exportImage(current, Date.now())}
-          onExportCsv={() => exportCsv(current, Date.now())}
+          onShare={() => setShare(sheetMatchDraft())}
           onOpenHistory={() => setPanel({ kind: 'history' })}
           onFinish={() => setFinish(sheetMatchDraft())}
           onNewGame={newGame}
@@ -306,26 +241,11 @@ export default function ScoreSheetPage() {
       )}
 
       {panel?.kind === 'history' && (
-        <SheetHistory
-          onLoad={loadGame}
-          onExportImage={exportImage}
-          onExportCsv={exportCsv}
-          onClose={() => setPanel(null)}
-        />
+        <SheetHistory onLoad={loadGame} onShare={setShare} onClose={() => setPanel(null)} />
       )}
 
-      {target && (
-        <SheetImage
-          image={image}
-          skin={imageSkin}
-          form={imageForm}
-          onSkin={setImageSkin}
-          onForm={setImageForm}
-          onClose={() => {
-            setTarget(null)
-            setImage(null)
-          }}
-        />
+      {share && (
+        <MatchShare match={share} exports={sheetExports} onClose={() => setShare(null)} />
       )}
 
       {activeSeat && (

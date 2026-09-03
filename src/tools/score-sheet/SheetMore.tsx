@@ -1,15 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Overlay } from '../../shared/components/Overlay'
-import { IconCheck, IconCsv, IconHistory, IconImage, IconRepeat } from '../../shared/icons'
+import { IconCheck, IconHistory, IconRepeat, IconShare } from '../../shared/icons'
 
 type Props = {
-  /** 当前局有没有填过东西。空局导出只会得到一张全是 `·` 的图，两个导出按钮直接禁用 */
-  canExport: boolean
+  /** 当前局有没有填过东西。空局分享只会得到一张全是 `·` 的图，按钮直接禁用 */
+  canShare: boolean
   /** 这一局值不值得记一条（见 [isComplete](store.ts)）。决定出口是结算还是直接清 */
   canFinish: boolean
-  onExportImage: () => void
-  onExportCsv: () => void
+  onShare: () => void
   onOpenHistory: () => void
   /** 打开结算面板 —— 记录一局的唯一入口 */
   onFinish: () => void
@@ -21,17 +20,16 @@ type Props = {
 const EXIT_BTN = 'btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11'
 
 /**
- * 一局打完才用一次的出口：导出、历史、新一局。与模板选择分家的理由是使用频率 ——
+ * 一局打完才用一次的出口：分享、历史、新一局。与模板选择分家的理由是使用频率 ——
  * 模板是开局第一件事，这些是收尾动作，堆在一个浮层里前者会被后者挤到要滚。
  *
  * 新一局不直插键盘的动作行：那一行两格都太窄，放不下 [ConfirmButton] 武装后的确认文案，
  * 而清空整局分数正是最不能省二次确认的操作。
  */
 export function SheetMore({
-  canExport,
+  canShare,
   canFinish,
-  onExportImage,
-  onExportCsv,
+  onShare,
   onOpenHistory,
   onFinish,
   onNewGame,
@@ -45,21 +43,15 @@ export function SheetMore({
       onClose={onClose}
     >
       <div className="flex flex-col gap-2">
-        <span className="section-label">{t('tools.scoreSheet.more.export')}</span>
-        <div className="grid grid-cols-2 gap-2">
-          {/*
-           * 导出图片**不关这个浮层** —— 图片层是 z-30 的独立 lightbox，
-           * 看完关掉自然回到这里。CSV 是即刻下载，留在原地也不打断什么
-           */}
-          <button type="button" onClick={onExportImage} disabled={!canExport} className={EXIT_BTN}>
-            <IconImage className="size-6 short:size-5" aria-hidden />
-            {t('tools.scoreSheet.more.exportImage')}
-          </button>
-          <button type="button" onClick={onExportCsv} disabled={!canExport} className={EXIT_BTN}>
-            <IconCsv className="size-6 short:size-5" aria-hidden />
-            {t('tools.scoreSheet.more.exportCsv')}
-          </button>
-        </div>
+        <span className="section-label">{t('tools.scoreSheet.more.output')}</span>
+        {/*
+         * 分享**不关这个浮层** —— 分享层是 z-30 的独立 lightbox，
+         * 排版与外观在它里面选，看完关掉自然回到这里
+         */}
+        <button type="button" onClick={onShare} disabled={!canShare} className={EXIT_BTN}>
+          <IconShare className="size-6 short:size-5" aria-hidden />
+          {t('tools.scoreSheet.more.share')}
+        </button>
 
         {/* 历史是另一个浮层，沿用「同一时刻只开一个」：先关自己再开它 */}
         <button

@@ -236,13 +236,44 @@ export const zh = {
     confirmDiscard: '确认丢弃本局',
     unavailable: '这台设备禁用了本地数据库，本局记不下来，但可以直接开新局',
 
-    /** 把一局分享出去（见 [share](../../match/share/skins.ts)），各工具共用 */
+    /** 把一局分享出去（[MatchShare](../../match/MatchShare.tsx)），各工具共用 */
     share: {
+      /** 面板标题，也当图片的 alt 与系统分享面板的标题 */
+      title: '分享本局',
+      hint: '长按或右键图片可保存、分享。',
+      save: '保存',
+      /** 走系统分享面板。与 `save` 并排，所以只留一个词 */
+      shareBtn: '分享',
+      copyText: '复制文本',
+      copied: '已复制',
+      /** 换形态时新图还没画完那一小会儿 */
+      rendering: '正在生成…',
+      /** 表格类形态没图可看，占位块里说明「已经好了，按下面的按钮拿走」 */
+      noPreview: '这种形式不预览，直接保存或分享',
+      /** payload 反解不出来（别的版本记下的局面）时的一句人话，不出堆栈 */
+      failed: '这一局出不了这种形式，可能是旧版本记下的。换一种试试，战绩榜总是出得来。',
+      /** 画在图片页脚：图会脱离应用流传，得留一句它是什么出的 */
+      brand: 'BGTools',
       /** 外观：只换配色，不影响画哪些数 */
+      skin: '外观',
+      prevSkin: '上一种外观',
+      nextSkin: '下一种外观',
+      /** 形态：决定导出什么、怎么摆 */
+      form: '内容',
       skins: {
         print: '印刷',
         dark: '深色',
       },
+      /** 各工具自己的形态在它们的 key 下，这里只有跨工具通用的两种 */
+      forms: {
+        rank: '战绩榜',
+        csv: 'CSV',
+      },
+    },
+
+    /** 纯文本摘要（[summary](../../match/share/summary.ts)），贴到群里用 */
+    summary: {
+      note: '备注：{{text}}',
     },
   },
 
@@ -362,7 +393,8 @@ export const zh = {
     emptyPool: '还没放身份。点上面的身份加一张，或选一档常见板子。',
     addRole: '加入 {{name}}',
     removeRole: '移除一张 {{name}}',
-    start: '开始发 {{n}} 张',
+    /** 两种发牌方式并列，所以这句要点明是哪一种 */
+    start: '轮传发 {{n}} 张',
     tooFew: '至少放两张身份',
     seat: '第 {{n}} 位 / 共 {{total}} 位',
     tapToReveal: '点这张卡查看身份',
@@ -374,6 +406,39 @@ export const zh = {
     again: '重新洗牌再发',
     stop: '结束发牌',
     stopConfirm: '确认结束',
+    online: {
+      start: '扫码发牌',
+      title: '扫码发牌',
+      /** 配置引导。要说清三件事：只做一次、地址是他自己的、地址不外传 */
+      setupHint: '这一步只做一次：填一个你自己的实时数据库地址。玩家扫码后各自去那里排队领牌，地址只存在这台设备上。',
+      urlLabel: '数据库地址',
+      urlPlaceholder: 'https://……firebasedatabase.app',
+      test: '测试并保存',
+      testing: '正在测试…',
+      change: '换个地址',
+      opening: '正在开局…',
+      scanHint: '各位用手机扫这个码，扫到的就是自己的身份',
+      claimed: '已领 {{n}} / {{total}}',
+      /** 领的人比牌多：多出来的那几台会看到"已领完"，这里得让组织者知道发生了什么 */
+      overClaimed: '领牌的比牌还多：{{n}} / {{total}}',
+      mine: '我也领一张',
+      backToQr: '回到二维码',
+      retry: '重试',
+      joining: '正在领牌…',
+      keepSecret: '记住它，别给别人看',
+      soldOut: '这一局的牌已经领完了',
+      soldOutHint: '找组织者确认一下 —— 也可能你扫的是上一局的码。',
+      unknownSet: '认不出这局的游戏，更新一下再扫。',
+      err: {
+        offline: '连不上发牌服务，检查一下网络。轮传发牌不需要网络，随时可以改用它。',
+        config: '发牌服务拒绝了这次请求。核对一下地址，并确认数据库规则已经发布。',
+        taken: '这个牌局编号被占用了，再试一次会换一个。',
+        ridCollision: '领牌没成功，再试一次。',
+        badLink: '这个二维码不完整，请组织者重新出一次。',
+        version: '两边的版本不一样，都更新一下再发。',
+        unsupported: '这种发牌服务还没接上。',
+      },
+    },
   },
 
   tools: {
@@ -611,10 +676,10 @@ export const zh = {
       /** 更多操作浮层（[SheetMore](../../../tools/score-sheet/SheetMore.tsx)）：一局的收尾出口 */
       more: {
         title: '更多操作',
-        /** 导出分组的标签。按钮文案只留一个词 —— 英文比中文宽近两倍，写全句会撑破 */
-        export: '本局导出',
-        exportImage: '图片',
-        exportCsv: 'CSV',
+        /** 分享与历史那一组的标签 */
+        output: '本局',
+        /** 排版与外观在分享面板里选（[MatchShare](../../match/MatchShare.tsx)），这里只是入口 */
+        share: '分享本局',
         history: '历史记录',
         /** 说明记录是怎么进去的，也说明为什么这里有时是「结算」有时是「清空」 */
         archiveHint: '每人都填过分之后，出口会变成「本局结算」：记下参与者与名次，再开新局。',
@@ -641,27 +706,17 @@ export const zh = {
         clear: '清空历史',
         confirmClear: '确认清空全部历史',
       },
-      /** 全屏图片层（[SheetImage](../../../tools/score-sheet/SheetImage.tsx)） */
+      /**
+       * 计分纸自己的导出形态（[match.ts](../../../tools/score-sheet/match.ts)）。
+       * 面板与按钮文案在 `match.share.*` —— 那一层是所有工具共用的
+       */
       image: {
-        title: '导出图片',
-        hint: '长按或右键图片可保存、分享。',
-        save: '保存',
-        share: '分享',
         /** 画在图片页脚：图会脱离应用流传，得留一句它是什么出的 */
         brand: 'BGTools 计分纸',
-        /** 换排版时新图还没画完那一小会儿 */
-        rendering: '正在生成…',
-        /** 外观：只换配色，不影响画哪些数 */
-        skin: '外观',
-        prevSkin: '上一种外观',
-        nextSkin: '下一种外观',
-        /** 内容形式：决定画哪些数、怎么摆 */
-        form: '内容',
         forms: {
           /** 用「×」而不是「乘」：它读作「谁当行、谁当列」，两个词都得出现才分得清转置 */
           matrix: '条目×人',
           transposed: '人×条目',
-          rank: '战绩榜',
         },
       },
       /** 行首浮层（[EntryPanel](../../../tools/score-sheet/EntryPanel.tsx)）：换算表 + 输入方式 */

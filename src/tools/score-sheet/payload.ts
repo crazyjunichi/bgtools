@@ -7,8 +7,7 @@ import type { CustomEntry } from './store'
 /**
  * 一局计分纸的完整局面，也就是写进 [Match.payload](../../shared/match/types.ts) 的东西。
  *
- * **存的是 [store](store.ts) 里那几个局面字段的整份副本**（`partialize` 是它的超集 ——
- * 导出图的排版偏好也 persist，但那是设备偏好、不属于任何一局），
+ * **存的是 [store](store.ts) 里那几个局面字段的整份副本**，
  * 而不是「算好的分数 + 条目名快照」：回看时把它直接喂给现成的
  * `entriesOf` / `scoreOf` / `totalOf` 复算，显示逻辑与当前局**完全同一份**；
  * 「读取这一局」也就是原样 set 回去，不需要反解。

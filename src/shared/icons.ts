@@ -25,6 +25,8 @@ export {
   Check as IconCheck,
   X as IconClose,
   Compass as IconCompass,
+  /** 复制文本到剪贴板。两张叠起来的纸是这个动作的通行字形 */
+  Copy as IconCopy,
   Crown as IconCrown,
   /** 发身份：洗好一副牌沿桌传。交叉箭头是「洗牌」的通行字形，与 IconRepeat 的循环箭头区分 */
   Shuffle as IconDeal,
@@ -64,6 +66,8 @@ export {
   UserPlus as IconPlayerAdd,
   Users as IconPlayers,
   Plus as IconPlus,
+  /** 扫码发牌。二维码本身就是这个动作的字形，不必再叠相机 */
+  QrCode as IconQr,
   LayoutGrid as IconQuickMenu,
   RefreshCw as IconRepeat,
   RotateCcw as IconReset,

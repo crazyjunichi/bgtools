@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Overlay } from '../../shared/components/Overlay'
-import { IconBack, IconCrown, IconCsv, IconDelete, IconImage } from '../../shared/icons'
+import { IconBack, IconCrown, IconDelete, IconShare } from '../../shared/icons'
 import { useArchiveStore } from '../../shared/match/archive'
 import { durationText, fmtScore } from '../../shared/match/format'
 import { MatchNote } from '../../shared/match/MatchNote'
+import type { Match } from '../../shared/match/types'
 import { PLAYER_SOLID } from '../../shared/players/colors'
 import { scoreSheetMeta } from './meta'
 import { readSheetPayload, type SheetPayload } from './payload'
@@ -15,8 +16,8 @@ import { entriesOf } from './store'
 
 type Props = {
   onLoad: (payload: SheetPayload, endAt: number) => void
-  onExportImage: (payload: SheetPayload, at: number) => void
-  onExportCsv: (payload: SheetPayload, at: number) => void
+  /** 交给分享面板的是**整条记录**：形态怎么画由面板里的注册项各自反解 */
+  onShare: (match: Match) => void
   onClose: () => void
 }
 
@@ -34,10 +35,10 @@ const GRID_BOX = 'flex h-[min(26rem,48vh)] flex-col short:h-[min(14rem,42vh)]'
  * （叠浮层在平板上会让人不知道点哪个遮罩能退回去）。
  *
  * 记录来自共享存档（[archive](../../shared/match/archive.ts)），由结算面板写入，
- * 这里只读、改备注、删、导出。**计分纸 v1 的旧局也在里面**（读时适配、标了 legacy），
+ * 这里只读、改备注、删、分享。**计分纸 v1 的旧局也在里面**（读时适配、标了 legacy），
  * 它们没有分数与备注，所以详情里少一块。
  */
-export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Props) {
+export function SheetHistory({ onLoad, onShare, onClose }: Props) {
   const { t } = useTranslation()
   const { matches, status, load, remove, clear } = useArchiveStore()
   const [openId, setOpenId] = useState<string | null>(null)
@@ -119,23 +120,17 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
         {/* 备注是记录里唯一能事后改的字段 */}
         <MatchNote key={match.id} match={match} />
 
+        {/* 分享独占一行：另两个是 [ConfirmButton]，武装后的确认文案挤不进三分之一格 */}
+        <button
+          type="button"
+          onClick={() => onShare(match)}
+          className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
+        >
+          <IconShare className="size-6 short:size-5" aria-hidden />
+          {t('tools.scoreSheet.more.share')}
+        </button>
+
         <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => onExportImage(payload, match.endAt)}
-            className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
-          >
-            <IconImage className="size-6 short:size-5" aria-hidden />
-            {t('tools.scoreSheet.more.exportImage')}
-          </button>
-          <button
-            type="button"
-            onClick={() => onExportCsv(payload, match.endAt)}
-            className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
-          >
-            <IconCsv className="size-6 short:size-5" aria-hidden />
-            {t('tools.scoreSheet.more.exportCsv')}
-          </button>
           {/* 读取会覆盖当前局，必须二次确认 */}
           <ConfirmButton
             onConfirm={() => {

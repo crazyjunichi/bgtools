@@ -205,10 +205,32 @@ export const en: Resources = {
     unavailable: 'Local database is disabled on this device, so this game cannot be saved.',
 
     share: {
+      title: 'Share game',
+      hint: 'Long-press or right-click the image to save or share.',
+      save: 'Save',
+      shareBtn: 'Share',
+      copyText: 'Copy text',
+      copied: 'Copied',
+      rendering: 'Rendering…',
+      noPreview: 'No preview — save or share it directly',
+      failed: 'This game cannot be exported that way, probably saved by an older version. Try another form — standings always works.',
+      brand: 'BGTools',
+      skin: 'Look',
+      prevSkin: 'Previous look',
+      nextSkin: 'Next look',
+      form: 'Content',
       skins: {
         print: 'Print',
         dark: 'Dark',
       },
+      forms: {
+        rank: 'Ranking',
+        csv: 'CSV',
+      },
+    },
+
+    summary: {
+      note: 'Note: {{text}}',
     },
   },
 
@@ -313,7 +335,7 @@ export const en: Resources = {
     emptyPool: 'No roles yet. Tap a role above, or pick a setup.',
     addRole: 'Add {{name}}',
     removeRole: 'Remove one {{name}}',
-    start: 'Deal {{n}} cards',
+    start: 'Pass around · {{n}}',
     /** 禁用态的开始按钮文案，跟 start 挤在同一个位置 —— 压短是为了不撑破那个按钮 */
     tooFew: 'Need 2+ roles',
     seat: 'Player {{n}} / {{total}}',
@@ -325,6 +347,39 @@ export const en: Resources = {
     again: 'Reshuffle & deal',
     stop: 'Stop dealing',
     stopConfirm: 'Confirm stop',
+    online: {
+      /** 与轮传按钮并排，英文压到一个词才不撑破那一排 */
+      start: 'Scan',
+      title: 'Scan to deal',
+      setupHint:
+        'One-time setup: paste your own Realtime Database URL. Players scan the code and line up there. The URL stays on this device only.',
+      urlLabel: 'Database URL',
+      urlPlaceholder: 'https://….firebasedatabase.app',
+      test: 'Test & save',
+      testing: 'Testing…',
+      change: 'Change URL',
+      opening: 'Starting…',
+      scanHint: 'Everyone scan this code — what you get is your role',
+      claimed: '{{n}} / {{total}} taken',
+      overClaimed: 'More claims than cards: {{n}} / {{total}}',
+      mine: 'Take one too',
+      backToQr: 'Back to code',
+      retry: 'Retry',
+      joining: 'Getting your card…',
+      keepSecret: 'Remember it, keep it to yourself',
+      soldOut: 'All cards for this game are taken',
+      soldOutHint: 'Check with the organizer — this may be an old code.',
+      unknownSet: "Can't recognize this game. Update and scan again.",
+      err: {
+        offline: "Can't reach the dealing service. Check your network — passing the device around needs none.",
+        config: 'The dealing service rejected the request. Check the URL and make sure the rules are published.',
+        taken: 'That game id is taken. Try again for a new one.',
+        ridCollision: "Couldn't get a card. Try again.",
+        badLink: 'This code is incomplete. Ask the organizer for a new one.',
+        version: 'Versions differ. Update both sides and deal again.',
+        unsupported: 'This dealing service is not wired up yet.',
+      },
+    },
   },
 
   tools: {
@@ -532,9 +587,8 @@ export const en: Resources = {
       },
       more: {
         title: 'More actions',
-        export: 'Export this game',
-        exportImage: 'Image',
-        exportCsv: 'CSV',
+        output: 'This game',
+        share: 'Share',
         history: 'History',
         archiveHint:
           'Once everyone has a score, the exit becomes “Wrap up”: it records who played and how they placed, then starts the next game.',
@@ -557,20 +611,10 @@ export const en: Resources = {
         confirmClear: 'Delete all history?',
       },
       image: {
-        title: 'Export image',
-        hint: 'Long-press or right-click the image to save or share.',
-        save: 'Save',
-        share: 'Share',
         brand: 'BGTools Score Pad',
-        rendering: 'Rendering…',
-        skin: 'Look',
-        prevSkin: 'Previous look',
-        nextSkin: 'Next look',
-        form: 'Layout',
         forms: {
           matrix: 'Items × Players',
           transposed: 'Players × Items',
-          rank: 'Ranking',
         },
       },
       entry: {

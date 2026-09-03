@@ -6,14 +6,11 @@ import type { I18nKey } from '../../shared/i18n/types'
 import { useArchiveStore } from '../../shared/match/archive'
 import { fmtScore } from '../../shared/match/format'
 import { rankByScore, seatsToPlayers } from '../../shared/match/result'
-import type { ShareSkinId } from '../../shared/match/share/skins'
 import type { MatchDraft } from '../../shared/match/types'
 import { bindSeat, makeSeat, type Seat } from '../../shared/players/seats'
 import type { Player } from '../../shared/players/store'
 import { scoreSheetMeta } from './meta'
 import type { SheetPayload } from './payload'
-// 只取类型：渲染器那边反过来要用本文件的 entriesOf / fmtCell，跑运行时 import 会成环
-import type { SheetFormId } from './png/layouts'
 import { BLANK_ID, DIRECT, findTemplate, type Scoring, type SheetEntry, type Step } from './templates'
 
 /**
@@ -80,15 +77,6 @@ type SheetState = {
   lastActiveAt: number
   /** 选中的格子。不 persist —— 重开该是干净的，同 score 的 undoStack */
   pick: Pick | null
-  /**
-   * 导出图上次选的外观与内容形式（见 [png/layouts](png/layouts.ts)）。
-   * 值得 persist 是因为这个选择极稳定：习惯发群里的人每次都要战绩榜，要打印的人每次都要浅底。
-   *
-   * **它不属于局面**，所以不进 [SheetPayload](payload.ts) —— 那是「那一晚打了什么」，
-   * 这是这台设备的导出偏好，读一局历史不该把当时的排版一起读回来
-   */
-  imageSkin: ShareSkinId
-  imageForm: SheetFormId
 
   setTemplate: (templateId: string) => void
   /** 列数不设上限：列多了矩阵转横滚、颜色开始复用，但不拦着加 */
@@ -131,8 +119,6 @@ type SheetState = {
    * `endAt` 是那条记录的结束时刻，读回来当作它的最后活动时间
    */
   loadGame: (payload: SheetPayload, endAt: number) => void
-  setImageSkin: (id: ShareSkinId) => void
-  setImageForm: (id: SheetFormId) => void
 }
 
 export function cellKey(seatId: string, entryId: string): string {
@@ -210,8 +196,6 @@ export const useSheetStore = create<SheetState>()(
       startedAt: Date.now(),
       lastActiveAt: Date.now(),
       pick: null,
-      imageSkin: 'print',
-      imageForm: 'matrix',
 
       // 切模板**不清分数**：entryId 是稳定字面量，换走的条目只是暂时不显示，切回来还在
       setTemplate: (templateId) => set({ templateId, pick: null }),
@@ -319,9 +303,6 @@ export const useSheetStore = create<SheetState>()(
           pick: null,
         })
       },
-
-      setImageSkin: (imageSkin) => set({ imageSkin }),
-      setImageForm: (imageForm) => set({ imageForm }),
     }),
     {
       name: 'bgtools:score-sheet',
@@ -333,8 +314,6 @@ export const useSheetStore = create<SheetState>()(
         cells,
         startedAt,
         lastActiveAt,
-        imageSkin,
-        imageForm,
       }) => ({
         templateId,
         customEntries,
@@ -343,8 +322,6 @@ export const useSheetStore = create<SheetState>()(
         cells,
         startedAt,
         lastActiveAt,
-        imageSkin,
-        imageForm,
       }),
     },
   ),
