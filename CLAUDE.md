@@ -89,7 +89,7 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 **平板平放在桌面中央、多人斜视、视距 50–70cm；竖屏更常见，横屏也照常用 —— 两个朝向都要成立，拿不准先按竖屏验。** 完整规范与取值依据见 [docs/DESIGN.md](docs/DESIGN.md)，以下是不许违反的部分：
 
 - **一屏放完，页面级不滚动**。高度锁在 `html` / `body` / `#root` 的 `height:100% + overflow:hidden`（[src/index.css](src/index.css)），[App.tsx](src/App.tsx) 外壳跟着用 `h-full overflow-hidden`。**不要改回 `h-dvh`** —— PWA standalone 下 `100dvh` 会把状态栏算进视口，整页多出一条滚动条。工具页统一套 [ToolLayout](src/shared/components/ToolLayout.tsx)（横屏左控制栏 + 右主显示区；竖屏自动变主显示在上 + 控制栏贴底，仍不滚）。次要列表可以在自己的框里 `overflow-y-auto`，页面不许翻页
-- **横竖屏判据只用 `wide` variant**（`orientation: landscape`，定义在 [src/index.css](src/index.css)）。**禁止用宽度断点（`lg:` / `max-lg:`）判横竖屏** —— 安卓平板横屏 CSS 宽常不足 1024px，会被整批误判成竖屏。主显示区放两块信息时用 [Split](src/shared/components/Split.tsx)（横屏并排 / 竖屏上下），不要自己写朝向类
+- **横竖屏判据只用 `wide` variant**（`orientation: landscape`，定义在 [src/index.css](src/index.css)）。**禁止用宽度断点（`lg:` / `max-lg:`）判横竖屏** —— 安卓平板横屏 CSS 宽常不足 1024px，会被整批误判成竖屏。宽度断点只允许用于**与朝向无关的「内容放不放得下」**，目前全项目仅一处（首页列数的 `max-[520px]`，依据见 [docs/DESIGN.md](docs/DESIGN.md) §5）。主显示区放两块信息时用 [Split](src/shared/components/Split.tsx)（横屏并排 / 竖屏上下），不要自己写朝向类
 - **关键数字的视口单位一律 `vmin`，不用 `vh`**：横屏下二者等价，竖屏下 `vh` 会把数字撑爆容器
 - **返回/朝向切换/通用小工具入口由 [AppHeader](src/AppHeader.tsx) 统一提供**，工具页里不要自己画返回键、标题栏，也不要自己实现全屏。它**常显且正常占位**：竖屏通栏、横屏变左侧 64px 竖条（**不要改回自动收起的 overlay**，理由见 [docs/DESIGN.md](docs/DESIGN.md) §8）。全屏不再是独立按钮 —— `screen.orientation.lock()` 只在全屏或已安装 PWA 下生效，全屏因此降级成朝向键内部的前提步骤（[useOrientation](src/shared/hooks/useOrientation.ts)）
 - **会让自己消失的元素，一律 `onClick`，不许 `onPointerDown`** —— 浮层遮罩、全屏提醒、任何点一下就自我卸载的临时层都算。pointerdown 里改布局会当场卸载按下时的 target，触屏抬手补发的兼容鼠标事件按**抬手坐标**重新 hit-test，click 就穿透到底下的控件上了（关个计时器顺手把骰子投了）。`onPointerDown` 只留给不改变自身存在的持续交互，如 [Stepper](src/shared/components/Stepper.tsx) 的长按连增。改了外层还要检查内层的 `stopPropagation` 是否跟着换事件类型

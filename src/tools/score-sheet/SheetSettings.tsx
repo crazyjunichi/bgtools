@@ -67,7 +67,7 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
       <div className="flex flex-col gap-2">
         <div className="relative">
           <IconSearch
-            className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-text-dim"
+            className="pointer-events-none absolute left-0 top-1/2 size-5 -translate-y-1/2 text-text-dim"
             aria-hidden
           />
           {/*
@@ -79,14 +79,14 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('tools.scoreSheet.settings.search')}
             aria-label={t('tools.scoreSheet.settings.search')}
-            className={`${FIELD} pl-11 pr-14`}
+            className={`${FIELD} pl-8 pr-14`}
           />
           {query !== '' && (
             <button
               type="button"
               onClick={() => setQuery('')}
               aria-label={t('common.clear')}
-              className="btn-quiet absolute right-1 top-1/2 !min-h-12 w-12 -translate-y-1/2 short:!min-h-10 short:w-10"
+              className="btn-base absolute right-0 top-1/2 size-12 -translate-y-1/2 !min-h-0 text-text-muted short:size-10"
             >
               <IconClose className="size-5" aria-hidden />
             </button>

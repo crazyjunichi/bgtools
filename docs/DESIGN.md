@@ -242,7 +242,8 @@ python .claude/skills/bgg-cover/scripts/cover_hue.py public/covers/sheet
   - 横屏（`wide`）：左控制栏 + 右主显示区。控制栏宽度两档：默认 `minmax(17rem, 24%)`；`panelWidth="narrow"` 给 `minmax(13rem, 17%)`，用于控制栏只有一个读数 + 一个入口的工具（炸弹克星的生命），省下的宽度让给主显示区。下限 13rem = 208px 是 `card` 的 p-5 之后仍能并排两个 56px 按钮的最小值，不要再往下调
   - 竖屏：`grid-rows-[1fr_auto]`，主显示区在上、控制栏贴底（拇指够得到），控制栏限 `max-h-[45dvh]` 且只在自己框里滚，页面级仍不滚动。DOM 顺序保持"控制在前"（Tab / 读屏顺序），视觉换序靠 `order-*`
 - **两个工具故意不套 `ToolLayout`，走「窄条」变体**：多轮计分（[ScorePage](../src/tools/score/ScorePage.tsx)）与手指抽选（[TouchPickPage](../src/tools/touch-pick/TouchPickPage.tsx)）的全局操作只有几个按钮，装不满 `minmax(17rem, 24%)` 的控制栏（横屏要吃掉近 280px），而计分卡的合计数字靠的正是那点宽度。改成主区吃满整宽 + 操作压成 **80px 竖条**（竖屏是贴底横条，见 [ScoreBar](../src/tools/score/ScoreBar.tsx) / [PickBar](../src/tools/touch-pick/PickBar.tsx)）。代价是 80px 条里放不下确认文案，破坏性操作只能再套一层浮层（[ScoreSettings](../src/tools/score/ScoreSettings.tsx)）—— **新工具优先套 `ToolLayout`**，只有"控制项少到撑不满一栏、而主区又吃紧"时才照这个变体做
-- **朝向判据只有 `wide` variant**（`@custom-variant wide (@media (orientation: landscape))`，定义在 [index.css](../src/index.css)）。**不许用宽度断点判横竖屏**：安卓平板横屏的 CSS 视口宽常只有 800–962px，iPad 分屏后更窄，旧代码的 `lg`（≥1024px）会把这批横屏平板整批误判成竖屏，这是"横屏还是竖屏布局"这个 bug 的根因。首页的三个分区也只用 `wide:` 切列数，别为了"再密一点"补宽度断点回来
+- **朝向判据只有 `wide` variant**（`@custom-variant wide (@media (orientation: landscape))`，定义在 [index.css](../src/index.css)）。**不许用宽度断点判横竖屏**：安卓平板横屏的 CSS 视口宽常只有 800–962px，iPad 分屏后更窄，旧代码的 `lg`（≥1024px）会把这批横屏平板整批误判成竖屏，这是"横屏还是竖屏布局"这个 bug 的根因。首页三个分区的**横竖屏列数差异**同样只由 `wide:` 给，别为了"再密一点"补宽度断点回来
+  - **唯一允许的宽度断点是首页列数的 `max-[520px]:grid-cols-1`**，因为它判的不是朝向而是**名字放不放得下**：两列时留给名字的宽度 = `(视口宽 − 32 − 12) / 2 − 84`（内距 24 + 盒图槽 48 + gap 12），要装下最长的英文模板名 `Terraforming Mars`（16px bold 约 145px）得有 502px 视口，取 520 留余量。390px 手机竖屏两列时只剩约 116px，名字与 desc 双双截成省略号 —— 桌上认不出是哪款游戏，比首页变长严重得多
 - **矮屏判据是 `short` variant**（`@media (max-height: 480px)`），与 `wide` 正交：`wide` 判朝向决定布局方向，`short` 判可视高决定尺寸档位，手机横屏同时命中两者。`480px` 的依据：手机横屏可视高 320–430px（浏览器 UI 吃掉一截），而最小的 8" 平板横屏也有 600px+，不会被误判。命中 `short` 意味着手持、视距 ≈30cm，所以**只有这一档**允许把触控目标从 56px 降到 44px（iOS HIG 下限），别扩散到别处
 - **首页是三段式导航，三段共用同一档卡**（[Home.tsx](../src/pages/Home.tsx) 的 `CARD` / `GRID`，分区靠 `ToolMeta.category`）。分段的起因是入口从 4 个涨到 20 多个：quick 工具原来在首页完全不露出，计分纸的 17 个模板全藏在工具页浮层里
 
@@ -258,9 +259,10 @@ python .claude/skills/bgg-cover/scripts/cover_hue.py public/covers/sheet
   - **快捷区不是 quick 注册表全量**：玩家名单与设置是开局前配一次的东西，`onHome: false` 只留顶栏入口 —— 首页给它们一张同等大小的卡，会把真正随手用的三个挤下去
   - 描述行三个区各说各的：工具用自己的 `descKey`，模板卡用 `home.sheetDesc`（「计分纸 · N 项条目」）—— 游戏专用区里两类入口并列，这行得担起「点进去是干什么」。**单行截断而非换行**：换行会让同一排的卡高矮不齐，一档卡就没了。代价是英文描述吃紧，四条工具 `desc` 因此压到三个词以内（`Defuse · gear · lives`）
   - 游戏专用区横屏 **3 列**（列宽约 336px，图槽与内距之后留给文字约 250px）。**试过 4 列，退回来了**：250px 列宽下英文长名（"Lost Ruins of Arnak"、"Great Western Trail"）与描述行同时截断，整区看着发挤
-  - 项数一多光靠扫不够了，所以标题行右侧有个**筛选框**（只筛这一区）。判据与计分纸的模板搜索共用 [i18n/search.ts](../src/shared/i18n/search.ts)：比对串含**两个语言**的名字与别名（中文界面下打 `catan`、或桌上口头的「农家乐」都命中），多个词要全部命中。输入框样式共用 [components/fieldStyle.ts](../src/shared/components/fieldStyle.ts) 的 `FIELD`，**尺寸不覆盖**：56px 的框才装得下 48px 的清除键（次要按钮下限），压到 48px 会连带把清除键挤到 40px
+  - 项数一多光靠扫不够了，所以这一区网格上方有个**筛选框**（只筛这一区）。它与网格同宽自成一行、不进标题行 —— 标题两侧那条对称的规则线是分区的唯一编码，塞个控件进去会把居中的标题挤偏。判据与计分纸的模板搜索共用 [i18n/search.ts](../src/shared/i18n/search.ts)：比对串含**两个语言**的名字与别名（中文界面下打 `catan`、或桌上口头的「农家乐」都命中），多个词要全部命中
+  - 输入框样式共用 [components/fieldStyle.ts](../src/shared/components/fieldStyle.ts) 的 `FIELD`，**下划线式、无底色无四边框**，尺寸不覆盖。形态是被迫的而非审美偏好：站内「圆角 + 描边 + 实底」正是 `btn-quiet`，框式输入框摆在同屏按钮旁读起来像按钮；而这一页整体只靠规则线分段（卡片 `border-b-2`、分区标题两侧 `h-px`），一个圆角实底盒子的视觉重量会压过它下面的整片网格 —— 而它只是个可选的控制条。高度 48（`short` 40），比主操作矮一档。清除键随之改成**无底 ghost 图标键**，靶面取满框高 48（`short` 40）—— 无框式没有内框约束，48 的次要按钮下限反而比原来的框式更容易满足。旧版是 `rounded-xl + border-line + bg-surface-2` 的 56px 框，**不要改回去**：`bg-surface-2` 在 ink 页底上比图槽还亮一档，等于整页最亮的块落在一个次要控制条上，而同一个类名在浮层的 `card` 底上又是凹进一档 —— 一套类名在两种底上语义相反
   - **不做垂直居中**：旧版的 `content-center` + `min-h-full` 在内容溢出时会把第一区推到滚动区外且滚不回来
-  - 游戏专用区里混着两类入口，除了身份色（炸弹克星 rose / 模板 violet）与描述行，还给模板卡一个 📝 角标 —— 颜色不许是唯一编码
+  - 游戏专用区里混着两类入口，非颜色编码由**描述行**担（模板卡写「计分纸 · N 项条目」），颜色不许是唯一编码。旧版还在卡片右侧挂一个 📝 角标，**已删、不要加回**：它连 gap 一起吃掉一段宽度，而手机竖屏两列时名字本来就快放不下；文字编码已经在，角标是第三重冗余。要加编码就加进 desc
   - 高度：统一成一档卡之后 1180×820 横屏约 780px，超出可用高（约 740）**开始轻微滚动**。这是拿走了"横屏一屏放完"换来的形态统一 —— 首页是全站唯一允许纵向滚动的页面（见 §8），别为了这 40px 再把某一区的卡调小。真要恢复不滚，只有"游戏专用区退回 4 列"或"去掉描述行"两条路，两条都已经比较过并被否
 - 主显示区要放两块信息时用 [Split](../src/shared/components/Split.tsx)（横屏并排、竖屏上下等分），别自己写朝向类。`ratio` 只描述横屏的宽度比 —— 竖屏一律等分，因为横向挤压只是变窄仍可读，纵向挤压会直接切掉整行
 - 左栏放参数与破坏性操作，右栏放**全桌要看的那块信息**
@@ -293,7 +295,7 @@ python .claude/skills/bgg-cover/scripts/cover_hue.py public/covers/sheet
 5. 多态控件有非颜色编码
 6. 长时间盯屏的工具调 [useWakeLock](../src/shared/hooks/useWakeLock.ts)
 7. 没有自己画返回/朝向/标题栏，也没有自己实现的全屏键
-8. 横竖屏判断只用 `wide` variant：`grep -n "lg:\|max-lg:" src` 一遍，布局类里不该再有宽度断点
+8. 横竖屏判断只用 `wide` variant：`grep -n "lg:\|max-lg:\|min-\[\|max-\[" src` 一遍，除了首页列数那个 `max-[520px]`（判的是名字宽度，不是朝向），布局类里不该再有宽度断点
 9. 功能按钮里没有裸 emoji / 箭头字形（`← ✕ ⏸ ▶ ↑ ↓ ↺ ▸ ⚙️ 🗑`），图标一律从 [shared/icons.ts](../src/shared/icons.ts) 取；尺寸用 `size-*`，没有只为撑字形而留下的 `text-*`
 10. **注释里没有实现取值与推导算式**（px / vmin / 明度 / 对比度 / 预算加减法）—— 那些属于本文，代码注释只写目的与注意事项。改了这里的任何取值，回头确认对应的代码注释没有复述过它
 

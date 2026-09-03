@@ -80,8 +80,20 @@ const SLOT = 'bg-surface'
 const CARD =
   'flex items-center gap-3 border-b-2 p-3 text-left transition-transform duration-75 active:scale-95 short:gap-2 short:p-2'
 
-/** 卡片同款，列数也就没有理由不同 */
-const GRID = 'grid grid-cols-2 gap-3 wide:grid-cols-3 short:gap-2'
+/**
+ * 卡片同款，列数也就没有理由不同。
+ *
+ * `max-[520px]` 是全项目唯一一处宽度断点，**它判的不是朝向而是「名字放不放得下」**：
+ * 手机竖屏两列时，每张卡扣掉盒图槽与内距后留给名字的宽度装不下英文长名（连 desc 一起
+ * 截成省略号），而这跟横屏竖屏无关，纯粹是可用宽度不够。阈值依据见 DESIGN.md §5。
+ *
+ * 写成 `max-*` 而不是 `grid-cols-1 min-[520px]:grid-cols-2`：后者与 `wide:` 在平板横屏上
+ * **必然同时命中**，谁赢取决于 Tailwind 生成的规则顺序；`grid-cols-2` 作为无 variant 的
+ * base 一定输给两个 variant，只剩「横屏且窄于 520px」这个现实中不存在的组合会撞。
+ *
+ * 不要因为「手机上首页变长了」把它改回去 —— 截断的名字在桌上是认不出哪款游戏的。
+ */
+const GRID = 'grid grid-cols-2 gap-3 max-[520px]:grid-cols-1 wide:grid-cols-3 short:gap-2'
 
 /**
  * 一个区。横向内距由这里给，[App](../App.tsx) 在首页刻意不给（`PAD_X_HOME`）——
@@ -145,7 +157,11 @@ function CardText({ name, desc }: { name: string; desc: string }) {
 
 /**
  * 跳工具页的那张卡（通用区与游戏专用区共用）。
- * `badge` 是给计分纸模板入口的第二编码：游戏专用区里混着两种目的地，颜色靠不住。
+ *
+ * 游戏专用区里混着「工具页」与「计分纸模板」两种目的地，区分**只靠 desc 那行文案**
+ * （模板卡写的是「计分纸 · N 项条目」）。原来右侧还挂一个计分纸 emoji 角标，已删 ——
+ * 它连 gap 一起吃掉一段宽度，而手机竖屏两列时名字本来就快放不下了；文字编码已经在，
+ * 角标是第三重冗余。**不要再加回任何右侧角标**，要加编码就加在 desc 里。
  *
  * `under` 收的是**已解析好的类名**而不是色档名：这张卡的两类调用方查的是两张不同的表
  * （工具查 ACCENT、模板查 HUE），把 union 塞进 props 会让卡片自己也得知道有两种色源。
@@ -158,19 +174,13 @@ type ToolCardProps = {
   desc: string
   under: string
   ariaLabel?: string
-  badge?: string
 }
 
-function ToolCard({ to, cover, icon, name, desc, under, ariaLabel, badge }: ToolCardProps) {
+function ToolCard({ to, cover, icon, name, desc, under, ariaLabel }: ToolCardProps) {
   return (
     <Link to={to} aria-label={ariaLabel} className={`${CARD} ${under}`}>
       <Cover cover={cover} icon={icon} />
       <CardText name={name} desc={desc} />
-      {badge && (
-        <span className="shrink-0 text-xs" aria-hidden>
-          {badge}
-        </span>
-      )}
     </Link>
   )
 }
@@ -190,7 +200,8 @@ function ToolCard({ to, cover, icon, name, desc, under, ariaLabel, badge }: Tool
  * 两处不要改回去：
  * - **不做垂直居中**（原来的 `content-center` + `min-h-full`）：三区块本来就填满可用高，
  *   而 `content-center` 在内容溢出时会把第一区推到滚动区外且滚不回来
- * - 列数只用 `wide:` 判朝向 —— 宽度断点会把安卓平板横屏误判成竖屏，整批退成单列
+ * - **不许用宽度断点判朝向**：会把安卓平板横屏误判成竖屏，整批退成单列。列数的
+ *   横竖屏差异只由 `wide:` 给；`GRID` 里那个 `max-[520px]` 判的是别的事，见它自己的说明
  *
  * 首页是全站唯一允许纵向滚动的页面（取值与理由见 DESIGN.md §5）。
  */
@@ -234,7 +245,6 @@ export default function Home() {
           under: HUE[tpl.hue],
           // 卡面只有游戏名，读屏得说清点进去是哪个工具
           ariaLabel: t('home.sheetOf', { name: t(tpl.nameKey) }),
-          badge: scoreSheetMeta.icon,
         } satisfies ToolCardProps,
       }))
       .sort((a, b) => a.card.name.localeCompare(b.card.name, i18n.language))
@@ -294,7 +304,7 @@ export default function Home() {
           {/* 与下面的网格同宽自成一行：印刷版式里它是网格的控制条，不是标题的附件 */}
           <div className="relative">
             <IconSearch
-              className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-text-dim"
+              className="pointer-events-none absolute left-0 top-1/2 size-5 -translate-y-1/2 text-text-dim"
               aria-hidden
             />
             {/*
@@ -306,14 +316,14 @@ export default function Home() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('home.filter')}
               aria-label={t('home.filter')}
-              className={`${FIELD} pl-11 pr-14`}
+              className={`${FIELD} pl-8 pr-14`}
             />
             {query !== '' && (
               <button
                 type="button"
                 onClick={() => setQuery('')}
                 aria-label={t('common.clear')}
-                className="btn-quiet absolute right-1 top-1/2 !min-h-12 w-12 -translate-y-1/2 short:!min-h-10 short:w-10"
+                className="btn-base absolute right-0 top-1/2 size-12 -translate-y-1/2 !min-h-0 text-text-muted short:size-10"
               >
                 <IconClose className="size-5" aria-hidden />
               </button>
