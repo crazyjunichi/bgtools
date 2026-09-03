@@ -50,6 +50,12 @@ export {
   ChevronDown as IconMoveDown,
   ChevronUp as IconMoveUp,
   Bomb as IconNewGame,
+  /**
+   * 在一组候选里前后翻（导出图的外观切换）。**必须成对出现**，
+   * 单独一个箭头读不出「这是在一串里挪」。与 IconMoveUp/Down 分开：那对翻的是列表项的位置
+   */
+  ChevronRight as IconNext,
+  ChevronLeft as IconPrev,
   ListOrdered as IconOrder,
   Pause as IconPause,
   Play as IconPlay,

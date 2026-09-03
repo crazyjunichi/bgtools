@@ -3,17 +3,20 @@ import { useTranslation } from 'react-i18next'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Overlay } from '../../shared/components/Overlay'
 import { IconBack, IconCrown, IconCsv, IconDelete, IconImage } from '../../shared/icons'
+import { useArchiveStore } from '../../shared/match/archive'
+import { durationText } from '../../shared/match/format'
+import { MatchNote } from '../../shared/match/MatchNote'
 import { PLAYER_SOLID } from '../../shared/players/colors'
-import { useGamesStore, type GameDraft, type SheetGame } from './games'
+import { scoreSheetMeta } from './meta'
+import { readSheetPayload, type SheetPayload } from './payload'
 import { SheetGrid } from './SheetGrid'
 import { buildSnapshot } from './snapshot'
 import { entriesOf, fmtScore } from './store'
-import { findTemplate } from './templates'
 
 type Props = {
-  onLoad: (game: SheetGame) => void
-  onExportImage: (game: GameDraft, at: number) => void
-  onExportCsv: (game: GameDraft, at: number) => void
+  onLoad: (payload: SheetPayload, endAt: number) => void
+  onExportImage: (payload: SheetPayload, at: number) => void
+  onExportCsv: (payload: SheetPayload, at: number) => void
   onClose: () => void
 }
 
@@ -30,11 +33,13 @@ const GRID_BOX = 'flex h-[min(26rem,48vh)] flex-col short:h-[min(14rem,42vh)]'
  * 历史记录：列表 + 单局详情**两层视图共用一个浮层**，不叠第二层
  * （叠浮层在平板上会让人不知道点哪个遮罩能退回去）。
  *
- * 存档由 [store](store.ts) 的 `newGame` / `loadGame` 自动写入，这里只读、删、导出。
+ * 记录来自共享存档（[archive](../../shared/match/archive.ts)），由结算面板写入，
+ * 这里只读、改备注、删、导出。**计分纸 v1 的旧局也在里面**（读时适配、标了 legacy），
+ * 它们没有分数与备注，所以详情里少一块。
  */
 export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Props) {
-  const { t, i18n } = useTranslation()
-  const { games, status, load, remove, clear } = useGamesStore()
+  const { t } = useTranslation()
+  const { matches, status, load, remove, clear } = useArchiveStore()
   const [openId, setOpenId] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
 
@@ -44,23 +49,38 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
   }, [load])
 
   /*
+   * 单表混着所有工具的记录，这里只要计分纸的；payload 反解不出来的直接跳过
+   * （别的版本写下的东西，与其显示半条不如不显示）。
    * 列表行要的「谁多少分」和导出用的是同一个 buildSnapshot ——
-   * 行里显示的合计与导出图上的合计不可能对不上。
-   * 切片放在 memo 内：`games.slice()` 每次都是新数组，摊在外面会让 memo 永远失效
+   * 行里显示的合计与导出图上的合计不可能对不上
    */
+  const games = useMemo(
+    () =>
+      matches
+        .filter((m) => m.toolId === scoreSheetMeta.id)
+        .flatMap((m) => {
+          const payload = readSheetPayload(m.payload)
+          return payload ? [{ match: m, payload }] : []
+        }),
+    [matches],
+  )
+
   const rows = useMemo(
     () =>
       (showAll ? games : games.slice(0, PAGE)).map((g) => ({
-        game: g,
-        snap: buildSnapshot(g, g.at, t),
+        ...g,
+        snap: buildSnapshot(g.payload, g.match.endAt, t),
       })),
     [games, showAll, t],
   )
 
-  const open = openId ? games.find((g) => g.id === openId) : undefined
+  const open = openId ? games.find((g) => g.match.id === openId) : undefined
 
   if (open) {
-    const entries = entriesOf(open.templateId, open.customEntries, open.overrides)
+    const { match, payload } = open
+    const entries = entriesOf(payload.templateId, payload.customEntries, payload.overrides)
+    const snap = buildSnapshot(payload, match.endAt, t)
+    const spent = match.endAt - match.startedAt
     return (
       <Overlay
         maxWidth="max-w-3xl"
@@ -75,11 +95,11 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
               <IconBack className="size-5" aria-hidden />
             </button>
             <span className="flex min-w-0 flex-col">
-              <span className="truncate text-base font-bold">
-                {t(findTemplate(open.templateId).nameKey)}
-              </span>
+              <span className="truncate text-base font-bold">{snap.title}</span>
               <span className="truncate text-xs tabular-nums text-text-dim">
-                {new Date(open.at).toLocaleString(i18n.language)}
+                {snap.dateText}
+                {/* 旧局没记开局时刻，时长会是 0，那就不显示这一段 */}
+                {spent > 0 && ` · ${durationText(t, spent)}`}
               </span>
             </span>
           </span>
@@ -90,16 +110,19 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
         <div className={GRID_BOX}>
           <SheetGrid
             readOnly
-            seats={open.seats.map((s) => ({ ...s, linked: false }))}
+            seats={payload.seats.map((s) => ({ ...s, linked: false }))}
             entries={entries}
-            cells={open.cells}
+            cells={payload.cells}
           />
         </div>
+
+        {/* 备注是记录里唯一能事后改的字段 */}
+        <MatchNote key={match.id} match={match} />
 
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
-            onClick={() => onExportImage(open, open.at)}
+            onClick={() => onExportImage(payload, match.endAt)}
             className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
           >
             <IconImage className="size-6 short:size-5" aria-hidden />
@@ -107,7 +130,7 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
           </button>
           <button
             type="button"
-            onClick={() => onExportCsv(open, open.at)}
+            onClick={() => onExportCsv(payload, match.endAt)}
             className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
           >
             <IconCsv className="size-6 short:size-5" aria-hidden />
@@ -116,7 +139,7 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
           {/* 读取会覆盖当前局，必须二次确认 */}
           <ConfirmButton
             onConfirm={() => {
-              onLoad(open)
+              onLoad(payload, match.endAt)
               onClose()
             }}
             confirmText={t('tools.scoreSheet.history.confirmLoad')}
@@ -125,7 +148,7 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
           </ConfirmButton>
           <ConfirmButton
             onConfirm={() => {
-              void remove(open.id)
+              void remove(match.id)
               setOpenId(null)
             }}
             confirmText={t('tools.scoreSheet.history.confirmRemove')}
@@ -166,11 +189,11 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
       {rows.length > 0 && (
         // 列表自己滚，浮层整体仍不滚（滚整个浮层会把「清空历史」推出视野）
         <div className="flex max-h-[52vh] flex-col gap-2 overflow-y-auto short:max-h-[40vh]">
-          {rows.map(({ game, snap }) => (
+          {rows.map(({ match, snap }) => (
             <button
-              key={game.id}
+              key={match.id}
               type="button"
-              onClick={() => setOpenId(game.id)}
+              onClick={() => setOpenId(match.id)}
               aria-label={t('tools.scoreSheet.history.open', {
                 date: snap.dateText,
                 name: snap.title,
@@ -198,6 +221,9 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
                   </span>
                 ))}
               </span>
+              {match.note !== undefined && (
+                <span className="truncate text-left text-xs text-text-muted">{match.note}</span>
+              )}
             </button>
           ))}
 
@@ -217,7 +243,8 @@ export function SheetHistory({ onLoad, onExportImage, onExportCsv, onClose }: Pr
       {games.length > 0 && (
         <ConfirmButton
           onConfirm={() => {
-            void clear()
+            // 只清计分纸自己的：单表里还躺着别的工具的局
+            void clear(scoreSheetMeta.id)
             setShowAll(false)
           }}
           confirmText={t('tools.scoreSheet.history.confirmClear')}

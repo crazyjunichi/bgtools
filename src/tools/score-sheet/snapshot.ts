@@ -1,9 +1,9 @@
 import type { TFunction } from 'i18next'
 import i18n from '../../shared/i18n'
 import type { PlayerColor } from '../../shared/players/colors'
-import type { GameDraft } from './games'
+import type { SheetPayload } from './payload'
 import { entriesOf, entryLabel, rawOf, scoreOf, totalOf } from './store'
-import { findTemplate } from './templates'
+import { findTemplate, templateIdentity } from './templates'
 
 /** 一条计分细则一行。`undefined` = 那一格没填过（**不是 0**，两者在纸上必须看得出区别） */
 export type SnapshotRow = { name: string; cells: (number | undefined)[] }
@@ -21,6 +21,8 @@ export type SnapshotRow = { name: string; cells: (number | undefined)[] }
 export type SheetSnapshot = {
   /** 模板名 */
   title: string
+  /** 模板 emoji。战绩榜的头部用它做身份标识，同首页宫格那个字面量 */
+  icon: string
   /** 归档/导出时刻。只给文件名用，展示走 dateText */
   at: number
   /** 已按界面语言格式化好的日期时间 */
@@ -40,13 +42,16 @@ export type SheetSnapshot = {
   bestTotal: number | null
 }
 
-export function buildSnapshot(g: GameDraft, at: number, t: TFunction): SheetSnapshot {
+export function buildSnapshot(g: SheetPayload, at: number, t: TFunction): SheetSnapshot {
   const entries = entriesOf(g.templateId, g.customEntries, g.overrides)
   const totals = g.seats.map((s) => totalOf(entries, g.cells, s.id))
   const best = Math.max(...totals)
 
+  const identity = templateIdentity(findTemplate(g.templateId))
+
   return {
-    title: t(findTemplate(g.templateId).nameKey),
+    title: t(identity.nameKey),
+    icon: identity.icon,
     at,
     dateText: new Date(at).toLocaleString(i18n.language),
     entryCol: t('tools.scoreSheet.entryCol'),

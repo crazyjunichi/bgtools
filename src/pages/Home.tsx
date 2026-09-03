@@ -4,11 +4,12 @@ import { Link } from 'react-router-dom'
 import { type QuickAccent, quickTools } from '../quick/registry'
 import { useQuickUI } from '../quick/store'
 import { FIELD } from '../shared/components/fieldStyle'
+import type { GameHue } from '../shared/games/types'
 import { searchText, tokenize } from '../shared/i18n/search'
 import { IconClose, IconSearch } from '../shared/icons'
 import { tools } from '../tools/registry'
 import { scoreSheetMeta } from '../tools/score-sheet/meta'
-import { BLANK_ID, type SheetHue, TEMPLATES } from '../tools/score-sheet/templates'
+import { BLANK_ID, TEMPLATES, templateIdentity } from '../tools/score-sheet/templates'
 import type { ToolMeta } from '../tools/types'
 
 /** 注册表是静态的，分区在模块顶层切一次 —— 每次渲染重算会让下面的 useMemo 依赖白给 */
@@ -37,13 +38,13 @@ const ACCENT: Record<ToolMeta['accent'] | QuickAccent, { under: string; glyph: s
 }
 
 /**
- * 计分纸模板卡的规则线色，来自各自的盒图主体色（[SheetHue](../tools/score-sheet/templates.ts)）。
+ * 计分纸模板卡的规则线色，来自各自的盒图主体色（[GameHue](../shared/games/types.ts)）。
  * 这一区十几张卡本来全是计分纸的 violet，那条线等于没编码。
  *
  * 与 ACCENT 分成两张表：档数是它的两倍多，而模板卡没有字形，合表得给每档补一个用不到的
  * `glyph`。**一律 -400 档**，跟工具身份色同亮度 —— 混着 -300/-500 会让某几张卡显得更重要。
  */
-const HUE: Record<SheetHue, string> = {
+const HUE: Record<GameHue, string> = {
   red: 'border-red-400',
   orange: 'border-orange-400',
   amber: 'border-amber-400',
@@ -231,22 +232,26 @@ export default function Home() {
     }))
 
     const sheetRows = TEMPLATES.filter((tpl) => tpl.id !== BLANK_ID)
-      .map((tpl) => ({
-        text: searchText(i18n, [tpl.nameKey, tpl.aliasKey]),
-        card: {
-          // 目标模板带在 URL 上，由 ScoreSheetPage 落地时消费掉
-          to: `/${scoreSheetMeta.id}?tpl=${tpl.id}`,
-          cover: tpl.cover,
-          icon: tpl.icon,
-          name: t(tpl.nameKey),
-          // 描述行说清这张点进去是计分纸，条目数顺带告诉桌上这表有多长
-          desc: t('home.sheetDesc', { n: tpl.entries.length }),
-          // 这一区唯一不走 meta.accent 的地方：线色跟着盒图，不跟着「计分纸」这个工具
-          under: HUE[tpl.hue],
-          // 卡面只有游戏名，读屏得说清点进去是哪个工具
-          ariaLabel: t('home.sheetOf', { name: t(tpl.nameKey) }),
-        } satisfies ToolCardProps,
-      }))
+      .map((tpl) => {
+        // 名字与盒图都属于那盒游戏，模板只存 gameId 指过去
+        const game = templateIdentity(tpl)
+        return {
+          text: searchText(i18n, [game.nameKey, game.aliasKey]),
+          card: {
+            // 目标模板带在 URL 上，由 ScoreSheetPage 落地时消费掉
+            to: `/${scoreSheetMeta.id}?tpl=${tpl.id}`,
+            cover: game.cover,
+            icon: game.icon,
+            name: t(game.nameKey),
+            // 描述行说清这张点进去是计分纸，条目数顺带告诉桌上这表有多长
+            desc: t('home.sheetDesc', { n: tpl.entries.length }),
+            // 这一区唯一不走 meta.accent 的地方：线色跟着盒图，不跟着「计分纸」这个工具
+            under: HUE[game.hue],
+            // 卡面只有游戏名，读屏得说清点进去是哪个工具
+            ariaLabel: t('home.sheetOf', { name: t(game.nameKey) }),
+          } satisfies ToolCardProps,
+        }
+      })
       .sort((a, b) => a.card.name.localeCompare(b.card.name, i18n.language))
 
     return [...toolRows, ...sheetRows]

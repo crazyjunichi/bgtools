@@ -1,7 +1,10 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { rankByScore, seatsToPlayers } from '../../shared/match/result'
+import type { MatchDraft } from '../../shared/match/types'
 import { bindSeat, makeSeat, type Seat } from '../../shared/players/seats'
 import type { Player } from '../../shared/players/store'
+import { scoreMeta } from './meta'
 
 export type Round = {
   id: string
@@ -26,9 +29,22 @@ type ScoreState = {
   draft: Record<string, number>
   /** 只在内存：跨会话还能回退一步反而危险，重开就该是干净的 */
   undoStack: Op[]
+  /** 这一局的开局时刻，按「新一局」才重置 */
+  startedAt: number
+  /**
+   * 最后一次**改动分数数据**的时刻，结算时的 `endAt` 取它。
+   * 表摊在桌上切后台、隔天再回来按「新一局」是常态，那时的 `Date.now()`
+   * 与这局真正结束差着十几个小时。加列删列不算改动
+   */
+  lastActiveAt: number
 
   /** 席位数不设上限：列多了表格转为横滚、颜色开始复用，但不拦着加 */
   addSeat: () => void
+  /**
+   * 一次落座：按名单顺序建席位并绑定玩家。**只给空桌开局用** ——
+   * 一局重新添加玩家是常态，逐列点太慢
+   */
+  seatPlayers: (picked: Player[]) => void
   removeSeat: (seatId: string) => void
   bindPlayer: (seatId: string, player: Player | null) => void
   /** 只改临时席位的快照名。绑定了名单玩家的列由 [SeatPicker] 直接改名单，不到这里 */
@@ -58,11 +74,18 @@ export const useScoreStore = create<ScoreState>()(
       rounds: [],
       draft: {},
       undoStack: [],
+      startedAt: Date.now(),
+      lastActiveAt: Date.now(),
 
       addSeat: () => {
         const { seats } = get()
         set({ seats: [...seats, makeSeat(seats)] })
       },
+
+      seatPlayers: (picked) =>
+        set({
+          seats: picked.reduce<Seat[]>((acc, p) => [...acc, bindSeat(makeSeat(acc), p)], []),
+        }),
 
       removeSeat: (seatId) => {
         const { seats, rounds, draft, undoStack } = get()
@@ -87,6 +110,7 @@ export const useScoreStore = create<ScoreState>()(
         set({
           draft: { ...draft, [seatId]: (draft[seatId] ?? 0) + amount },
           undoStack: [...undoStack, { seatId, amount }].slice(-UNDO_LIMIT),
+          lastActiveAt: Date.now(),
         })
       },
 
@@ -99,7 +123,12 @@ export const useScoreStore = create<ScoreState>()(
         // 空轮不落行：桌上误点一下不该在表里留一条全 0 的记录
         if (!Object.values(draft).some((v) => v !== 0)) return
         // 封档后清撤销栈：撤销只在当前轮内有效，否则会把已成表的行改乱
-        set({ rounds: [...rounds, { id: newId(), delta: draft }], draft: {}, undoStack: [] })
+        set({
+          rounds: [...rounds, { id: newId(), delta: draft }],
+          draft: {},
+          undoStack: [],
+          lastActiveAt: Date.now(),
+        })
       },
 
       undo: () => {
@@ -108,17 +137,65 @@ export const useScoreStore = create<ScoreState>()(
         if (!op) return
         const next = { ...draft, [op.seatId]: (draft[op.seatId] ?? 0) - op.amount }
         if (next[op.seatId] === 0) delete next[op.seatId]
-        set({ draft: next, undoStack: undoStack.slice(0, -1) })
+        set({ draft: next, undoStack: undoStack.slice(0, -1), lastActiveAt: Date.now() })
       },
 
-      newGame: () => set({ rounds: [], draft: {}, undoStack: [] }),
+      newGame: () => {
+        const now = Date.now()
+        set({ rounds: [], draft: {}, undoStack: [], startedAt: now, lastActiveAt: now })
+      },
     }),
     {
       name: 'bgtools:score',
-      partialize: ({ seats, rounds, draft }) => ({ seats, rounds, draft }),
+      partialize: ({ seats, rounds, draft, startedAt, lastActiveAt }) => ({
+        seats,
+        rounds,
+        draft,
+        startedAt,
+        lastActiveAt,
+      }),
     },
   ),
 )
+
+/**
+ * 这一局的可归档形态。**在打开结算面板那一刻取一次**：`endAt` 是最后一次加分的时刻，
+ * 不是按下结算的时刻。名次按总分自动算（并列同名次），谁算赢让用户在面板里改。
+ */
+export function scoreMatchDraft(): MatchDraft {
+  const s = useScoreStore.getState()
+  const scored = seatsToPlayers(s.seats).map((p, i) => ({
+    ...p,
+    score: totalOf(s.rounds, s.draft, s.seats[i].id),
+  }))
+  const payload: ScorePayload = {
+    seats: s.seats,
+    rounds: s.rounds,
+    draft: s.draft,
+    startedAt: s.startedAt,
+  }
+  return {
+    startedAt: s.startedAt,
+    endAt: s.lastActiveAt,
+    // 通用计分不绑定某盒游戏，用户可以在结算面板里指定
+    gameId: null,
+    toolId: scoreMeta.id,
+    mode: 'ranked',
+    players: rankByScore(scored, (p) => p.score ?? 0),
+    payload,
+  }
+}
+
+/**
+ * 存进 `Match.payload` 的局面。整份局面而不是算好的总分：回看要能看到逐轮明细，
+ * 而分数细则（哪轮加了几分）只有这个工具知道怎么读。第一步还没有读它的地方
+ */
+export type ScorePayload = {
+  seats: Seat[]
+  rounds: Round[]
+  draft: Record<string, number>
+  startedAt: number
+}
 
 export function totalOf(rounds: Round[], draft: Record<string, number>, seatId: string): number {
   return rounds.reduce((sum, r) => sum + (r.delta[seatId] ?? 0), 0) + (draft[seatId] ?? 0)

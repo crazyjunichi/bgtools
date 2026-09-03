@@ -36,7 +36,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 默认落第一级。第二级只在数据「一晚攒好几条、永远不删」时才用，理由是硬的：
 
 - localStorage 的 5MB 是**整个域名共享**的，现在已经有七个 `bgtools:*` key 在分
-- zustand `persist` 是**全量写回**：存档进了某个 store，就等于每按一下数字键都把所有历史一起 `JSON.stringify`（同步阻塞主线程）。所以**存档必须独立一个不带 persist 的 store**（[score-sheet/games.ts](src/tools/score-sheet/games.ts) 是范例），IDB 自己就是持久层
+- zustand `persist` 是**全量写回**：存档进了某个 store，就等于每按一下数字键都把所有历史一起 `JSON.stringify`（同步阻塞主线程）。所以**存档必须独立一个不带 persist 的 store**（[match/archive.ts](src/shared/match/archive.ts) 是范例），IDB 自己就是持久层
 - 新增一种存档要在 [idb.ts](src/shared/idb.ts) 的 `STORES` 加一行并 bump `VERSION`（`onupgradeneeded` 一个版本只跑一次，分散到各业务模块去建必然漏）
 - **IDB 打不开是正常分支，不是崩点**：隐私模式会直接禁掉它。上层 catch 成 `status: 'unavailable'` → 那一块功能关掉 + 一句说明，其余照用
 
@@ -83,6 +83,17 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 - **人数不设上限、名单也没有「重置」**：`add()` 永不失败（返回新 id），UI 里不要显示 `N/上限`，也不要再加一键恢复默认（误触代价太大，删除是逐个删的）
 - 颜色只用 [colors.ts](src/shared/players/colors.ts) 的 `PLAYER_SOLID` / `PLAYER_SOFT` / `PLAYER_DOT` 三张显式映射表，16 色刻意避开 rose / emerald / sky / amber 四个语义色，末尾四格是中性/大地色（棕白灰黑，棕在 `@theme` 自定义）。**这已是上限，不要再加色**，依据见 [docs/DESIGN.md](docs/DESIGN.md) §2。**同色允许被两个玩家共用**（超过 16 人必然重复），所以任何露出玩家色的地方必须同时出名字或色名 —— 颜色不许是唯一识别编码。文字色由这三张表给，**调用点不许在 `PLAYER_SOLID` 后面再补 `text-*`**（会覆盖掉「黑」唯一的白字）
 - `src/shared/players/` 是 shared 层「两个工具用到才上提」原则的一处**有意例外**：它本身就是跨工具契约，不是某个工具的私有组件
+
+## 游戏目录（games）与一局游戏（match）
+
+同 players，这两层也是**跨工具契约**，不属于任何工具 —— 统计、玩家战绩、分享都只依赖它们，不许去反解某个工具的私有存档。
+
+- **游戏 ≠ 工具**：[shared/games/registry.ts](src/shared/games/registry.ts) 的 `GAMES` 是「哪盒游戏」的唯一真源（名字 / emoji / 盒图 / hue / 别名 / 结算方式），编译期常量、存 key 不存文案。计分纸模板只持有 `gameId`，`ToolMeta.gameId` 同理。一张模板该显示的名字与图标一律走 [templateIdentity](src/tools/score-sheet/templates.ts)，**不要自己判 `gameId` 是否为空**
+- **没有全局的「当前局」**：打开一个工具页就是在那个工具里开一局，谁参与只属于这一局，与别的工具、别的实例无关（每局都重新选人，[SeatStart](src/shared/players/SeatStart.tsx) 是两个计分工具共用的开局选人空态）。进行中的状态留在各工具自己的 store 里；[match/active.ts](src/shared/match/active.ts) 只是给顶栏 quick 看的**派生镜像**，不 persist、不是真源
+- **归档只有一个入口**：[MatchFinish](src/shared/match/MatchFinish.tsx) → [archive.ts](src/shared/match/archive.ts)（IDB 单表 `matches`，所有工具混存，所以按 `toolId` 过滤、`clear(toolId)` 也要带上）。分数与名次由工具算好传进去（只有它知道怎么算），面板只调「谁算赢」这类规则外的判断
+- **`endAt` 取工具 store 里的 `lastActiveAt`，不取 `Date.now()`**：表摊在桌上切后台、隔天回来才按新一局是常态。`lastActiveAt` 只由**改动分数数据**的 action 刷新（加列、切模板、选格子都不算），并且进 persist
+- `note` 是 `Match` 上**唯一允许事后修改**的字段（回看时补一句，[MatchNote](src/shared/match/MatchNote.tsx) 落在 blur 写盘），其余字段只增删不改
+- 旧存档（计分纸 v1 的 `score-sheet-games`）靠 `archive.ts` 的**读时适配**保住并标 `legacy`：只进历史列表，不进统计、不给改备注、不写盘。**旧表不迁移也不删**
 
 ## 运行场景基线（每个工具都要满足）
 

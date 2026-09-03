@@ -4,7 +4,7 @@ import { FIELD } from '../../shared/components/fieldStyle'
 import { Overlay } from '../../shared/components/Overlay'
 import { searchText, tokenize } from '../../shared/i18n/search'
 import { IconClose, IconSearch, IconSelected } from '../../shared/icons'
-import { BLANK_ID, findTemplate, TEMPLATES, type SheetTemplate } from './templates'
+import { BLANK_ID, findTemplate, TEMPLATES, templateIdentity, type SheetTemplate } from './templates'
 
 type Props = {
   templateId: string
@@ -28,11 +28,16 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
   const [broken, setBroken] = useState<ReadonlySet<string>>(new Set())
 
   const rows = useMemo(() => {
-    const all = TEMPLATES.map((tpl) => ({
-      tpl,
-      name: t(tpl.nameKey),
-      text: searchText(i18n, [tpl.nameKey, tpl.aliasKey]),
-    }))
+    const all = TEMPLATES.map((tpl) => {
+      // 名字、盒图、别名都属于那盒游戏（通用空白除外，它自带一份）
+      const game = templateIdentity(tpl)
+      return {
+        tpl,
+        game,
+        name: t(game.nameKey),
+        text: searchText(i18n, [game.nameKey, game.aliasKey]),
+      }
+    })
 
     // 通用空白钉在首位，其余按当前语言的名字排 —— 中文下是拼音序，比声明序好扫
     all.sort((a, b) =>
@@ -57,7 +62,7 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
           {/* 搜到的结果里可能没有选中项，当前模板得有个常驻锚点 */}
           <span className="truncate text-xs text-text-dim">
             {t('tools.scoreSheet.settings.current', {
-              name: t(findTemplate(templateId).nameKey),
+              name: t(templateIdentity(findTemplate(templateId)).nameKey),
             })}
           </span>
         </span>
@@ -95,9 +100,9 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
 
         {/* 用 max-h 而非定高：只搜到两条时不该留一大块空白。约束的是高度，所以是 vh 不是 vmin */}
         <div className="flex max-h-[52vh] flex-col gap-2 overflow-y-auto short:max-h-[38vh]">
-          {rows.map(({ tpl, name }) => {
+          {rows.map(({ tpl, game, name }) => {
             const on = tpl.id === templateId
-            const cover = tpl.cover && !broken.has(tpl.id) ? tpl.cover : null
+            const cover = game.cover && !broken.has(tpl.id) ? game.cover : null
             return (
               <button
                 key={tpl.id}
@@ -124,7 +129,7 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
                         onError={() => setBroken((s) => new Set(s).add(tpl.id))}
                       />
                     ) : (
-                      <span className="text-2xl short:text-xl">{tpl.icon}</span>
+                      <span className="text-2xl short:text-xl">{game.icon}</span>
                     )}
                   </span>
                   <span className="truncate">{name}</span>

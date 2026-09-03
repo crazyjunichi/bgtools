@@ -3,23 +3,35 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { buzz } from '../../shared/haptics'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
-import { IconPlayerAdd } from '../../shared/icons'
+import { useActiveMatch } from '../../shared/match/active'
+import { MatchFinish } from '../../shared/match/MatchFinish'
+import type { MatchDraft } from '../../shared/match/types'
 import { SeatPicker } from '../../shared/players/SeatPicker'
 import { resolveSeat, takenPlayerIds } from '../../shared/players/seats'
+import { SeatStart } from '../../shared/players/SeatStart'
 import { usePlayersStore } from '../../shared/players/store'
 import { EntryPanel } from './EntryPanel'
-import type { GameDraft } from './games'
+import { scoreSheetMeta } from './meta'
+import type { SheetPayload } from './payload'
+import { renderSheetImage } from './png/layouts'
 import { saveText, stampName } from './save'
 import { SheetGrid } from './SheetGrid'
 import { SheetHistory } from './SheetHistory'
 import { SheetImage } from './SheetImage'
 import { SheetKeypad } from './SheetKeypad'
 import { SheetMore } from './SheetMore'
-import { renderSheetPng } from './sheetPng'
 import { SheetSettings } from './SheetSettings'
-import { buildSnapshot, toCsv } from './snapshot'
-import { cellKey, entriesOf, hasRow, rawOf, useSheetStore } from './store'
-import { findTemplate } from './templates'
+import { buildSnapshot, type SheetSnapshot, toCsv } from './snapshot'
+import {
+  cellKey,
+  entriesOf,
+  hasRow,
+  isComplete,
+  rawOf,
+  sheetMatchDraft,
+  useSheetStore,
+} from './store'
+import { findTemplate, templateNameKey } from './templates'
 
 /** 同一时刻只开一个浮层：席位（改名 / 换人 / 移除）、条目编辑、模板、更多操作、历史 */
 type Panel =
@@ -44,6 +56,7 @@ export default function ScoreSheetPage() {
     pick,
     setTemplate,
     addSeat,
+    seatPlayers,
     removeSeat,
     bindPlayer,
     renameSeat,
@@ -56,6 +69,10 @@ export default function ScoreSheetPage() {
     removeEntry,
     newGame,
     loadGame,
+    imageSkin,
+    imageForm,
+    setImageSkin,
+    setImageForm,
   } = useSheetStore()
   const players = usePlayersStore((s) => s.players)
 
@@ -73,14 +90,66 @@ export default function ScoreSheetPage() {
     setParams({}, { replace: true })
   }, [wanted, setTemplate, setParams])
 
+  /*
+   * 顶栏的 quick 小工具看不见工具页内部的席位，靠这层镜像拿到「这一局谁在打」
+   * （见 [active](../../shared/match/active.ts)）。用 getState 而不是订阅 setter：
+   * 依赖里只剩真正会变的东西，不会因为 store 引用变化而反复写
+   */
+  useEffect(() => {
+    useActiveMatch.getState().set({
+      toolId: scoreSheetMeta.id,
+      gameId: findTemplate(templateId).gameId,
+      seats,
+    })
+  }, [seats, templateId])
+  useEffect(() => () => useActiveMatch.getState().clear(), [])
+
   const [panel, setPanel] = useState<Panel | null>(null)
   /**
-   * 导出好的 PNG。**不算 Panel** —— 它是 z-30 的独立 lightbox，
+   * 结算面板要处理的那一局。**不算 Panel** —— 它是「更多」浮层关掉之后才出现的下一步，
+   * 而且开面板那一刻就得把局面快照下来（`endAt` 是最后填分的时刻，不是现在）
+   */
+  const [finish, setFinish] = useState<MatchDraft | null>(null)
+  /**
+   * 要出图的那一局，**在点导出那一刻就快照下来**：之后在 lightbox 里换排版重画的是同一份数据，
+   * 桌上继续填分不该改变已经打开的那张图。历史局导出更是如此（那局早结束了）。
+   *
+   * 与 `image` 分成两段而不是一个 state：换排版时变的只有渲染参数，
+   * 合成一个就得在每个切换回调里重新 buildSnapshot 一次
+   */
+  const [target, setTarget] = useState<{ snapshot: SheetSnapshot; at: number } | null>(null)
+  /**
+   * 画好的 PNG。**不算 Panel** —— 它是 z-30 的独立 lightbox，
    * 从设置或历史浮层里打开、关掉后要回到底下那一层，两者能同时在屏上。
    * objectURL 与 blob 一起进 state：建在子组件的 effect 里会被 StrictMode 的
    * 「setup → cleanup → setup」撤掉（cleanup 一 revoke 就没了）
    */
   const [image, setImage] = useState<{ blob: Blob; url: string; filename: string } | null>(null)
+
+  /*
+   * 排版一变就重画。**不先清 image**：让上一张留在屏上直到新的就绪，
+   * 否则每次点箭头都闪一下空白（画一张只要几十毫秒，闪比等更难受）。
+   *
+   * alive 防的是后发先至：连点箭头时两次渲染并行，先完成的那次不一定是最后选的那种。
+   */
+  useEffect(() => {
+    if (!target) return
+    let alive = true
+    renderSheetImage(target.snapshot, imageForm, imageSkin, t('tools.scoreSheet.image.brand'))
+      .then((blob) => {
+        if (!alive) return
+        setImage({
+          blob,
+          url: URL.createObjectURL(blob),
+          filename: stampName(target.at, 'png', imageForm, imageSkin),
+        })
+      })
+      // 画布失败（极老 Safari、内存不足）不该连页面一起带走，桌上分数还在表里
+      .catch((e) => console.warn('[score-sheet] render failed', e))
+    return () => {
+      alive = false
+    }
+  }, [target, imageForm, imageSkin, t])
 
   /*
    * 回收 objectURL。写成 effect 而不是塞进关闭回调：路由切走（浏览器返回）时
@@ -126,20 +195,15 @@ export default function ScoreSheetPage() {
     setSeq((n) => n + 1)
   }
 
-  /** 当前局的可导出形态，与归档进 IDB 的是同一个形状 —— 导出路径因此不分「当前局 / 历史局」 */
-  const current: GameDraft = { templateId, customEntries, overrides, seats, cells, startedAt }
+  /** 当前局的可导出形态，与归档进存档的是同一个形状 —— 导出路径因此不分「当前局 / 历史局」 */
+  const current: SheetPayload = { templateId, customEntries, overrides, seats, cells, startedAt }
 
-  const exportImage = (game: GameDraft, at: number) => {
-    const snapshot = buildSnapshot(game, at, t)
-    renderSheetPng(snapshot, t('tools.scoreSheet.image.brand'))
-      .then((blob) =>
-        setImage({ blob, url: URL.createObjectURL(blob), filename: stampName(at, 'png') }),
-      )
-      // 画布失败（极老 Safari、内存不足）不该连页面一起带走，桌上分数还在表里
-      .catch((e) => console.warn('[score-sheet] render failed', e))
+  /** 只负责定下「画哪一局」，画哪种排版由上面那个 effect 跟着 store 里的选择走 */
+  const exportImage = (game: SheetPayload, at: number) => {
+    setTarget({ snapshot: buildSnapshot(game, at, t), at })
   }
 
-  const exportCsv = (game: GameDraft, at: number) => {
+  const exportCsv = (game: SheetPayload, at: number) => {
     const csv = toCsv(buildSnapshot(game, at, t))
     saveText(csv, stampName(at, 'csv'), 'text/csv;charset=utf-8')
   }
@@ -165,32 +229,19 @@ export default function ScoreSheetPage() {
      */
     <div className="flex h-full min-h-0 flex-col gap-3 wide:flex-row short:gap-2">
       {views.length === 0 ? (
-        /* 没人时矩阵不渲染，列头那个 ＋ 也就不存在 —— 空态自己得带一个加人入口 */
-        <div className="card flex min-h-0 flex-1 flex-col items-center justify-center gap-3 text-center wide:min-w-0">
-          <span className="text-5xl" aria-hidden>
-            📝
-          </span>
-          <span className="max-w-md text-base leading-relaxed text-text-muted">
-            {t('tools.scoreSheet.empty')}
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              addSeat()
-              buzz(20)
-            }}
-            className="btn-base gap-2 border border-line bg-surface-2 px-5 text-base"
-          >
-            <IconPlayerAdd className="size-6" aria-hidden />
-            {t('tools.scoreSheet.addSeat')}
-          </button>
-        </div>
+        /* 没人时矩阵不渲染，列头那个 ＋ 也就不存在 —— 空态自己得带落座入口 */
+        <SeatStart
+          icon={scoreSheetMeta.icon}
+          hint={t('tools.scoreSheet.empty')}
+          onSeat={seatPlayers}
+          onAddTemp={addSeat}
+        />
       ) : (
         <SheetGrid
           seats={views}
           entries={entries}
           cells={cells}
-          title={t(findTemplate(templateId).nameKey)}
+          title={t(templateNameKey(templateId))}
           startedAt={startedAt}
           pick={pick}
           editable={editable}
@@ -233,11 +284,24 @@ export default function ScoreSheetPage() {
       {panel?.kind === 'more' && (
         <SheetMore
           canExport={Object.keys(cells).length > 0}
+          canFinish={isComplete(seats, cells)}
           onExportImage={() => exportImage(current, Date.now())}
           onExportCsv={() => exportCsv(current, Date.now())}
           onOpenHistory={() => setPanel({ kind: 'history' })}
+          onFinish={() => setFinish(sheetMatchDraft())}
           onNewGame={newGame}
           onClose={() => setPanel(null)}
+        />
+      )}
+
+      {finish && (
+        <MatchFinish
+          draft={finish}
+          onDone={() => {
+            newGame()
+            setFinish(null)
+          }}
+          onClose={() => setFinish(null)}
         />
       )}
 
@@ -250,12 +314,17 @@ export default function ScoreSheetPage() {
         />
       )}
 
-      {image && (
+      {target && (
         <SheetImage
-          blob={image.blob}
-          url={image.url}
-          filename={image.filename}
-          onClose={() => setImage(null)}
+          image={image}
+          skin={imageSkin}
+          form={imageForm}
+          onSkin={setImageSkin}
+          onForm={setImageForm}
+          onClose={() => {
+            setTarget(null)
+            setImage(null)
+          }}
         />
       )}
 

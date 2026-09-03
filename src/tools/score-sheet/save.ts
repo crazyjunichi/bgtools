@@ -8,11 +8,14 @@ const pad2 = (n: number) => String(n).padStart(2, '0')
 /**
  * 文件名带**本地**时刻：一晚导好几张，靠时间戳才分得清哪张是哪局
  * （用 ISO 的 UTC 串会和玩家记忆里的时间差几个小时）。
+ *
+ * `parts` 拼在时间戳后面，给同一局导出的多种排版做区分 —— 时间戳只精确到分钟，
+ * 连切两种排版会撞名，浏览器那边会变成 `xxx (1).png`，事后认不出哪张是哪种。
  */
-export function stampName(at: number, ext: string): string {
+export function stampName(at: number, ext: string, ...parts: string[]): string {
   const d = new Date(at)
   const stamp = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}`
-  return `score-sheet-${stamp}.${ext}`
+  return `score-sheet-${[stamp, ...parts].join('-')}.${ext}`
 }
 
 function download(url: string, filename: string) {

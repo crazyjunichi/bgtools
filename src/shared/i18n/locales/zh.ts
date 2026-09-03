@@ -126,6 +126,12 @@ export const zh = {
       empty: '名单是空的。先添加玩家，之后每个工具都能直接用。',
       manage: '管理玩家',
     },
+    /** 计分工具的开局选人空态（[SeatStart](../../players/SeatStart.tsx)），两个计分工具共用 */
+    seatStart: {
+      label: '这局谁在玩',
+      start: '就坐（{{n}} 人）',
+      temp: '加一个临时席位',
+    },
     /**
      * 席位面板（[SeatPicker](../../players/SeatPicker.tsx)），多轮计分与计分纸共用。
      * 「移除这一列」的按钮在这里，但**文案留在各自的 `tools.*` 下**并由工具传进来 ——
@@ -142,6 +148,91 @@ export const zh = {
       /** 列表最后一格，宽度只有约 128px */
       manage: '管理名单',
     },
+  },
+
+  /**
+   * 游戏目录（[shared/games](../../games/registry.ts)）。**与 `tools.*` 的工具名分开**：
+   * 「狼人杀」是一盒游戏，「狼人杀主持」是服务它的工具，两个名字都得在。
+   */
+  games: {
+    name: {
+      agricola: '农场主',
+      catan: '卡坦岛',
+      splendor: '璀璨宝石',
+      azul: '花砖物语',
+      ticketToRide: '铁路之旅',
+      carcassonne: '卡卡颂',
+      wingspan: '展翅翱翔',
+      patchwork: '拼布',
+      everdell: '绮丽庄园',
+      sevenWonders: '七大奇迹',
+      arnak: '阿纳克遗迹',
+      cascadia: '喀斯喀迪亚',
+      terraformingMars: '火星殖民地',
+      terraMystica: '泰拉神秘之地',
+      greatWesternTrail: '大西部之路',
+      castlesOfBurgundy: '勃艮第城堡',
+      /** 中文圈没有统一译名，索性用原名，几种叫法都进别名串 */
+      clank: 'Clank!',
+      bombBusters: '炸弹克星',
+      werewolf: '狼人杀',
+      yahtzee: '快艇骰子',
+    },
+    /**
+     * **只参与搜索、永不渲染**：桌上的口头叫法常常不是官方译名（农家乐 / 翼展 / 车票之旅），
+     * 只匹配正式名会搜不到。两个语言的别名都进比对串，所以中英文混着打也能命中
+     */
+    alias: {
+      agricola: '农家乐 农夫',
+      catan: '卡坦 开拓者',
+      splendor: '宝石商人 宝石',
+      azul: '阿祖 瓷砖',
+      ticketToRide: '车票之旅 铁路 火车 TTR',
+      carcassonne: '卡卡送 版块',
+      wingspan: '翼展 鸟',
+      patchwork: '拼布艺术 双人',
+      everdell: '常青庄园 艾弗戴尔 松鼠',
+      sevenWonders: '7 Wonders 奇迹',
+      arnak: '失落的阿纳克遗迹 阿纳克 遗迹 Arnak',
+      cascadia: '卡斯卡迪亚 山河之间 动物 Cascadia',
+      terraformingMars: '改造火星 殖民火星 火星 TM',
+      terraMystica: '泰拉密斯提卡 神秘大地 教派',
+      greatWesternTrail: '西部之路 赶牛 牛仔 GWT',
+      castlesOfBurgundy: '勃根地城堡 城堡 骰子',
+      clank: '克朗克 珂玛 叮当 地牢',
+      bombBusters: '拆弹 拆炸弹 排线 Bomb Busters',
+      werewolf: '狼人 狼 Werewolf',
+      yahtzee: '快艇 大话骰 Yahtzee',
+    },
+  },
+
+  /** 一局游戏的结算与存档（[shared/match](../../match/types.ts)），各工具共用同一套措辞 */
+  match: {
+    title: '本局结算',
+    gameLabel: '这是哪盒游戏',
+    gameNone: '不指定',
+    players: '参与者',
+    /** 名次角标，`n` 是第几名 */
+    rank: '第 {{n}}',
+    /** 点一下切换「这人算赢」，读屏要念到是谁 */
+    markWin: '{{name}} 算获胜',
+    coopQuestion: '这局赢了吗',
+    coopWin: '通关',
+    coopLoss: '失败',
+    winnerTeam: '获胜阵营',
+    duration: '时长',
+    durationHm: '{{h}} 小时 {{m}} 分',
+    durationM: '{{m}} 分钟',
+    /** 不足一分钟不给数字，见 [format.ts](../../match/format.ts) */
+    durationShort: '不到 1 分钟',
+    note: '备注',
+    notePlaceholder: '随便记一句（可留空）',
+    /** 临时席位没绑名单玩家，进不了个人战绩 —— 得先说清楚再让人存 */
+    tempHint: '临时席位不计入个人战绩，去顶栏 👥 把人加进名单可以长期统计',
+    save: '记录并开新局',
+    discard: '不记录，直接开新局',
+    confirmDiscard: '确认丢弃本局',
+    unavailable: '这台设备禁用了本地数据库，本局记不下来，但可以直接开新局',
   },
 
   quick: {
@@ -388,7 +479,7 @@ export const zh = {
     score: {
       name: '多轮计分',
       desc: '多人加减分 · 逐轮历史 · 总分表',
-      empty: '先点操作条最上面的「加人」摆开席位。要换成名单里的人，点开那张卡片，再点顶上的名字。',
+      empty: '选出这局在玩的人就能开始。名单里没有的人加个临时席位，开局后还能用操作条的「加人」继续加。',
       /** 完整记录里首列的列头，只给读屏用（视觉上是空白，轮次号自己会说明） */
       roundCol: '轮',
       /** 调分浮层里两个数字块的标签 */
@@ -418,6 +509,8 @@ export const zh = {
       },
       settings: {
         title: '局面',
+        /** 加过分才出现，走结算面板（[MatchFinish](../../match/MatchFinish.tsx)） */
+        finish: '本局结算',
         newGame: '新一局（清空分数）',
         confirmNewGame: '确认清空历史',
       },
@@ -433,7 +526,7 @@ export const zh = {
     scoreSheet: {
       name: '计分纸',
       desc: '固定条目逐项结算 · 游戏模板 · 自动合计',
-      empty: '还没有人。点下面的「加人」摆开列，之后在表格右上角的「＋」继续加。',
+      empty: '选出这局在玩的人就能开始。名单里没有的人加个临时席位，开局后还能用表格右上角的「＋」继续加。',
       /** 矩阵首列的列头，视觉上是空的（下面每行自己写着条目名） */
       entryCol: '计分条目',
       total: '合计',
@@ -452,7 +545,7 @@ export const zh = {
       cellEmpty: '{{name}} 的{{entry}}：还没填，点击输入',
       editEntry: '{{name}}，点击看换算表或改输入方式',
       addEntry: '添加条目',
-      /** 列头行末尾那个 ＋ 的 aria-label，也是空态卡片上那个按钮的文案 */
+      /** 列头行末尾那个 ＋ 的 aria-label */
       addSeat: '加人',
       /** 列头整块是按钮，点开席位面板 */
       editSeat: '{{name}}，点击改名、换人或移除这一列',
@@ -499,8 +592,10 @@ export const zh = {
         exportImage: '图片',
         exportCsv: 'CSV',
         history: '历史记录',
-        /** 说明历史是怎么进去的，省掉一个「保存本局」按钮 */
-        archiveHint: '按「新一局」时，每人都填过分的局会自动存进历史。',
+        /** 说明记录是怎么进去的，也说明为什么这里有时是「结算」有时是「清空」 */
+        archiveHint: '每人都填过分之后，出口会变成「本局结算」：记下参与者与名次，再开新局。',
+        /** 填齐了才出现，走结算面板（[MatchFinish](../../match/MatchFinish.tsx)） */
+        finish: '本局结算',
         newGame: '新一局（清空所有分数）',
         confirmNewGame: '确认清空分数',
       },
@@ -510,7 +605,7 @@ export const zh = {
         loading: '正在读取…',
         /** IndexedDB 被禁（隐私模式等）时只关掉这一块，其余功能照用 */
         unavailable: '这台设备不能保存本地存档，可能开着隐私模式。其余功能不受影响。',
-        empty: '还没有存档。按「新一局」时，每人都填过分的局会自动存进来。',
+        empty: '还没有存档。一局填完后按「本局结算」，记录就会存到这里。',
         /** 列表只渲染最近 50 条，更早的按需展开 */
         more: '显示更早的',
         /** 一行一局，整块是按钮 */
@@ -531,6 +626,24 @@ export const zh = {
         share: '分享',
         /** 画在图片页脚：图会脱离应用流传，得留一句它是什么出的 */
         brand: 'BGTools 计分纸',
+        /** 换排版时新图还没画完那一小会儿 */
+        rendering: '正在生成…',
+        /** 外观：只换配色，不影响画哪些数 */
+        skin: '外观',
+        prevSkin: '上一种外观',
+        nextSkin: '下一种外观',
+        skins: {
+          dark: '深色',
+          print: '印刷',
+        },
+        /** 内容形式：决定画哪些数、怎么摆 */
+        form: '内容',
+        forms: {
+          /** 用「×」而不是「乘」：它读作「谁当行、谁当列」，两个词都得出现才分得清转置 */
+          matrix: '条目×人',
+          transposed: '人×条目',
+          rank: '战绩榜',
+        },
       },
       /** 行首浮层（[EntryPanel](../../../tools/score-sheet/EntryPanel.tsx)）：换算表 + 输入方式 */
       entry: {
@@ -555,49 +668,13 @@ export const zh = {
         remove: '删除这个条目',
         confirmRemove: '确认删除，这一行的分数一起删',
       },
+      /**
+       * **只剩空白表这一条** —— 其余模板的名字与别名都搬去了 `games.*`
+       * （[shared/games](../../games/registry.ts)），模板只存 `gameId` 指回去。
+       * 空白表不是一盒游戏，所以它的名字仍归模板自己
+       */
       templates: {
         custom: '通用空白',
-        agricola: '农场主',
-        catan: '卡坦岛',
-        splendor: '璀璨宝石',
-        azul: '花砖物语',
-        ticketToRide: '铁路之旅',
-        carcassonne: '卡卡颂',
-        wingspan: '展翅翱翔',
-        patchwork: '拼布',
-        everdell: '绮丽庄园',
-        sevenWonders: '七大奇迹',
-        arnak: '阿纳克遗迹',
-        cascadia: '喀斯喀迪亚',
-        terraformingMars: '火星殖民地',
-        terraMystica: '泰拉神秘之地',
-        greatWesternTrail: '大西部之路',
-        castlesOfBurgundy: '勃艮第城堡',
-        /** 中文圈没有统一译名，索性用原名，几种叫法都进别名串 */
-        clank: 'Clank!',
-      },
-      /**
-       * **只参与搜索、永不渲染**：桌上的口头叫法常常不是官方译名（农家乐 / 翼展 / 车票之旅），
-       * 只匹配正式名会搜不到。两个语言的别名都进比对串，所以中英文混着打也能命中
-       */
-      templateAlias: {
-        agricola: '农家乐 农夫',
-        catan: '卡坦 开拓者',
-        splendor: '宝石商人 宝石',
-        azul: '阿祖 瓷砖',
-        ticketToRide: '车票之旅 铁路 火车 TTR',
-        carcassonne: '卡卡送 版块',
-        wingspan: '翼展 鸟',
-        patchwork: '拼布艺术 双人',
-        everdell: '常青庄园 艾弗戴尔 松鼠',
-        sevenWonders: '7 Wonders 奇迹',
-        arnak: '失落的阿纳克遗迹 阿纳克 遗迹 Arnak',
-        cascadia: '卡斯卡迪亚 山河之间 动物 Cascadia',
-        terraformingMars: '改造火星 殖民火星 火星 TM',
-        terraMystica: '泰拉密斯提卡 神秘大地 教派',
-        greatWesternTrail: '西部之路 赶牛 牛仔 GWT',
-        castlesOfBurgundy: '勃根地城堡 城堡 骰子',
-        clank: '克朗克 珂玛 叮当 地牢',
       },
       /**
        * 《农场主》局末计分表。**只剩条目名** —— 换算表已经是

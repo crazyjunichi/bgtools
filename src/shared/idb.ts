@@ -16,8 +16,8 @@ const DB_NAME = 'bgtools'
  * 所有 object store 集中声明。`onupgradeneeded` 一个版本只跑一次，
  * 分散到各业务模块去建必然漏 —— 新增一个存档要 **bump VERSION 并在这里加一行**。
  */
-const STORES = ['score-sheet-games'] as const
-const VERSION = 1
+const STORES = ['score-sheet-games', 'matches'] as const
+const VERSION = 2
 
 export type IdbStore = (typeof STORES)[number]
 

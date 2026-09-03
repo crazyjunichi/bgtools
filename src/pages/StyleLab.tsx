@@ -10,7 +10,7 @@ import {
 } from '../shared/icons'
 import { tools } from '../tools/registry'
 import { scoreSheetMeta } from '../tools/score-sheet/meta'
-import { BLANK_ID, TEMPLATES } from '../tools/score-sheet/templates'
+import { BLANK_ID, TEMPLATES, templateIdentity } from '../tools/score-sheet/templates'
 import type { ToolMeta } from '../tools/types'
 
 /*
@@ -69,15 +69,18 @@ function useRows() {
       icon: tool.icon,
       cover: tool.cover,
     })),
-    ...SHEETS.map((tpl) => ({
-      key: `s-${tpl.id}`,
-      name: t(tpl.nameKey),
-      desc: t('home.sheetDesc', { n: tpl.entries.length }),
-      accent: scoreSheetMeta.accent,
-      icon: tpl.icon,
-      cover: tpl.cover,
-      badge: scoreSheetMeta.icon,
-    })),
+    ...SHEETS.map((tpl) => {
+      const game = templateIdentity(tpl)
+      return {
+        key: `s-${tpl.id}`,
+        name: t(game.nameKey),
+        desc: t('home.sheetDesc', { n: tpl.entries.length }),
+        accent: scoreSheetMeta.accent,
+        icon: game.icon,
+        cover: game.cover,
+        badge: scoreSheetMeta.icon,
+      }
+    }),
   ]
   return { quick, general, game }
 }

@@ -3,9 +3,15 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import i18n from '../../shared/i18n'
 import type { I18nKey } from '../../shared/i18n/types'
+import { useArchiveStore } from '../../shared/match/archive'
+import { rankByScore, seatsToPlayers } from '../../shared/match/result'
+import type { MatchDraft } from '../../shared/match/types'
 import { bindSeat, makeSeat, type Seat } from '../../shared/players/seats'
 import type { Player } from '../../shared/players/store'
-import { useGamesStore, type GameDraft, type SheetGame } from './games'
+import { scoreSheetMeta } from './meta'
+import type { SheetPayload } from './payload'
+// 只取类型：渲染器那边反过来要用本文件的 fmtScore，跑运行时 import 会成环
+import type { SheetFormId, SheetSkinId } from './png/layouts'
 import { BLANK_ID, DIRECT, findTemplate, type Scoring, type SheetEntry, type Step } from './templates'
 
 /**
@@ -64,12 +70,32 @@ type SheetState = {
    * 桌上问的是「这局打了多久」，所以锚点得是开局那一刻，不是最后一次填分
    */
   startedAt: number
+  /**
+   * 最后一次**改动分数数据**的时刻，结算时的 `endAt` 取它。
+   * 表摊在桌上切后台、隔天再回来按「新一局」是常态，那时的 `Date.now()`
+   * 与这局真正结束差着十几个小时。切模板、加列、点格子都不算改动
+   */
+  lastActiveAt: number
   /** 选中的格子。不 persist —— 重开该是干净的，同 score 的 undoStack */
   pick: Pick | null
+  /**
+   * 导出图上次选的外观与内容形式（见 [png/layouts](png/layouts.ts)）。
+   * 值得 persist 是因为这个选择极稳定：习惯发群里的人每次都要战绩榜，要打印的人每次都要浅底。
+   *
+   * **它不属于局面**，所以不进 [SheetPayload](payload.ts) —— 那是「那一晚打了什么」，
+   * 这是这台设备的导出偏好，读一局历史不该把当时的排版一起读回来
+   */
+  imageSkin: SheetSkinId
+  imageForm: SheetFormId
 
   setTemplate: (templateId: string) => void
   /** 列数不设上限：列多了矩阵转横滚、颜色开始复用，但不拦着加 */
   addSeat: () => void
+  /**
+   * 一次落座：按名单顺序建席位并绑定玩家。**只给空桌开局用** ——
+   * 一局重新添加玩家是常态，逐列点太慢
+   */
+  seatPlayers: (picked: Player[]) => void
   removeSeat: (seatId: string) => void
   bindPlayer: (seatId: string, player: Player | null) => void
   /** 只改临时席位的快照名。绑定了名单玩家的列由 [SeatPicker] 直接改名单，不到这里 */
@@ -93,14 +119,18 @@ type SheetState = {
   removeEntry: (entryId: string) => void
   /**
    * 新一局：只清分数，留席位 / 模板 / 自定义条目（换局通常还是这桌人这个游戏）。
-   * 清之前先按 [isComplete](#isComplete) 归档 —— 这是历史记录唯一的入口
+   * **它自己不归档** —— 归档统一走结算面板（[MatchFinish](../../shared/match/MatchFinish.tsx)），
+   * 调用方负责先弹面板再落到这里
    */
   newGame: () => void
   /**
    * 把一局历史读回当前局。**先归档当前局**（手滑点到不该丢掉正在打的那局），
-   * 再整份覆盖那五个字段。历史里被读的那条**不删** —— 这是「读取」不是「取出」
+   * 再整份覆盖局面。历史里被读的那条**不删** —— 这是「读取」不是「取出」。
+   * `endAt` 是那条记录的结束时刻，读回来当作它的最后活动时间
    */
-  loadGame: (game: SheetGame) => void
+  loadGame: (payload: SheetPayload, endAt: number) => void
+  setImageSkin: (id: SheetSkinId) => void
+  setImageForm: (id: SheetFormId) => void
 }
 
 export function cellKey(seatId: string, entryId: string): string {
@@ -124,12 +154,19 @@ export function isComplete(seats: Seat[], cells: Record<string, number>): boolea
 }
 
 /**
- * 归档当前局。**fire-and-forget**：写盘失败只落 console（见 [games](games.ts) 的 warn），
- * 桌上按「新一局」不能因为 IDB 不可用就卡住不清分。
+ * 当前局收成一条待归档记录：分数用现成的 `entriesOf` / `totalOf` 复算，名次交给
+ * [rankByScore](../../shared/match/result.ts)，原始局面原样进 `payload`（见 [SheetPayload](payload.ts)）。
+ *
+ * **在打开结算面板那一刻取一次**，之后面板里的改动都落在这份副本上。
  */
-function archiveCurrent(s: SheetState) {
-  if (!isComplete(s.seats, s.cells)) return
-  const draft: GameDraft = {
+export function sheetMatchDraft(): MatchDraft {
+  const s = useSheetStore.getState()
+  const entries = entriesOf(s.templateId, s.customEntries, s.overrides)
+  const scored = seatsToPlayers(s.seats).map((p, i) => ({
+    ...p,
+    score: totalOf(entries, s.cells, s.seats[i].id),
+  }))
+  const payload: SheetPayload = {
     templateId: s.templateId,
     customEntries: s.customEntries,
     overrides: s.overrides,
@@ -137,7 +174,27 @@ function archiveCurrent(s: SheetState) {
     cells: s.cells,
     startedAt: s.startedAt,
   }
-  void useGamesStore.getState().archive(draft)
+  return {
+    startedAt: s.startedAt,
+    endAt: s.lastActiveAt,
+    gameId: findTemplate(s.templateId).gameId,
+    toolId: scoreSheetMeta.id,
+    mode: 'ranked',
+    players: rankByScore(scored, (p) => p.score ?? 0),
+    payload,
+  }
+}
+
+/**
+ * 归档当前局，**只给 loadGame 兜底**：正常收尾走结算面板，这里管的是
+ * 「手滑点了读取历史」时不丢掉桌上正在打的那局，所以名次自动算、没有备注。
+ *
+ * fire-and-forget：写盘失败只落 console（见 [archive](../../shared/match/archive.ts)），
+ * 桌上不能因为 IDB 不可用就卡住。
+ */
+function archiveCurrent(s: SheetState) {
+  if (!isComplete(s.seats, s.cells)) return
+  void useArchiveStore.getState().archive(sheetMatchDraft())
 }
 
 export const useSheetStore = create<SheetState>()(
@@ -149,7 +206,10 @@ export const useSheetStore = create<SheetState>()(
       seats: [],
       cells: {},
       startedAt: Date.now(),
+      lastActiveAt: Date.now(),
       pick: null,
+      imageSkin: 'dark',
+      imageForm: 'matrix',
 
       // 切模板**不清分数**：entryId 是稳定字面量，换走的条目只是暂时不显示，切回来还在
       setTemplate: (templateId) => set({ templateId, pick: null }),
@@ -158,6 +218,9 @@ export const useSheetStore = create<SheetState>()(
         const { seats } = get()
         set({ seats: [...seats, makeSeat(seats)] })
       },
+
+      seatPlayers: (picked) =>
+        set({ seats: picked.reduce<Seat[]>((acc, p) => [...acc, bindSeat(makeSeat(acc), p)], []) }),
 
       removeSeat: (seatId) => {
         const { seats, cells, pick } = get()
@@ -181,7 +244,7 @@ export const useSheetStore = create<SheetState>()(
         const cells = { ...get().cells }
         if (raw === null) delete cells[key]
         else cells[key] = raw
-        set({ cells })
+        set({ cells, lastActiveAt: Date.now() })
       },
 
       setScoring: (entryId, scoring) => {
@@ -194,11 +257,15 @@ export const useSheetStore = create<SheetState>()(
           cells: dropCells(cells, (k) => k.endsWith(`|${entryId}`)),
           // 这一行的数刚被清掉，键盘不该还停在它上面（缓冲也跟着 pickKey 重置）
           pick: pick?.entryId === entryId ? null : pick,
+          lastActiveAt: Date.now(),
         })
       },
 
       setPer: (entryId, per) =>
-        set({ overrides: { ...get().overrides, [entryId]: { kind: 'perUnit', per } } }),
+        set({
+          overrides: { ...get().overrides, [entryId]: { kind: 'perUnit', per } },
+          lastActiveAt: Date.now(),
+        }),
 
       addEntry: () => {
         const { customEntries } = get()
@@ -227,15 +294,16 @@ export const useSheetStore = create<SheetState>()(
           overrides: rest,
           cells: dropCells(cells, (k) => k.endsWith(`|${entryId}`)),
           pick: pick?.entryId === entryId ? null : pick,
+          lastActiveAt: Date.now(),
         })
       },
 
       newGame: () => {
-        archiveCurrent(get())
-        set({ cells: {}, pick: null, startedAt: Date.now() })
+        const now = Date.now()
+        set({ cells: {}, pick: null, startedAt: now, lastActiveAt: now })
       },
 
-      loadGame: ({ templateId, customEntries, overrides, seats, cells, startedAt, at }) => {
+      loadGame: ({ templateId, customEntries, overrides, seats, cells, startedAt }, endAt) => {
         archiveCurrent(get())
         set({
           templateId,
@@ -243,21 +311,38 @@ export const useSheetStore = create<SheetState>()(
           overrides,
           seats,
           cells,
-          // 读回来的是那一晚，表头得跟着走。存档早于本字段的只有归档时刻可用
-          startedAt: startedAt ?? at,
+          // 读回来的是那一晚，表头与时长都得跟着走
+          startedAt: startedAt ?? endAt,
+          lastActiveAt: endAt,
           pick: null,
         })
       },
+
+      setImageSkin: (imageSkin) => set({ imageSkin }),
+      setImageForm: (imageForm) => set({ imageForm }),
     }),
     {
       name: 'bgtools:score-sheet',
-      partialize: ({ templateId, customEntries, overrides, seats, cells, startedAt }) => ({
+      partialize: ({
         templateId,
         customEntries,
         overrides,
         seats,
         cells,
         startedAt,
+        lastActiveAt,
+        imageSkin,
+        imageForm,
+      }) => ({
+        templateId,
+        customEntries,
+        overrides,
+        seats,
+        cells,
+        startedAt,
+        lastActiveAt,
+        imageSkin,
+        imageForm,
       }),
     },
   ),

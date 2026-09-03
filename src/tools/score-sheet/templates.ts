@@ -1,3 +1,5 @@
+import { findGame } from '../../shared/games/registry'
+import type { Game } from '../../shared/games/types'
 import type { I18nKey } from '../../shared/i18n/types'
 
 /**
@@ -46,55 +48,21 @@ export type SheetEntry = {
 }
 
 /**
- * 盒图主体色档位。只存档位名不存 hex：首页要按名取 Tailwind 类名，
- * 存 hex 会绕开 `@theme` 也保不住斜视下的对比度。
- *
- * **不含 `rose`** —— 规范把它留给破坏性操作。取色办法与逐盒依据见 DESIGN.md §2。
+ * 一张模板在界面上的身份（名字 / 图标 / 盒图 / 色）。
+ * 形状取自 [Game](../../shared/games/types.ts)，这样游戏那条记录可以直接当身份用
  */
-export type SheetHue =
-  | 'red'
-  | 'orange'
-  | 'amber'
-  | 'yellow'
-  | 'lime'
-  | 'green'
-  | 'emerald'
-  | 'teal'
-  | 'cyan'
-  | 'sky'
-  | 'blue'
-  | 'indigo'
-  | 'violet'
-  | 'purple'
-  | 'fuchsia'
-  | 'pink'
-  | 'stone'
-  | 'brown'
+export type SheetIdentity = Pick<Game, 'nameKey' | 'icon' | 'cover' | 'hue' | 'aliasKey'>
 
 export type SheetTemplate = {
   id: string
-  nameKey: I18nKey
   /**
-   * 兜底图标。`cover` 缺失或加载失败（离线、文件没抓到）时显示它，
-   * 所以**一个都不许删** —— 图挂了列表还得认得出是哪款游戏
+   * 它服务的那盒游戏（[shared/games](../../shared/games/registry.ts)）。
+   * **名字、盒图、色都在游戏那边**，这里不许再存一份 —— 同一盒游戏在首页卡和统计里
+   * 必须是同一个名字。`null` = 通用空白，它不是一盒游戏，身份由 `identity` 自带
    */
-  icon: string
-  /**
-   * 盒图，路径相对 `public/`（由 `.claude/skills/bgg-cover` 抓的 96×96 PNG）。
-   * 渲染时必须拼 `import.meta.env.BASE_URL`，`base: './'` 下不许写绝对路径
-   */
-  cover?: string
-  /**
-   * 首页那张卡的规则线色，取自盒图的主色相。**必填，没有缺省值** ——
-   * 17 张模板卡全共用一个色时那条线就不再是身份编码了。允许两款共享同一档：
-   * 卡上同时有盒图与游戏名，颜色从来不是唯一识别码
-   */
-  hue: SheetHue
-  /**
-   * **只参与搜索、永不渲染**的别名串（`农家乐`、`翼展`、`车票之旅`）。
-   * 桌上的口头叫法常常不是官方译名，只匹配正式名会搜不到
-   */
-  aliasKey?: I18nKey
+  gameId: string | null
+  /** 只有 `gameId === null` 时给。有 gameId 的一律取游戏那份，不许在这里覆盖 */
+  identity?: SheetIdentity
   entries: readonly SheetEntry[]
   /** 条目可增删改名。只有 custom 是 true，它的条目来自 store 的 customEntries */
   editable?: boolean
@@ -103,14 +71,19 @@ export type SheetTemplate = {
 /** 通用空白模板的 id。它在列表里钉在首位，也是模板 id 失效时的落点 */
 export const BLANK_ID = 'custom'
 
-const custom: SheetTemplate = {
-  id: BLANK_ID,
+const BLANK_IDENTITY: SheetIdentity = {
   nameKey: 'tools.scoreSheet.templates.custom',
   // 不是一款游戏、BGG 上没有条目，所以只有 emoji（与 meta.icon 一致）
   icon: '📝',
   // 没有盒图可取色。首页也不给它单独的模板卡（入口是通用区那张「计分纸」），
   // 这里跟着 meta.accent 走只为让字段有个不矛盾的值
   hue: 'violet',
+}
+
+const custom: SheetTemplate = {
+  id: BLANK_ID,
+  gameId: null,
+  identity: BLANK_IDENTITY,
   entries: [],
   editable: true,
 }
@@ -166,11 +139,7 @@ const T_SQUARE: readonly Step[] = [
 /** 《农场主》局末计分。木屋房间 0 分，故不列行 */
 const agricola: SheetTemplate = {
   id: 'agricola',
-  nameKey: 'tools.scoreSheet.templates.agricola',
-  icon: '🌾',
-  cover: 'covers/sheet/agricola.png',
-  hue: 'amber',
-  aliasKey: 'tools.scoreSheet.templateAlias.agricola',
+  gameId: 'agricola',
   entries: [
     { id: 'ag.fields', nameKey: 'tools.scoreSheet.agricola.fields', scoring: { kind: 'table', steps: T_FIELDS } },
     {
@@ -200,11 +169,7 @@ const agricola: SheetTemplate = {
  */
 const catan: SheetTemplate = {
   id: 'catan',
-  nameKey: 'tools.scoreSheet.templates.catan',
-  icon: '🏝',
-  cover: 'covers/sheet/catan.png',
-  hue: 'red',
-  aliasKey: 'tools.scoreSheet.templateAlias.catan',
+  gameId: 'catan',
   entries: [
     { id: 'ct.settlements', nameKey: 'tools.scoreSheet.catan.settlements', scoring: { kind: 'perUnit', per: 1 } },
     { id: 'ct.cities', nameKey: 'tools.scoreSheet.catan.cities', scoring: { kind: 'perUnit', per: 2 } },
@@ -218,11 +183,7 @@ const catan: SheetTemplate = {
 /** 《璀璨宝石》。两行就完了 —— 短模板也值得存，省的是「每局重新加五个空条目」 */
 const splendor: SheetTemplate = {
   id: 'splendor',
-  nameKey: 'tools.scoreSheet.templates.splendor',
-  icon: '💎',
-  cover: 'covers/sheet/splendor.png',
-  hue: 'indigo',
-  aliasKey: 'tools.scoreSheet.templateAlias.splendor',
+  gameId: 'splendor',
   entries: [
     { id: 'sp.cards', nameKey: 'tools.scoreSheet.splendor.cards' },
     { id: 'sp.nobles', nameKey: 'tools.scoreSheet.splendor.nobles', scoring: { kind: 'perUnit', per: 3 } },
@@ -232,11 +193,7 @@ const splendor: SheetTemplate = {
 /** 《花砖物语》。面板分是局中累计的，只有三项局末奖励要折算 */
 const azul: SheetTemplate = {
   id: 'azul',
-  nameKey: 'tools.scoreSheet.templates.azul',
-  icon: '🎨',
-  cover: 'covers/sheet/azul.png',
-  hue: 'cyan',
-  aliasKey: 'tools.scoreSheet.templateAlias.azul',
+  gameId: 'azul',
   entries: [
     { id: 'az.board', nameKey: 'tools.scoreSheet.azul.board' },
     { id: 'az.rows', nameKey: 'tools.scoreSheet.azul.rows', scoring: { kind: 'perUnit', per: 2 } },
@@ -251,11 +208,7 @@ const azul: SheetTemplate = {
  */
 const ticketToRide: SheetTemplate = {
   id: 'ticketToRide',
-  nameKey: 'tools.scoreSheet.templates.ticketToRide',
-  icon: '🚂',
-  cover: 'covers/sheet/ticket-to-ride.png',
-  hue: 'orange',
-  aliasKey: 'tools.scoreSheet.templateAlias.ticketToRide',
+  gameId: 'ticketToRide',
   entries: [
     { id: 'tr.routes', nameKey: 'tools.scoreSheet.ticketToRide.routes' },
     { id: 'tr.tickets', nameKey: 'tools.scoreSheet.ticketToRide.tickets' },
@@ -268,11 +221,7 @@ const ticketToRide: SheetTemplate = {
 /** 《卡卡颂》。局末只剩没围完的那些：城市按「板块 + 纹章」数，修道院按「自己 + 周围板块」数 */
 const carcassonne: SheetTemplate = {
   id: 'carcassonne',
-  nameKey: 'tools.scoreSheet.templates.carcassonne',
-  icon: '🧩',
-  cover: 'covers/sheet/carcassonne.png',
-  hue: 'lime',
-  aliasKey: 'tools.scoreSheet.templateAlias.carcassonne',
+  gameId: 'carcassonne',
   entries: [
     { id: 'ca.track', nameKey: 'tools.scoreSheet.carcassonne.track' },
     { id: 'ca.city', nameKey: 'tools.scoreSheet.carcassonne.city', scoring: { kind: 'perUnit', per: 1 } },
@@ -286,11 +235,7 @@ const carcassonne: SheetTemplate = {
 /** 《展翅翱翔》。官方计分表的六行，后三行都是「数一遍实物」 */
 const wingspan: SheetTemplate = {
   id: 'wingspan',
-  nameKey: 'tools.scoreSheet.templates.wingspan',
-  icon: '🐦',
-  cover: 'covers/sheet/wingspan.png',
-  hue: 'sky',
-  aliasKey: 'tools.scoreSheet.templateAlias.wingspan',
+  gameId: 'wingspan',
   entries: [
     { id: 'ws.birds', nameKey: 'tools.scoreSheet.wingspan.birds' },
     { id: 'ws.bonus', nameKey: 'tools.scoreSheet.wingspan.bonus' },
@@ -304,11 +249,7 @@ const wingspan: SheetTemplate = {
 /** 《拼布》。空格是唯一的负分行（每格 −2） */
 const patchwork: SheetTemplate = {
   id: 'patchwork',
-  nameKey: 'tools.scoreSheet.templates.patchwork',
-  icon: '🧵',
-  cover: 'covers/sheet/patchwork.png',
-  hue: 'pink',
-  aliasKey: 'tools.scoreSheet.templateAlias.patchwork',
+  gameId: 'patchwork',
   entries: [
     { id: 'pw.buttons', nameKey: 'tools.scoreSheet.patchwork.buttons', scoring: { kind: 'perUnit', per: 1 } },
     { id: 'pw.empty', nameKey: 'tools.scoreSheet.patchwork.empty', scoring: { kind: 'perUnit', per: -2 } },
@@ -319,11 +260,7 @@ const patchwork: SheetTemplate = {
 /** 《绮丽庄园》。前四行都是「把卡上的数加起来」，只有点数令牌是一个个数 */
 const everdell: SheetTemplate = {
   id: 'everdell',
-  nameKey: 'tools.scoreSheet.templates.everdell',
-  icon: '🌳',
-  cover: 'covers/sheet/everdell.png',
-  hue: 'yellow',
-  aliasKey: 'tools.scoreSheet.templateAlias.everdell',
+  gameId: 'everdell',
   entries: [
     { id: 'ev.cards', nameKey: 'tools.scoreSheet.everdell.cards' },
     { id: 'ev.prosperity', nameKey: 'tools.scoreSheet.everdell.prosperity' },
@@ -340,11 +277,7 @@ const everdell: SheetTemplate = {
  */
 const sevenWonders: SheetTemplate = {
   id: 'sevenWonders',
-  nameKey: 'tools.scoreSheet.templates.sevenWonders',
-  icon: '🏛',
-  cover: 'covers/sheet/seven-wonders.png',
-  hue: 'brown',
-  aliasKey: 'tools.scoreSheet.templateAlias.sevenWonders',
+  gameId: 'sevenWonders',
   entries: [
     { id: '7w.military', nameKey: 'tools.scoreSheet.sevenWonders.military' },
     {
@@ -373,11 +306,7 @@ const sevenWonders: SheetTemplate = {
  */
 const arnak: SheetTemplate = {
   id: 'arnak',
-  nameKey: 'tools.scoreSheet.templates.arnak',
-  icon: '🏺',
-  cover: 'covers/sheet/arnak.png',
-  hue: 'emerald',
-  aliasKey: 'tools.scoreSheet.templateAlias.arnak',
+  gameId: 'arnak',
   entries: [
     { id: 'ak.magnifier', nameKey: 'tools.scoreSheet.arnak.magnifier' },
     { id: 'ak.notebook', nameKey: 'tools.scoreSheet.arnak.notebook' },
@@ -398,11 +327,7 @@ const arnak: SheetTemplate = {
  */
 const cascadia: SheetTemplate = {
   id: 'cascadia',
-  nameKey: 'tools.scoreSheet.templates.cascadia',
-  icon: '🦌',
-  cover: 'covers/sheet/cascadia.png',
-  hue: 'blue',
-  aliasKey: 'tools.scoreSheet.templateAlias.cascadia',
+  gameId: 'cascadia',
   entries: [
     { id: 'cs.bear', nameKey: 'tools.scoreSheet.cascadia.bear' },
     { id: 'cs.elk', nameKey: 'tools.scoreSheet.cascadia.elk' },
@@ -424,11 +349,7 @@ const cascadia: SheetTemplate = {
  */
 const terraformingMars: SheetTemplate = {
   id: 'terraformingMars',
-  nameKey: 'tools.scoreSheet.templates.terraformingMars',
-  icon: '🚀',
-  cover: 'covers/sheet/terraforming-mars.png',
-  hue: 'orange',
-  aliasKey: 'tools.scoreSheet.templateAlias.terraformingMars',
+  gameId: 'terraformingMars',
   entries: [
     { id: 'tf.tr', nameKey: 'tools.scoreSheet.terraformingMars.tr' },
     {
@@ -451,11 +372,7 @@ const terraformingMars: SheetTemplate = {
  */
 const terraMystica: SheetTemplate = {
   id: 'terraMystica',
-  nameKey: 'tools.scoreSheet.templates.terraMystica',
-  icon: '🧙',
-  cover: 'covers/sheet/terra-mystica.png',
-  hue: 'violet',
-  aliasKey: 'tools.scoreSheet.templateAlias.terraMystica',
+  gameId: 'terraMystica',
   entries: [
     { id: 'tm.track', nameKey: 'tools.scoreSheet.terraMystica.track' },
     { id: 'tm.network', nameKey: 'tools.scoreSheet.terraMystica.network' },
@@ -477,11 +394,7 @@ const terraMystica: SheetTemplate = {
  */
 const greatWesternTrail: SheetTemplate = {
   id: 'greatWesternTrail',
-  nameKey: 'tools.scoreSheet.templates.greatWesternTrail',
-  icon: '🤠',
-  cover: 'covers/sheet/great-western-trail.png',
-  hue: 'stone',
-  aliasKey: 'tools.scoreSheet.templateAlias.greatWesternTrail',
+  gameId: 'greatWesternTrail',
   entries: [
     {
       id: 'gw.money',
@@ -506,11 +419,7 @@ const greatWesternTrail: SheetTemplate = {
  */
 const castlesOfBurgundy: SheetTemplate = {
   id: 'castlesOfBurgundy',
-  nameKey: 'tools.scoreSheet.templates.castlesOfBurgundy',
-  icon: '🏰',
-  cover: 'covers/sheet/castles-of-burgundy.png',
-  hue: 'green',
-  aliasKey: 'tools.scoreSheet.templateAlias.castlesOfBurgundy',
+  gameId: 'castlesOfBurgundy',
   entries: [
     { id: 'cb.track', nameKey: 'tools.scoreSheet.castlesOfBurgundy.track' },
     { id: 'cb.knowledge', nameKey: 'tools.scoreSheet.castlesOfBurgundy.knowledge' },
@@ -528,11 +437,7 @@ const castlesOfBurgundy: SheetTemplate = {
 /** 《Clank!》。神器、皇冠、秘密标记的面值各不相同，只有偶像与精通标记是定额 */
 const clank: SheetTemplate = {
   id: 'clank',
-  nameKey: 'tools.scoreSheet.templates.clank',
-  icon: '💀',
-  cover: 'covers/sheet/clank.png',
-  hue: 'teal',
-  aliasKey: 'tools.scoreSheet.templateAlias.clank',
+  gameId: 'clank',
   entries: [
     { id: 'ck.artifacts', nameKey: 'tools.scoreSheet.clank.artifacts' },
     { id: 'ck.crowns', nameKey: 'tools.scoreSheet.clank.crowns' },
@@ -572,4 +477,17 @@ export const TEMPLATES: readonly SheetTemplate[] = [
 export function findTemplate(id: string): SheetTemplate {
   // 存档里的模板 id 失效（比如以后删了某个模板）就退回通用空白，不让整页崩
   return TEMPLATES.find((t) => t.id === id) ?? custom
+}
+
+/**
+ * 取一张模板该显示的名字与图标。**消费方一律走这里**，不要自己判 `gameId` 是否为空 ——
+ * 「有游戏就用游戏那份、通用空白用自带那份」这条分叉只该存在一处
+ */
+export function templateIdentity(tpl: SheetTemplate): SheetIdentity {
+  return findGame(tpl.gameId) ?? tpl.identity ?? BLANK_IDENTITY
+}
+
+/** 只要名字的（页面标题、历史条目、快照）直接用它，省得每处都串一遍两个查找 */
+export function templateNameKey(templateId: string): I18nKey {
+  return templateIdentity(findTemplate(templateId)).nameKey
 }

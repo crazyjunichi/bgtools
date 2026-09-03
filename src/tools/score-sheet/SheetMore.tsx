@@ -1,14 +1,18 @@
 import { useTranslation } from 'react-i18next'
 import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Overlay } from '../../shared/components/Overlay'
-import { IconCsv, IconHistory, IconImage, IconRepeat } from '../../shared/icons'
+import { IconCheck, IconCsv, IconHistory, IconImage, IconRepeat } from '../../shared/icons'
 
 type Props = {
   /** 当前局有没有填过东西。空局导出只会得到一张全是 `·` 的图，两个导出按钮直接禁用 */
   canExport: boolean
+  /** 这一局值不值得记一条（见 [isComplete](store.ts)）。决定出口是结算还是直接清 */
+  canFinish: boolean
   onExportImage: () => void
   onExportCsv: () => void
   onOpenHistory: () => void
+  /** 打开结算面板 —— 记录一局的唯一入口 */
+  onFinish: () => void
   onNewGame: () => void
   onClose: () => void
 }
@@ -25,9 +29,11 @@ const EXIT_BTN = 'btn-base gap-2 border border-line bg-surface-2 text-base short
  */
 export function SheetMore({
   canExport,
+  canFinish,
   onExportImage,
   onExportCsv,
   onOpenHistory,
+  onFinish,
   onNewGame,
   onClose,
 }: Props) {
@@ -73,17 +79,34 @@ export function SheetMore({
         </p>
       </div>
 
-      <ConfirmButton
-        onConfirm={() => {
-          onNewGame()
-          onClose()
-        }}
-        confirmText={t('tools.scoreSheet.more.confirmNewGame')}
-        className="short:!min-h-11"
-      >
-        <IconRepeat className="size-6 short:size-5" aria-hidden />
-        {t('tools.scoreSheet.more.newGame')}
-      </ConfirmButton>
+      {/*
+       * 填齐了就走结算（面板里自己带「不记录直接开新局」的二次确认出口），
+       * 没填齐的局记下来也是废记录，直接给清空按钮 —— 那才是最不能省二次确认的操作
+       */}
+      {canFinish ? (
+        <button
+          type="button"
+          onClick={() => {
+            onClose()
+            onFinish()
+          }}
+          className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink short:!min-h-11"
+        >
+          <IconCheck className="size-6 short:size-5" aria-hidden />
+          {t('tools.scoreSheet.more.finish')}
+        </button>
+      ) : (
+        <ConfirmButton
+          onConfirm={() => {
+            onNewGame()
+            onClose()
+          }}
+          confirmText={t('tools.scoreSheet.more.confirmNewGame')}
+        >
+          <IconRepeat className="size-6 short:size-5" aria-hidden />
+          {t('tools.scoreSheet.more.newGame')}
+        </ConfirmButton>
+      )}
     </Overlay>
   )
 }

@@ -31,6 +31,12 @@ export type ToolMeta = {
    * **刻意必填**：给了缺省值，新工具就会默默落进通用区，而这个判断只有作者自己知道。
    */
   category: 'general' | 'game'
+  /**
+   * 它专门服务的那盒游戏（[shared/games](../shared/games/registry.ts) 里的 id），
+   * 归档一局时作为 `gameId` 的缺省。只有 `category: 'game'` 的工具填得上；
+   * 计分纸这种一个工具服务十几盒的**不要填** —— 它的游戏由当前模板决定
+   */
+  gameId?: string
 }
 
 export type ToolEntry = ToolMeta & {
