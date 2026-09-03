@@ -8,9 +8,10 @@ import {
   IconMoveDown,
   IconTemplate,
 } from '../../shared/icons'
+import { fmtScore } from '../../shared/match/format'
 import { PLAYER_SOLID } from '../../shared/players/colors'
 import type { SeatView } from '../../shared/players/seats'
-import { entryLabel, fmtScore, scoreOf, type Entry } from './store'
+import { entryLabel, scoreOf, type Entry } from './store'
 import { isCount } from './templates'
 
 type Props = {

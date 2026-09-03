@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconCrown, IconEdit, IconPlus } from '../../shared/icons'
+import { fmtScore } from '../../shared/match/format'
 import { PLAYER_SOLID } from '../../shared/players/colors'
 import type { SeatView } from '../../shared/players/seats'
 import { tone } from '../../shared/tone'
 import {
   entryLabel,
   fmtCell,
-  fmtScore,
   isAdjustable,
   rawOf,
   scoreOf,

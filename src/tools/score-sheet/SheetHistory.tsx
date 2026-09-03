@@ -4,14 +4,14 @@ import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Overlay } from '../../shared/components/Overlay'
 import { IconBack, IconCrown, IconCsv, IconDelete, IconImage } from '../../shared/icons'
 import { useArchiveStore } from '../../shared/match/archive'
-import { durationText } from '../../shared/match/format'
+import { durationText, fmtScore } from '../../shared/match/format'
 import { MatchNote } from '../../shared/match/MatchNote'
 import { PLAYER_SOLID } from '../../shared/players/colors'
 import { scoreSheetMeta } from './meta'
 import { readSheetPayload, type SheetPayload } from './payload'
 import { SheetGrid } from './SheetGrid'
 import { buildSnapshot } from './snapshot'
-import { entriesOf, fmtScore } from './store'
+import { entriesOf } from './store'
 
 type Props = {
   onLoad: (payload: SheetPayload, endAt: number) => void

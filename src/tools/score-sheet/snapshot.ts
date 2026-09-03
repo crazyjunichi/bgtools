@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
-import i18n from '../../shared/i18n'
+import { dateTimeText } from '../../shared/match/format'
+import { toCsv as joinCsv } from '../../shared/match/share/csv'
 import type { PlayerColor } from '../../shared/players/colors'
 import type { SheetPayload } from './payload'
 import { entriesOf, entryLabel, rawOf, scoreOf, totalOf } from './store'
@@ -15,7 +16,8 @@ export type SnapshotRow = { name: string; cells: (number | undefined)[] }
  * 「屏幕上是什么，图里和表里就是什么」这件事只在这一个函数里保证一次。
  *
  * 分数留 `number` 而不是预格式化的串：CSV 必须用 ASCII 的 `-`（Excel 不认
- * [fmtScore](store.ts) 的 U+2212，整列会被当成文本），而图上要用 U+2212 才对得齐等宽数字。
+ * [fmtScore](../../shared/match/format.ts) 的 U+2212，整列会被当成文本），
+ * 而图上要用 U+2212 才对得齐等宽数字。
  * 两边格式不同，所以格式化留给各自的渲染器。
  */
 export type SheetSnapshot = {
@@ -53,7 +55,7 @@ export function buildSnapshot(g: SheetPayload, at: number, t: TFunction): SheetS
     title: t(identity.nameKey),
     icon: identity.icon,
     at,
-    dateText: new Date(at).toLocaleString(i18n.language),
+    dateText: dateTimeText(at),
     entryCol: t('tools.scoreSheet.entryCol'),
     totalRow: t('tools.scoreSheet.total'),
     // 快照名/色，不走 resolveSeat：那一晚谁拿什么色就该固定住
@@ -75,28 +77,13 @@ export function buildSnapshot(g: SheetPayload, at: number, t: TFunction): SheetS
 }
 
 /**
- * 逗号 / 引号 / 换行都得包起来（席位名是用户随便打的，「小明, 小红」这种一定会出现）。
- * CSV 里引号的转义是**翻倍**而不是反斜杠。
- */
-function csvCell(v: string): string {
-  return /[",\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
-}
-
-/** BOM。用码点而非字面量：那个字符在源码里不可见，谁都不该靠肉眼确认它还在 */
-const BOM = String.fromCharCode(0xfeff)
-
-/**
  * 一行一条目 + 末行合计，**只导得分不导数量**：一列数字混着「4 块田」和「3 分」
  * 没法直接做统计，而折算规则本来就在模板里、不该由表格再表达一遍。
- *
- * BOM 不能省：没有它 Excel 会按本地代码页解中文，打开就是乱码。
  */
 export function toCsv(s: SheetSnapshot): string {
-  const lines = [
+  return joinCsv([
     [s.entryCol, ...s.seats.map((x) => x.name)],
     ...s.rows.map((r) => [r.name, ...r.cells.map((c) => (c === undefined ? '' : String(c)))]),
     [s.totalRow, ...s.totals.map(String)],
-  ]
-  // CRLF：Excel 对 LF-only 的兼容性时好时坏，而所有表格软件都吃 CRLF
-  return BOM + lines.map((cols) => cols.map(csvCell).join(',')).join('\r\n') + '\r\n'
+  ])
 }

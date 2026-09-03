@@ -235,6 +235,15 @@ export const zh = {
     discard: '不记录，直接开新局',
     confirmDiscard: '确认丢弃本局',
     unavailable: '这台设备禁用了本地数据库，本局记不下来，但可以直接开新局',
+
+    /** 把一局分享出去（见 [share](../../match/share/skins.ts)），各工具共用 */
+    share: {
+      /** 外观：只换配色，不影响画哪些数 */
+      skins: {
+        print: '印刷',
+        dark: '深色',
+      },
+    },
   },
 
   quick: {
@@ -646,10 +655,6 @@ export const zh = {
         skin: '外观',
         prevSkin: '上一种外观',
         nextSkin: '下一种外观',
-        skins: {
-          dark: '深色',
-          print: '印刷',
-        },
         /** 内容形式：决定画哪些数、怎么摆 */
         form: '内容',
         forms: {

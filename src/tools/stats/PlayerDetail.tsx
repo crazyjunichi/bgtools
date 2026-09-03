@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Overlay } from '../../shared/components/Overlay'
+import { gameLabel } from '../../shared/match/label'
 import { PLAYER_DOT } from '../../shared/players/colors'
 import { winRate, type PlayerRow } from './aggregate'
-import { gameLabel } from './label'
 
 type Props = { row: PlayerRow; onClose: () => void }
 

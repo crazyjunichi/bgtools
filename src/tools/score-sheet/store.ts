@@ -4,14 +4,16 @@ import { persist } from 'zustand/middleware'
 import i18n from '../../shared/i18n'
 import type { I18nKey } from '../../shared/i18n/types'
 import { useArchiveStore } from '../../shared/match/archive'
+import { fmtScore } from '../../shared/match/format'
 import { rankByScore, seatsToPlayers } from '../../shared/match/result'
+import type { ShareSkinId } from '../../shared/match/share/skins'
 import type { MatchDraft } from '../../shared/match/types'
 import { bindSeat, makeSeat, type Seat } from '../../shared/players/seats'
 import type { Player } from '../../shared/players/store'
 import { scoreSheetMeta } from './meta'
 import type { SheetPayload } from './payload'
-// 只取类型：渲染器那边反过来要用本文件的 fmtScore，跑运行时 import 会成环
-import type { SheetFormId, SheetSkinId } from './png/layouts'
+// 只取类型：渲染器那边反过来要用本文件的 entriesOf / fmtCell，跑运行时 import 会成环
+import type { SheetFormId } from './png/layouts'
 import { BLANK_ID, DIRECT, findTemplate, type Scoring, type SheetEntry, type Step } from './templates'
 
 /**
@@ -85,7 +87,7 @@ type SheetState = {
    * **它不属于局面**，所以不进 [SheetPayload](payload.ts) —— 那是「那一晚打了什么」，
    * 这是这台设备的导出偏好，读一局历史不该把当时的排版一起读回来
    */
-  imageSkin: SheetSkinId
+  imageSkin: ShareSkinId
   imageForm: SheetFormId
 
   setTemplate: (templateId: string) => void
@@ -129,7 +131,7 @@ type SheetState = {
    * `endAt` 是那条记录的结束时刻，读回来当作它的最后活动时间
    */
   loadGame: (payload: SheetPayload, endAt: number) => void
-  setImageSkin: (id: SheetSkinId) => void
+  setImageSkin: (id: ShareSkinId) => void
   setImageForm: (id: SheetFormId) => void
 }
 
@@ -208,7 +210,7 @@ export const useSheetStore = create<SheetState>()(
       startedAt: Date.now(),
       lastActiveAt: Date.now(),
       pick: null,
-      imageSkin: 'dark',
+      imageSkin: 'print',
       imageForm: 'matrix',
 
       // 切模板**不清分数**：entryId 是稳定字面量，换走的条目只是暂时不显示，切回来还在
@@ -422,14 +424,6 @@ export function hasRow(cells: Record<string, number>, entryId: string): boolean 
 
 export function totalOf(entries: Entry[], cells: Record<string, number>, seatId: string): number {
   return entries.reduce((sum, e) => sum + scoreOf(e, rawOf(cells, seatId, e.id)), 0)
-}
-
-/**
- * 负号用 U+2212 而非连字符：与 [Stepper](../../shared/components/Stepper.tsx) 一致，
- * 等宽字体下宽度也才对得上。
- */
-export function fmtScore(v: number): string {
-  return v < 0 ? `−${-v}` : String(v)
 }
 
 /** 没填过的格子显示 `·`：满屏 0 会糊成噪声，反而看不见真正填过的格子（显式填的 0 照显示） */

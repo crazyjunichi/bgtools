@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import { findGame } from '../../shared/games/registry'
+import { findGame } from '../games/registry'
 
 /**
  * 一条记录该显示的游戏名与图标。

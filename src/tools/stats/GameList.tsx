@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { IconCrown } from '../../shared/icons'
 import { durationText } from '../../shared/match/format'
+import { gameLabel } from '../../shared/match/label'
 import { PLAYER_DOT } from '../../shared/players/colors'
 import type { GameRow } from './aggregate'
-import { gameLabel } from './label'
 
 type Props = { rows: GameRow[] }
 

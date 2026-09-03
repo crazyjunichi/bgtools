@@ -203,6 +203,13 @@ export const en: Resources = {
     discard: 'Skip saving, start next',
     confirmDiscard: 'Discard this game',
     unavailable: 'Local database is disabled on this device, so this game cannot be saved.',
+
+    share: {
+      skins: {
+        print: 'Print',
+        dark: 'Dark',
+      },
+    },
   },
 
   quick: {
@@ -559,10 +566,6 @@ export const en: Resources = {
         skin: 'Look',
         prevSkin: 'Previous look',
         nextSkin: 'Next look',
-        skins: {
-          dark: 'Dark',
-          print: 'Print',
-        },
         form: 'Layout',
         forms: {
           matrix: 'Items × Players',

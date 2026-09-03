@@ -1,15 +1,9 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconCheck, IconClose, IconNext, IconPrev, IconSave, IconShare } from '../../shared/icons'
-import {
-  findForm,
-  findSkin,
-  SHEET_FORMS,
-  SHEET_SKINS,
-  type SheetFormId,
-  type SheetSkinId,
-} from './png/layouts'
-import { canShareBlob, saveBlob, shareBlob } from './save'
+import { canShareBlob, saveBlob, shareBlob } from '../../shared/match/share/save'
+import { findSkin, SHARE_SKINS, type ShareSkinId } from '../../shared/match/share/skins'
+import { findForm, SHEET_FORMS, type SheetFormId } from './png/layouts'
 
 type Props = {
   /**
@@ -20,9 +14,9 @@ type Props = {
    * 跑一遍挂载 effect，第一次 cleanup 就把 URL 撤了，图直接空白
    */
   image: { blob: Blob; url: string; filename: string } | null
-  skin: SheetSkinId
+  skin: ShareSkinId
   form: SheetFormId
-  onSkin: (id: SheetSkinId) => void
+  onSkin: (id: ShareSkinId) => void
   onForm: (id: SheetFormId) => void
   onClose: () => void
 }
@@ -59,11 +53,11 @@ export function SheetImage({ image, skin, form, onSkin, onForm, onClose }: Props
    * （localStorage 里的东西不受类型约束），渲染器那边会兜回首项，
    * 这里不跟着兜就会出现「按钮一个都没亮，图却已经是第一种」。
    */
-  const si = SHEET_SKINS.indexOf(findSkin(skin))
+  const si = SHARE_SKINS.indexOf(findSkin(skin))
   const activeForm = findForm(form).id
   // 外观数量以后还会加，所以循环切而不是到头禁用 —— 两个箭头永远都能按
   const stepSkin = (d: number) =>
-    onSkin(SHEET_SKINS[(si + d + SHEET_SKINS.length) % SHEET_SKINS.length].id)
+    onSkin(SHARE_SKINS[(si + d + SHARE_SKINS.length) % SHARE_SKINS.length].id)
 
   return (
     <div className="safe-b safe-t fixed inset-0 z-30 flex flex-col gap-2 bg-ink/95 p-3 backdrop-blur-sm">
@@ -98,10 +92,10 @@ export function SheetImage({ image, skin, form, onSkin, onForm, onClose }: Props
             <IconPrev className="size-5" aria-hidden />
           </button>
           <span className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
-            <span className="truncate text-sm text-text">{t(SHEET_SKINS[si].nameKey)}</span>
+            <span className="truncate text-sm text-text">{t(SHARE_SKINS[si].nameKey)}</span>
             {/* 有几种、现在是第几种：只给一个名字看不出还能不能再按 */}
             <span className="shrink-0 font-mono text-xs tabular-nums text-text-dim">
-              {si + 1}/{SHEET_SKINS.length}
+              {si + 1}/{SHARE_SKINS.length}
             </span>
           </span>
           <button

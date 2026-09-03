@@ -5,6 +5,7 @@ import { buzz } from '../../shared/haptics'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
 import { useActiveMatch } from '../../shared/match/active'
 import { MatchFinish } from '../../shared/match/MatchFinish'
+import { saveText, stampName } from '../../shared/match/share/save'
 import type { MatchDraft } from '../../shared/match/types'
 import { SeatPicker } from '../../shared/players/SeatPicker'
 import { resolveSeat, takenPlayerIds } from '../../shared/players/seats'
@@ -14,7 +15,6 @@ import { EntryPanel } from './EntryPanel'
 import { scoreSheetMeta } from './meta'
 import type { SheetPayload } from './payload'
 import { renderSheetImage } from './png/layouts'
-import { saveText, stampName } from './save'
 import { SheetGrid } from './SheetGrid'
 import { SheetHistory } from './SheetHistory'
 import { SheetImage } from './SheetImage'
@@ -141,7 +141,7 @@ export default function ScoreSheetPage() {
         setImage({
           blob,
           url: URL.createObjectURL(blob),
-          filename: stampName(target.at, 'png', imageForm, imageSkin),
+          filename: stampName(scoreSheetMeta.id, target.at, 'png', imageForm, imageSkin),
         })
       })
       // 画布失败（极老 Safari、内存不足）不该连页面一起带走，桌上分数还在表里
@@ -205,7 +205,7 @@ export default function ScoreSheetPage() {
 
   const exportCsv = (game: SheetPayload, at: number) => {
     const csv = toCsv(buildSnapshot(game, at, t))
-    saveText(csv, stampName(at, 'csv'), 'text/csv;charset=utf-8')
+    saveText(csv, stampName(scoreSheetMeta.id, at, 'csv'), 'text/csv;charset=utf-8')
   }
 
   const next = () => {
