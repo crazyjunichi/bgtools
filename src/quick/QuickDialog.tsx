@@ -31,7 +31,7 @@ export function QuickDialog({ title, icon: Icon, onClose, wide, children }: Prop
     <div
       className="fixed inset-0 z-30 flex items-center justify-center bg-ink/85 p-4 backdrop-blur-sm short:p-2"
       /*
-       * 同 AppHeader 的顶栏热区：这里必须是 onClick。用 onPointerDown 的话，
+       * 这里必须是 onClick（同 CLAUDE.md 里那条「会让自己消失的元素」）。用 onPointerDown 的话，
        * 按下就卸载了整个浮层，抬手补发的 click 按新坐标 hit-test 直接穿透到
        * 底下的工具页 —— 关个计时器顺手把骰子页的「投掷」点了，白投一次。
        * 代价是面板内按下、拖到遮罩上抬手会误关（click 派发到共同祖先），

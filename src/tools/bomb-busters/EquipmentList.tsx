@@ -97,8 +97,9 @@ export function EquipmentList({ hand, onCycle }: Props) {
       <span className="shrink-0 text-sm font-semibold tracking-wide text-violet-200">
         {t('tools.bombBusters.equip.title')}
       </span>
-      {/* 竖屏时本区只分到约一半屏高，5 张卡的硬下限可能刚好装不下 —— 允许框内滚，
-          总比被 Split 外层的 overflow-hidden 裁掉第 5 张好（页面级仍不翻页） */}
+      {/* 卡片 flex-1：人数决定张数（2–5），少的时候摊开占满，不留一截空框。
+          竖屏拿的是拆弹区之外的余量（Split 的 autoFirst），最矮的机型上 5 张仍可能装不下 ——
+          允许框内滚，总比被 Split 外层的 overflow-hidden 裁掉第 5 张好（页面级仍不翻页） */}
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto wide:overflow-visible">
         {hand.map((card, i) => {
           const equip = findEquipment(card.equipId)

@@ -27,10 +27,8 @@ export const en: Resources = {
 
   header: {
     back: 'Back to home',
-    enterFullscreen: 'Enter fullscreen',
-    exitFullscreen: 'Exit fullscreen',
-    show: 'Show header',
-    hint: 'Header auto-hides · tap the top of the screen',
+    toPortrait: 'Switch to portrait',
+    toLandscape: 'Switch to landscape',
   },
 
   home: {
@@ -78,7 +76,7 @@ export const en: Resources = {
     },
     // 面板只有 224px 宽，按钮文案一律一到两个词
     pool: {
-      open: 'Open dice',
+      open: 'Open {{name}}',
       pick: 'Dice',
       all: 'All',
       none: 'None',
@@ -209,10 +207,35 @@ export const en: Resources = {
     },
   },
 
+  dealRoles: {
+    open: 'Deal roles',
+    title: 'Deal roles',
+    preset: 'Common setups',
+    presetN: '{{n}}P',
+    pick: 'Roles · tap to add one',
+    pool: 'This game · tap to remove',
+    total: '{{n}} cards',
+    emptyPool: 'No roles yet. Tap a role above, or pick a setup.',
+    addRole: 'Add {{name}}',
+    removeRole: 'Remove one {{name}}',
+    start: 'Deal {{n}} cards',
+    /** 禁用态的开始按钮文案，跟 start 挤在同一个位置 —— 压短是为了不撑破那个按钮 */
+    tooFew: 'Need 2+ roles',
+    seat: 'Player {{n}} / {{total}}',
+    tapToReveal: 'Tap this card to see your role',
+    tapToHide: 'Seen it? Tap to cover, pass it on',
+    tapToFinish: 'Seen it? Tap to finish',
+    handoff: 'Pass it on',
+    done: 'All dealt',
+    again: 'Reshuffle & deal',
+    stop: 'Stop dealing',
+    stopConfirm: 'Confirm stop',
+  },
+
   tools: {
     werewolf: {
       name: 'Werewolf Host',
-      desc: 'Voice-hosted night · roles toggleable',
+      desc: 'Voice-hosted night · deal roles',
       flow: 'Standard night',
       param: {
         guard: 'Guard',
@@ -245,6 +268,22 @@ export const en: Resources = {
       do: {
         announceDeaths: 'Announce who died last night',
         announceVote: 'Announce the vote result and who is exiled',
+      },
+      roles: {
+        set: 'Standard roles',
+        role: {
+          wolf: 'Werewolf',
+          villager: 'Villager',
+          seer: 'Seer',
+          witch: 'Witch',
+          hunter: 'Hunter',
+          guard: 'Guard',
+          idiot: 'Idiot',
+        },
+        team: {
+          wolf: 'Werewolf team',
+          village: 'Village team',
+        },
       },
     },
 

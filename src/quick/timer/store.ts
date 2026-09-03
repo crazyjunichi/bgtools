@@ -7,7 +7,7 @@ export const TICK_MS = 250
 // 下限跟 STEP_SEC 对齐，否则步进出来的值全是 35 / 65 这种零头
 export const MIN_SEC = 30
 export const MAX_SEC = 3600
-export const STEP_SEC = 30
+export const STEP_SEC = 10
 
 type QuickTimerState = {
   durationSec: number

@@ -29,10 +29,8 @@ export const zh = {
 
   header: {
     back: '返回首页',
-    enterFullscreen: '进入全屏',
-    exitFullscreen: '退出全屏',
-    show: '显示顶栏',
-    hint: '顶栏会自动隐藏 · 轻点屏幕顶部可唤出',
+    toPortrait: '切换到竖屏',
+    toLandscape: '切换到横屏',
   },
 
   /** 首页三个分区 */
@@ -85,7 +83,8 @@ export const zh = {
     },
     /** 骰池：勾选哪几颗、投掷、锁定结果 */
     pool: {
-      open: '打开骰子',
+      /** 入口按钮只有一个图标，同一页上可能有两套骰组，读屏得报出是哪套 */
+      open: '打开{{name}}',
       pick: '骰子',
       all: '全选',
       none: '全不选',
@@ -231,10 +230,41 @@ export const zh = {
     },
   },
 
+  /**
+   * 发身份（[shared/deal-roles](../../deal-roles)）自己的界面文案。
+   * **身份名与阵营不在这里**，在各宿主游戏的 `tools.<id>.roles.*` 下 ——
+   * 身份是按游戏定的，引擎不认识任何一个具体身份。
+   */
+  dealRoles: {
+    /** 宿主游戏页上的入口按钮，各游戏共用这一句 */
+    open: '发身份',
+    title: '发身份',
+    preset: '常见板子',
+    presetN: '{{n}} 人',
+    pick: '可选身份 · 点一下加一张',
+    pool: '这局的身份 · 点一下减一张',
+    total: '共 {{n}} 张',
+    emptyPool: '还没放身份。点上面的身份加一张，或选一档常见板子。',
+    addRole: '加入 {{name}}',
+    removeRole: '移除一张 {{name}}',
+    start: '开始发 {{n}} 张',
+    tooFew: '至少放两张身份',
+    seat: '第 {{n}} 位 / 共 {{total}} 位',
+    tapToReveal: '点这张卡查看身份',
+    tapToHide: '看完了？点卡盖上，传给下一位',
+    tapToFinish: '看完了？点卡结束',
+    /** 盖上牌之后的过场，停一下才切到下一位的待翻界面 —— 逼出"先把设备递出去"这个动作 */
+    handoff: '请交给下一位',
+    done: '全部发完',
+    again: '重新洗牌再发',
+    stop: '结束发牌',
+    stopConfirm: '确认结束',
+  },
+
   tools: {
     werewolf: {
       name: '狼人杀主持',
-      desc: '语音主持一整夜 · 环节可开关',
+      desc: '语音主持一整夜 · 顺手发身份',
       flow: '标准夜晚流程',
       param: {
         guard: '守卫',
@@ -266,6 +296,23 @@ export const zh = {
       do: {
         announceDeaths: '宣布昨晚的死亡情况',
         announceVote: '宣布投票结果与被放逐的人',
+      },
+      /** 发身份用的身份集（[roles.ts](../../../../tools/werewolf/roles.ts)）：只有名字，交互文案在 `dealRoles.*` */
+      roles: {
+        set: '标准身份',
+        role: {
+          wolf: '狼人',
+          villager: '平民',
+          seer: '预言家',
+          witch: '女巫',
+          hunter: '猎人',
+          guard: '守卫',
+          idiot: '白痴',
+        },
+        team: {
+          wolf: '狼人阵营',
+          village: '好人阵营',
+        },
       },
     },
 

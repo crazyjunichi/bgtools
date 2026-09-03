@@ -1,9 +1,7 @@
-import { useEffect } from 'react'
 import { DiceControls } from '../../shared/dice/DiceControls'
 import { DiceStage } from '../../shared/dice/DiceStage'
 import { ToolLayout } from '../../shared/components/ToolLayout'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
-import { useDiceStore } from '../../shared/dice/store'
 
 const SET_ID = 'yahtzee'
 
@@ -18,15 +16,10 @@ const SET_ID = 'yahtzee'
 export default function YahtzeePage() {
   // 整局都摊在桌上按「重掷」，不能息屏
   useWakeLock()
-  const setSet = useDiceStore((s) => s.setSet)
-
-  useEffect(() => {
-    setSet(SET_ID)
-  }, [setSet])
 
   return (
-    <ToolLayout panel={<DiceControls />}>
-      <DiceStage />
+    <ToolLayout panel={<DiceControls setId={SET_ID} />}>
+      <DiceStage setId={SET_ID} />
     </ToolLayout>
   )
 }

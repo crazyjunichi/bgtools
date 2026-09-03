@@ -63,7 +63,8 @@ export function LifeBar({ lives, onChange }: Props) {
 
   return (
     <section
-      className={`card flex shrink-0 flex-col gap-2 border-2 transition-colors ${CARD[level]}`}
+      // 竖屏 flex-1 是为了与右侧按钮组对半分（内容宽会把右半挤到换行），横屏回到内容高度
+      className={`card flex min-w-0 flex-1 flex-col gap-2 border-2 transition-colors wide:flex-none ${CARD[level]}`}
     >
       <span className={`text-base font-semibold ${TONE[level]}`}>{t(CAPTION_KEY[level])}</span>
 

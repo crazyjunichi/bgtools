@@ -1,17 +1,12 @@
 import type { TFunction } from 'i18next'
-import { lazy, Suspense, useMemo } from 'react'
+import { Suspense, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconLocked } from '../icons'
 import type { RenderDie } from './dice3d/DiceCanvas'
+import { DiceCanvas } from './dice3d/lazy'
 import { findDiceSet } from './presets'
-import { useDiceStore, type DieResult } from './store'
+import { useDiceSlice, useDiceStore, type DieResult } from './store'
 import { DIE_CHIP, dieName, dieRenderOf, faceLabel, type DieSpec } from './types'
-
-/**
- * three.js 是全项目唯一的大依赖，只服务一个装饰用的画布 —— **不许进首屏包**。
- * 想让第一次投掷不等加载的调用方在挂载时 `void import()` 预取（见 DiceButton）
- */
-const DiceCanvas = lazy(() => import('./dice3d/DiceCanvas').then((m) => ({ default: m.DiceCanvas })))
 
 type Rolled = { index: number; spec: DieSpec; result: DieResult }
 
@@ -21,11 +16,9 @@ type Rolled = { index: number; spec: DieSpec; result: DieResult }
  * 3D 画布是 `aria-hidden` 的装饰层，**可访问的真源是下面那排芯片** ——
  * 点芯片与点骰子都能切锁，没有 WebGL 时只是少了上面那块。
  */
-export function DiceStage() {
+export function DiceStage({ setId }: { setId: string }) {
   const { t } = useTranslation()
-  const setId = useDiceStore((s) => s.setId)
-  const selected = useDiceStore((s) => s.selected)
-  const results = useDiceStore((s) => s.results)
+  const { selected, results } = useDiceSlice(setId)
   const toggleLock = useDiceStore((s) => s.toggleLock)
   const set = findDiceSet(setId)
 
@@ -69,7 +62,7 @@ export function DiceStage() {
           <Suspense fallback={<div className="min-h-0 w-full flex-1" />}>
             <DiceCanvas
               dice={dice}
-              onPick={(key) => toggleLock(Number(key))}
+              onPick={(key) => toggleLock(setId, Number(key))}
               className="min-h-0 w-full flex-1"
             />
           </Suspense>
@@ -84,7 +77,7 @@ export function DiceStage() {
                   <button
                     key={index}
                     type="button"
-                    onClick={() => toggleLock(index)}
+                    onClick={() => toggleLock(setId, index)}
                     aria-pressed={result.locked}
                     aria-label={t(result.locked ? 'dice.pool.unlock' : 'dice.pool.lock', {
                       name,

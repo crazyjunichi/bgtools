@@ -6,7 +6,7 @@
 
 | 事实 | 推出的约束 |
 |---|---|
-| 平板**横屏**、**平放**在桌面中央 | 横屏是主场景（横向双栏），但**竖屏是一等布局**（主显示在上 + 控制栏贴底，同样不滚动）—— 前端锁不住所有平台的朝向；屏幕是斜视的，不是正视 |
+| 平板**平放**在桌面中央，**竖屏更常见**，横屏也照常用 | **竖屏是第一优先**（主显示在上 + 控制栏贴底），横屏是横向双栏，两者都不滚动。朝向不预设也锁不死（见 §8），布局必须两个方向都成立；屏幕是斜视的，不是正视 |
 | 多人从不同角度看，视距 **50–70cm** | 最小正文 14px；关键数字跟视口高走；对比度下限按"倾斜 45° 仍可分辨"而非 WCAG AA |
 | 手在桌面上斜着点 | 触控目标 **56px** 起（不是 44px） |
 | 游戏进行中没人愿意滚屏找信息 | **一屏放完，页面级不滚动**；只允许次要列表在自己的框里滚 |
@@ -220,16 +220,16 @@ python .claude/skills/bgg-cover/scripts/cover_hue.py public/covers/sheet
 - 高度锁在 `html` / `body` / `#root` 上（`height: 100%; overflow: hidden`，[index.css](../src/index.css)），[App.tsx](../src/App.tsx) 外壳跟着 `h-full overflow-hidden`。**这是有意的硬约束**：内容超一屏必须让布局自己收缩，而不是悄悄变成可滚页面
   - **不要用 `h-dvh` 当外壳**：PWA standalone 下 `100dvh` 在部分平台包含状态栏那一条，`#root` 比真正可视区高出 24–48px，而 `body` 没有 `overflow` 兜底 → 整页多出一条滚动条。`height: 100%` 取 ICB，不受这类实现差异影响；百分比高度要求父链每级高度确定，所以 `#root` 也必须给
   - 配套：manifest `display: 'fullscreen'`（[vite.config.ts](../vite.config.ts)）让 Android 直接隐藏状态栏。**iOS 忽略此值仍是 standalone**，所以 `safe-t` / `safe-b` / `safe-x` 避让一个都不能拆
-- **顶栏（返回 + 全屏 + quick 入口）由 [AppHeader](../src/AppHeader.tsx) 统一提供，工具里不要自己画。** 工具页里的形态**按朝向分两种**，因为横屏最贵的是高度、竖屏最贵的是宽度；首次进入工具页提示一次（`bgtools:chrome-hint`）：
-  - **横屏**：左侧常驻 **64px 竖条**，正常参与 flex 布局占位。顶部整条留给内容，不遮挡也不需要热区；标题放不下，`sr-only` 只留给读屏
-  - **竖屏**：通栏 `absolute` overlay，3 秒后收起，顶部留一条 16px 全宽热区 + 小把手唤出
-  - 竖屏的顶栏**必须是 `absolute` overlay，绝不参与 flex 布局** —— 参与了，收放时内容区高度就会变，跟 `vh` / `flex-1` 走的骰子和大数字会跳一下。首页与横屏侧栏正常占位
-  - 朝向差异全部走 `wide:` 覆盖，**不引入 JS 判朝向**：自动收起的 state 和计时在横屏照旧跑，只是位移与 `pointer-events` 被 `wide:` 抵消（media variant 规则后置必然赢）
-  - 隐藏状态靠 `key={tool.id}` 重挂载重置，不在 effect 里同步 `setState`（oxlint 的 `react(set-state-in-effect)` 会拦）
-  - 代价：竖屏顶栏唤出时会盖住内容顶部约 57px（工具页顶部是 `section-label` 一行），3 秒后自己让开，可接受
+- **顶栏（返回 + 朝向切换 + quick 入口）由 [AppHeader](../src/AppHeader.tsx) 统一提供，工具里不要自己画。** 工具页里的形态**按朝向分两种**，因为横屏最贵的是高度、竖屏最贵的是宽度：
+  - **横屏**：左侧常驻 **64px 竖条**。顶部整条留给内容；标题放不下，`sr-only` 只留给读屏
+  - **竖屏**：通栏常显。竖屏是更常见的朝向，返回键必须一直够得着
+  - 两种形态都**正常参与 flex 布局占位**，没有任何收放动作 —— 代价是竖屏内容区少约 57px，换来返回键随时可点
+  - 朝向差异全部走 `wide:` 覆盖，**不引入 JS 判朝向**（顶栏里唯一读朝向的 JS 是朝向键的 `aria-label`，用的仍是同一条 media query）
+  - **朝向键（`IconRotate`）是两态切换**：点一下就锁到另一个朝向，没有「回到跟随系统」那一态 —— 桌上一按到位比状态完整更重要。全屏不再是独立按钮：`screen.orientation.lock()` 只在全屏或已安装 PWA 下生效，所以它降级成朝向键内部的前提步骤（未全屏就先 `requestFullscreen`）。桌面浏览器与 iOS 的 lock 一律 reject，**静默失败**，不弹「请旋转设备」挡住内容
+  - 配套：manifest 的 `orientation` 是 `'any'`（[vite.config.ts](../vite.config.ts)），装成 PWA 后跟随设备，固定朝向的决定权交给用户手上那个键
 - **通用小工具（骰子 / 计时器 / 随机指针 / 玩家名单 / 设置）的入口也在顶栏**（图标来自 [shared/icons.ts](../src/shared/icons.ts)，注册表里存的是组件不是字符串），点开是居中 dialog，不占工具页版面。浮层不能挂在 `<header>` 内（`translate` + `backdrop-blur` 会成为 `fixed` 的包含块），由 App 层的 [QuickLayer](../src/quick/QuickLayer.tsx) 渲染，机械流程见 [CLAUDE.md](../CLAUDE.md)
-  - 顶栏入口的形态**按页面分两种**：**工具页**是一个 tile 面板开关（[QuickMenu](../src/quick/QuickMenu.tsx)）收纳全部五个 —— 横屏侧栏只有 64px，平铺放不下，也会跟工具自己的控件抢注意力；**首页**不放抽屉，直接给名单与设置两个按钮（右侧顺序：名单 · 设置 · 全屏）。理由是骰子 / 计时器 / 指针在首页宫格里已有大卡，抽屉在首页只是多一层点击。两处的取舍同源于一个 `onHome` 字段，见 [CLAUDE.md](../CLAUDE.md)
-  - 首页顶栏保留 `TimerChip`：从首页宫格开的计时器，关掉 dialog 后只剩它能看到还剩多久
+  - 顶栏入口的形态**按页面分两种**：**工具页**是一个 tile 面板开关（[QuickMenu](../src/quick/QuickMenu.tsx)）收纳全部五个 —— 横屏侧栏只有 64px，平铺放不下，也会跟工具自己的控件抢注意力；**首页**不放抽屉，直接给名单与设置两个按钮（右侧顺序：名单 · 设置 · 朝向）。理由是骰子 / 计时器 / 指针在首页宫格里已有大卡，抽屉在首页只是多一层点击。两处的取舍同源于一个 `onHome` 字段，见 [CLAUDE.md](../CLAUDE.md)
+  - 两种形态都带 `TimerChip`：关掉 dialog 后只剩它能看到还剩多久。顶栏改常显之后工具页也一直看得到（旧的自动收起会把芯片一起带走）
 - quick 面板的 `wide` prop 只决定**宽度上限**（`max-w-2xl` / `max-w-md`），不是朝向判据。内部要分横竖屏的面板（[QuickPlayers](../src/quick/players/QuickPlayers.tsx)：横屏左名单 + 右编辑，竖屏上下堆叠）自己写 `wide:` variant，并**显式给一个 `h-[min(…rem,…vh)]` 高度** —— 面板高度由内容决定，内层写 `h-full` 没有锚点会塌缩，列表也就撑不满
 - `fixed` 浮层的层级约定，**新增浮层按这三档挑，不要自造数字**：
 
@@ -286,23 +286,23 @@ python .claude/skills/bgg-cover/scripts/cover_hue.py public/covers/sheet
 
 ## 7. 新增工具时的自检
 
-1. 三种视口下页面级都无滚动条：iPad 横屏 **1180×820**、安卓平板横屏 **962×601**（旧宽度断点在这挂掉过）、竖屏 **820×1180**（主显示在上、控制栏贴底，不是单列长滚）
+1. 三种视口下页面级都无滚动条，**先验竖屏**：竖屏 **820×1180**（主显示在上、控制栏贴底，不是单列长滚）、iPad 横屏 **1180×820**、安卓平板横屏 **962×601**（旧宽度断点在这挂掉过）
 2. 没有 `slate-*` 系列颜色、没有小于 `text-xs` 的字号（`grep` 一遍）
 3. 破坏性操作走 [ConfirmButton](../src/shared/components/ConfirmButton.tsx)，且同屏内 rose 只出现在破坏性语义上
 4. 关键数字跟视口**短边**走（默认档 `text-data` / `text-data-sm`，或工具自己目录里的 `clamp()` 常量，单位一律 `vmin` 不用 `vh`）+ `font-mono tabular-nums`
 5. 多态控件有非颜色编码
 6. 长时间盯屏的工具调 [useWakeLock](../src/shared/hooks/useWakeLock.ts)
-7. 没有自己画返回/全屏/标题栏；页面最顶部 16px 内没有需要精准点击的控件（那是顶栏唤出热区）
+7. 没有自己画返回/朝向/标题栏，也没有自己实现的全屏键
 8. 横竖屏判断只用 `wide` variant：`grep -n "lg:\|max-lg:" src` 一遍，布局类里不该再有宽度断点
 9. 功能按钮里没有裸 emoji / 箭头字形（`← ✕ ⏸ ▶ ↑ ↓ ↺ ▸ ⚙️ 🗑`），图标一律从 [shared/icons.ts](../src/shared/icons.ts) 取；尺寸用 `size-*`，没有只为撑字形而留下的 `text-*`
 10. **注释里没有实现取值与推导算式**（px / vmin / 明度 / 对比度 / 预算加减法）—— 那些属于本文，代码注释只写目的与注意事项。改了这里的任何取值，回头确认对应的代码注释没有复述过它
 
 ## 8. 已知取舍
 
-- **锁横屏只能尽力而为，所以竖屏必须是一等布局**。能做的两半都做了：PWA manifest `orientation: 'landscape'`（[vite.config.ts](../vite.config.ts)，装成 PWA 的 Android 生效）+ 进全屏后 `screen.orientation.lock('landscape')`（[useFullscreen](../src/shared/hooks/useFullscreen.ts)，Android Chrome 生效）。**iOS Safari 两条都拿不到**，全靠 `catch` 静默兜住。仍然不做「请旋转设备」提示 —— 挡内容，而且竖屏现在本来就能用
+- **不预设朝向，竖屏优先**。原先假定「桌上平放 = 横屏」，靠 manifest `orientation: 'landscape'` + 进全屏后 `lock('landscape')` 两条一起把 PWA 钉在横屏；实际使用里竖屏更常见，现在 manifest 是 `'any'`，朝向由用户点顶栏那个键决定（[useOrientation](../src/shared/hooks/useOrientation.ts)）。锁仍然只能尽力而为：**iOS Safari 拿不到这个 API、桌面浏览器一律 reject**，靠 `catch` 静默兜住。不做「请旋转设备」提示 —— 挡内容，而且两个朝向本来都能用
 - **竖屏控制栏允许框内滚**：竖屏底栏只有 45dvh，控制项多的工具会在栏内滚。页面级不滚这条底线没破，但比横屏多一次滚动动作
 - **矩形格子优于正方形**：拆弹网格在高度受限时拉成矩形，是为了不翻页
 - **首页允许滚动**：入口分了三区、又给计分纸每个模板配了虚拟入口，三区还共用同一档卡（不给游戏专用区压小），连 1180×820 横屏都会溢出约 40px。首页翻页比工具页翻页可接受，形态统一比省这 40px 重要
-- **顶栏自动隐藏**：换回约 57px 高度（820px 屏的 7%），代价是返回键不常显、要学一次唤出动作 —— 用一次性文字提示 + 全宽热区补偿。不做「点任意处唤出」，那会跟工具本身的点按抢事件
-- **计时器运行中不做任何残留指示**：dialog 关掉后既没有顶栏角标（顶栏会自动收起，角标跟着消失），也没有角落浮标 —— 少一个常驻浮层，代价是桌上看不到还剩多久，靠到时的震动 + 提示音 + 全屏红字补偿
+- **竖屏顶栏常显，不再自动隐藏**：交出约 57px 高度（1180px 屏的 5%），换返回键与朝向键随时可点。**被否决的旧方案**是 3 秒后收起成 `absolute` overlay + 16px 全宽热区唤出：省下的是竖屏最不缺的那一维，代价却是每次返回都要先学一个唤出动作，且顶栏的 `translate` + `backdrop-blur` 会成为 `fixed` 的包含块，挂在里面的浮层会跟着滑走
+- **计时器运行中不做角落浮标**：dialog 关掉后靠顶栏的 `TimerChip` 看剩余时间（顶栏现在常显，芯片跟着一直在），不再另加常驻浮层；到时仍有震动 + 提示音 + 全屏红字
 - **`!` important 前缀**（`!min-h-12`）在 Tailwind 4.3 仍生效，沿用旧代码风格，只用于覆盖 `btn-base` 的尺寸

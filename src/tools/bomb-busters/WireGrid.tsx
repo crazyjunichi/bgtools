@@ -54,8 +54,11 @@ const DIVIDER: Record<DefuseState, string> = {
   2: 'border-ink/12',
 }
 
-/** 不只靠颜色区分三态：半拆填一半格数 + ½，全拆退场 + ✓ + 删除线 */
-const MARK: Record<DefuseState, string> = { 0: '', 1: '½', 2: '✓' }
+/**
+ * 不只靠颜色区分三态：半拆靠填一半格数（2/4 + 实线边框），全拆退场 + ✓ + 删除线。
+ * 半拆刻意不带角标 —— 亮格数已经把"拆了多少"说清楚了，再加个 ½ 只是同一信息说第二遍。
+ */
+const MARK: Record<DefuseState, string> = { 0: '', 1: '', 2: '✓' }
 
 const LABEL_KEY: Record<DefuseState, I18nKey> = {
   0: 'tools.bombBusters.wires.state.intact',

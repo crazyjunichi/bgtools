@@ -32,16 +32,21 @@ export default function BombBustersPage() {
       // 左栏只有一个生命读数 + 几个入口，撑不满默认档；省下的宽度给拆弹区与装备区
       panelWidth="narrow"
       panel={
-        <>
+        /* 竖屏控制栏通栏贴底，生命卡与按钮组并排才不会吃掉过多高度；
+           横屏走 `contents` 让三块回到 aside 的纵向流里（BoardActions 的 mt-auto 才有锚点） */
+        <div className="flex items-center gap-3 wide:contents">
           <LifeBar lives={lives} onChange={setLives} />
-          {/* 快捷键与设置入口一起沉到栏底（BoardActions 的 mt-auto 推动其后的兄弟节点） */}
-          <BoardActions onDeal={dealEquipment} onReset={resetGame} />
-          <SettingsPopover players={players} started={started} onSetPlayers={setPlayers} />
-        </>
+          <div className="flex min-w-0 flex-1 flex-col gap-3 wide:contents">
+            {/* 横屏下快捷键与设置入口一起沉到栏底（BoardActions 的 mt-auto 推动其后的兄弟节点） */}
+            <BoardActions onDeal={dealEquipment} onReset={resetGame} />
+            <SettingsPopover players={players} started={started} onSetPlayers={setPlayers} />
+          </div>
+        </div>
       }
     >
-      {/* 横屏并排（装备吃满右侧栏宽，描述才能整行读完）；竖屏自动改成拆弹在上、装备在下 */}
-      <Split ratio="majorFirst">
+      {/* 横屏并排（装备吃满右侧栏宽，描述才能整行读完）；竖屏改成拆弹在上、装备在下。
+          竖屏用 autoFirst：12 格的高度有上限，再高也只是把编号撑大，余量给装备列表更值 */}
+      <Split ratio="majorFirst" stack="autoFirst">
         <WireGrid wires={wires} onCycle={cycleWire} />
         <EquipmentList hand={hand} onCycle={cycleEquip} />
       </Split>

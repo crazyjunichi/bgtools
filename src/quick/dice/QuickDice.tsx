@@ -1,19 +1,11 @@
-import { lazy, Suspense, useEffect, useMemo } from 'react'
+import { Suspense, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Stepper } from '../../shared/components/Stepper'
 import type { RenderDie } from '../../shared/dice/dice3d/DiceCanvas'
+import { DiceCanvas, prefetchDiceCanvas } from '../../shared/dice/dice3d/lazy'
 import { dieRenderOf, numericDie } from '../../shared/dice/types'
 import { buzz } from '../../shared/haptics'
 import { QUICK_DICE_TYPES, QUICK_MAX_COUNT, useQuickDiceStore } from './store'
-
-/**
- * three.js 是全项目唯一的大依赖（~170KB gzip），不能进首屏包 —— 它只服务
- * 一个装饰用的画布。quick registry 那条"静态 import 不懒加载"针对的是很小的
- * 组件，这里是例外；dialog 一打开就预取，按到「投掷」时早已到位
- */
-const DiceCanvas = lazy(() =>
-  import('../../shared/dice/dice3d/DiceCanvas').then((m) => ({ default: m.DiceCanvas })),
-)
 
 /**
  * 顶栏快捷骰子。数字读数不等动画 —— 在别的工具中途弹出来，要的是立刻出数，
@@ -24,9 +16,9 @@ export function QuickDice() {
   const { t } = useTranslation()
   const { sides, count, last, seq, setSides, setCount, roll } = useQuickDiceStore()
 
-  useEffect(() => {
-    void import('../../shared/dice/dice3d/DiceCanvas')
-  }, [])
+  // dialog 一打开就预取 3D 块（quick registry 那条"静态 import 不懒加载"是给小组件的，
+  // three 这个体量必须例外），按到「投掷」时早已到位
+  useEffect(prefetchDiceCanvas, [])
 
   const handleRoll = () => {
     roll()

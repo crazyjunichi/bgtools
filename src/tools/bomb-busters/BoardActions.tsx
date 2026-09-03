@@ -19,12 +19,15 @@ type Props = {
  *
  * `mt-auto` 把这一组沉到左栏底部：横屏下生命卡按内容高度贴顶，余量集中在中间，
  * 手指够得到的位置留给要按的东西。
+ *
+ * 竖屏也保持单列：那时右半只有半屏宽（与生命卡对半分），两个按钮并排会把标签挤成两行；
+ * 竖排后整组高度与生命卡持平，面板总高不涨。
  */
 export function BoardActions({ onDeal, onReset }: Props) {
   const { t } = useTranslation()
 
   return (
-    <div className="mt-auto grid shrink-0 grid-cols-2 gap-3 wide:grid-cols-1">
+    <div className="mt-auto grid shrink-0 grid-cols-1 gap-3">
       <button
         type="button"
         onClick={() => {

@@ -20,8 +20,8 @@ const GAME = tools.filter((tool) => tool.category === 'game')
  * 显式映射而非拼接类名：Tailwind 编译期扫描静态字符串，动态拼接会被漏掉。
  *
  * 身份色只出现在两处：卡片底部那条规则线、quick 卡的字形。卡片既没有描边也没有
- * 底色（分界全靠区块色带），所以**这条线是卡片唯一的身份编码**，别降细也别改成
- * 半透明 —— 同一条色带里几张卡会当场糊成一片。
+ * 底色，所以**这条线是卡片唯一的身份编码**，别降细也别改成半透明 ——
+ * 同一区里几张卡会当场糊成一片。
  *
  * 一张表同时喂工具身份色与 quick 身份色，两个 union 合起来共七档 ——
  * 分成两张表只会让同一个 amber 在首页有两种写法。
@@ -65,17 +65,13 @@ const HUE: Record<SheetHue, string> = {
 }
 
 /**
- * 三段的色带与图槽底。**槽底始终比所在色带亮一档**：卡片本身没有底色，
- * 图槽是唯一能把卡内容从色带里拎出来的实体块，两个值必须成对改。
+ * 图槽底。三个区都不带底色了，**槽底比页底亮一档且三区同值** —— 卡片本身也没有底色，
+ * 图槽是唯一能把卡内容从页底里拎出来的实体块，三区给成不同亮度会看着像随机层级。
  */
-const BAND = {
-  quick: { band: 'bg-surface-2', slot: 'bg-surface-3' },
-  general: { band: 'bg-surface', slot: 'bg-surface-2' },
-  game: { band: '', slot: 'bg-surface' },
-} as const
+const SLOT = 'bg-surface'
 
 /**
- * **三个区只有一档卡**：尺寸、内距、图槽、字号全一样，区与区之间只靠色带分段。
+ * **三个区只有一档卡**：尺寸、内距、图槽、字号全一样，区与区之间只靠间距与规则线分段。
  * 桌上是斜视扫的，同一屏里出现三种卡片尺寸等于要重新对焦三次。
  * 代价是高度（取值与预算见 DESIGN.md §5），不要为了压高度再把某一区单独调小。
  *
@@ -88,24 +84,17 @@ const CARD =
 const GRID = 'grid grid-cols-2 gap-3 wide:grid-cols-3 short:gap-2'
 
 /**
- * 一段色带。`-mx-4` 抵掉 App 外壳的横向内距让色带出血到边，
- * safe-x 留在外层不被抵消 —— 色带不铺进刘海区是有意的。
+ * 一个区。横向内距由这里给，[App](../App.tsx) 在首页刻意不给（`PAD_X_HOME`）——
+ * **不要改回负 mx 抵内距**：外层那个滚动容器会把负 mx 的溢出算成横向可滚区，
+ * 窄屏下多一条横向滚动条。区与区的纵向间隔走外层的 gap，别在这里加回 py（会叠加）。
  *
- * 标题两侧的规则线是分区的主编码（游戏区没有色带，只剩这条线），
- * 所以**标题行独占一行、三个区完全同构**：往这行里塞控件会把居中的标题挤偏，
- * 那条对称的规则线就不成立了。游戏区的筛选框因此走 children 的第一块。
+ * 标题两侧的规则线是分区的唯一编码，所以**标题行独占一行、三个区完全同构**：
+ * 往这行里塞控件会把居中的标题挤偏，那条对称的规则线就不成立了。
+ * 游戏区的筛选框因此走 children 的第一块。
  */
-function Section({
-  title,
-  band,
-  children,
-}: {
-  title: string
-  band: string
-  children: ReactNode
-}) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className={`-mx-4 flex flex-col gap-3 px-4 py-4 short:gap-2 short:py-2 ${band}`}>
+    <section className="flex flex-col gap-3 px-4 short:gap-2">
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-line" aria-hidden />
         {/* 负 me 吃掉末字后面那份字距，否则标题看着偏左 */}
@@ -123,12 +112,11 @@ function Section({
  * 失败状态存在自己身上而不是改 `src`：改 src 会触发新一轮 onError 死循环。
  *
  * 槽与图都刻意保持直角：印刷版式里图是贴上去的方块，圆角会把它拉回卡片语汇。
- * `slot` 由所在色带给（见 `BAND`）。
  */
-function Cover({ cover, icon, slot }: { cover?: string; icon: string; slot: string }) {
+function Cover({ cover, icon }: { cover?: string; icon: string }) {
   const [failed, setFailed] = useState(false)
   return (
-    <span className={`flex size-12 shrink-0 items-center justify-center short:size-10 ${slot}`}>
+    <span className={`flex size-12 shrink-0 items-center justify-center short:size-10 ${SLOT}`}>
       {cover && !failed ? (
         <img
           // base 为相对路径，绝对的 /covers/... 在子目录部署下会 404
@@ -173,20 +161,10 @@ type ToolCardProps = {
   badge?: string
 }
 
-function ToolCard({
-  to,
-  cover,
-  icon,
-  name,
-  desc,
-  under,
-  ariaLabel,
-  badge,
-  slot,
-}: ToolCardProps & { slot: string }) {
+function ToolCard({ to, cover, icon, name, desc, under, ariaLabel, badge }: ToolCardProps) {
   return (
     <Link to={to} aria-label={ariaLabel} className={`${CARD} ${under}`}>
-      <Cover cover={cover} icon={icon} slot={slot} />
+      <Cover cover={cover} icon={icon} />
       <CardText name={name} desc={desc} />
       {badge && (
         <span className="shrink-0 text-xs" aria-hidden>
@@ -206,7 +184,8 @@ function ToolCard({
  * 3. **游戏专用工具**：`category: 'game'` 的工具 + 计分纸每个模板一个虚拟入口，
  *    带 `?tpl=` 直接落到那张表。项数多，标题下方带一条筛选框（只筛这一区）
  *
- * 三个区共用同一档卡与同一套列数，见 `CARD` / `GRID`；分区靠色带与规则线，见 `BAND`。
+ * 三个区共用同一档卡与同一套列数，见 `CARD` / `GRID`；三区都不带底色，分区只靠
+ * 区间距与标题两侧的规则线 —— 不要再给某一区加回色带底。
  *
  * 两处不要改回去：
  * - **不做垂直居中**（原来的 `content-center` + `min-h-full`）：三区块本来就填满可用高，
@@ -269,9 +248,9 @@ export default function Home() {
 
   return (
     <div className="h-full overflow-y-auto">
-      {/* 色带自带上下内距，区块之间不再另给 gap —— 两者叠加会把三区推出一屏 */}
-      <div className="mx-auto flex max-w-5xl flex-col">
-        <Section title={t('home.quick')} band={BAND.quick.band}>
+      {/* 区间距全在这一处的 gap 上，Section 自己不带 py —— 两处都给会叠加 */}
+      <div className="mx-auto flex max-w-5xl flex-col gap-10 pb-4 short:gap-4 short:pb-2">
+        <Section title={t('home.quick')}>
           <div className={GRID}>
             {QUICK.map((tool) => (
               <button
@@ -282,7 +261,7 @@ export default function Home() {
               >
                 {/* 槽位与另两个区的封面槽同尺寸；字形自己带身份色，盒图那边靠图本身 */}
                 <span
-                  className={`flex size-12 shrink-0 items-center justify-center short:size-10 ${BAND.quick.slot}`}
+                  className={`flex size-12 shrink-0 items-center justify-center short:size-10 ${SLOT}`}
                 >
                   <tool.icon
                     className={`size-7 short:size-6 ${ACCENT[tool.accent].glyph}`}
@@ -295,7 +274,7 @@ export default function Home() {
           </div>
         </Section>
 
-        <Section title={t('home.general')} band={BAND.general.band}>
+        <Section title={t('home.general')}>
           <div className={GRID}>
             {GENERAL.map((tool) => (
               <ToolCard
@@ -306,13 +285,12 @@ export default function Home() {
                 name={t(tool.nameKey)}
                 desc={t(tool.descKey)}
                 under={ACCENT[tool.accent].under}
-                slot={BAND.general.slot}
               />
             ))}
           </div>
         </Section>
 
-        <Section title={t('home.game')} band={BAND.game.band}>
+        <Section title={t('home.game')}>
           {/* 与下面的网格同宽自成一行：印刷版式里它是网格的控制条，不是标题的附件 */}
           <div className="relative">
             <IconSearch
@@ -343,7 +321,7 @@ export default function Home() {
           </div>
           <div className={GRID}>
             {shown.map((row) => (
-              <ToolCard key={row.card.to} {...row.card} slot={BAND.game.slot} />
+              <ToolCard key={row.card.to} {...row.card} />
             ))}
             {shown.length === 0 && (
               <span className="col-span-full px-1 py-2 text-sm leading-relaxed text-text-muted">

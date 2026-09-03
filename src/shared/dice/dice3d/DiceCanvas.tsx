@@ -88,7 +88,14 @@ export function DiceCanvas({ dice, onPick, className }: Props) {
     const host = hostRef.current
     if (!host) return
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    // 探测通过也仍可能建不出来（同时存活的上下文数量上限、显存不足），
+    // 而这层是装饰：构造抛错不许冒到路由把整页换成报错界面
+    let renderer: THREE.WebGLRenderer
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    } catch {
+      return
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     const canvas = renderer.domElement
     // 必须脱离文档流：canvas 的固有尺寸 = drawing buffer 像素数，而 setSize 按 DPR
@@ -294,7 +301,9 @@ function hasWebGL() {
   if (webglSupported === null) {
     try {
       const probe = document.createElement('canvas')
-      webglSupported = Boolean(probe.getContext('webgl2') ?? probe.getContext('webgl'))
+      // 只认 webgl2：three 的 WebGLRenderer 不再支持 webgl1，把「只有 webgl1」
+      // 算成支持等于让 renderer 构造当场抛错（iOS 15 以下正是这一档）
+      webglSupported = Boolean(probe.getContext('webgl2'))
     } catch {
       webglSupported = false
     }

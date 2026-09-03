@@ -1,6 +1,6 @@
 # BGTools · 桌游工具箱
 
-桌游桌上常用的小工具合集。纯前端、离线可用（PWA）。**为平板横屏、平放在桌面中央的场景设计** —— 高对比深色主题、大号触控目标、每个工具一屏放完不翻页。设计规范见 [docs/DESIGN.md](docs/DESIGN.md)。
+桌游桌上常用的小工具合集。纯前端、离线可用（PWA）。**为平板平放在桌面中央的场景设计，横竖屏都是一等布局（竖屏更常见）** —— 高对比深色主题、大号触控目标、每个工具一屏放完不翻页。设计规范见 [docs/DESIGN.md](docs/DESIGN.md)。
 
 ## 技术栈
 
@@ -36,7 +36,7 @@ DevTools 只能模拟单个指针，多点触摸测不了。手指抽选因此�
 docs/DESIGN.md         # 设计规范：配色 / 字号 / 布局的取值依据
 src/
   App.tsx              # 布局外壳（height:100% 一屏不滚，不用 h-dvh）
-  AppHeader.tsx        # 顶栏：返回 / 全屏 / 小工具入口，工具页 3 秒后自动收起
+  AppHeader.tsx        # 顶栏：返回 / 朝向切换 / 小工具入口，常显（横屏变左侧竖条）
   index.css            # @theme 主题 token + card/btn-base 等 utility + wide/short variant
   main.tsx             # 由 registry 生成 hash 路由
   pages/               # 首页、404

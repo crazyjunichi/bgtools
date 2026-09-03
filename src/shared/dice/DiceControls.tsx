@@ -3,19 +3,22 @@ import { ConfirmButton } from '../components/ConfirmButton'
 import { buzz } from '../haptics'
 import { IconReset } from '../icons'
 import { findDiceSet } from './presets'
-import { useDiceStore } from './store'
+import { useDiceSlice, useDiceStore } from './store'
 import { dieName } from './types'
 
 /**
  * 骰子界面的控制块（**刚性**：按钮压了就点不到）。不带外壳 ——
  * 由调用方决定是嵌进工具页的 ToolLayout 还是塞进浮层。
  */
-export function DiceControls() {
+export function DiceControls({ setId }: { setId: string }) {
   const { t } = useTranslation()
-  const setId = useDiceStore((s) => s.setId)
-  const selected = useDiceStore((s) => s.selected)
-  const results = useDiceStore((s) => s.results)
-  const { toggleDie, selectAll, selectNone, roll, clear } = useDiceStore()
+  const { selected, results } = useDiceSlice(setId)
+  // 逐个取而不是整份解构：整份会订阅所有骰组，别人那套一动这里就白渲染
+  const toggleDie = useDiceStore((s) => s.toggleDie)
+  const selectAll = useDiceStore((s) => s.selectAll)
+  const selectNone = useDiceStore((s) => s.selectNone)
+  const roll = useDiceStore((s) => s.roll)
+  const clear = useDiceStore((s) => s.clear)
 
   const set = findDiceSet(setId)
   if (!set) return null
@@ -26,7 +29,7 @@ export function DiceControls() {
   const loose = selected.filter((i) => !results[i]?.locked).length
 
   const handleRoll = () => {
-    roll()
+    roll(setId)
     buzz([15, 30, 15])
   }
 
@@ -36,7 +39,7 @@ export function DiceControls() {
         <span className="section-label">{t('dice.pool.pick')}</span>
         <button
           type="button"
-          onClick={allPicked ? selectNone : selectAll}
+          onClick={() => (allPicked ? selectNone(setId) : selectAll(setId))}
           className="btn-quiet !min-h-11 px-3 text-sm"
         >
           {t(allPicked ? 'dice.pool.none' : 'dice.pool.all')}
@@ -52,7 +55,7 @@ export function DiceControls() {
             <button
               key={i}
               type="button"
-              onClick={() => toggleDie(i)}
+              onClick={() => toggleDie(setId, i)}
               aria-pressed={picked}
               aria-label={t('dice.pool.die', { name, n: i + 1 })}
               // 未勾选除了压暗还加删除线：颜色不许是唯一编码。
@@ -79,7 +82,7 @@ export function DiceControls() {
             ? t('dice.pool.reroll', { n: loose })
             : t('dice.pool.roll', { n: selected.length })}
         </button>
-        <ConfirmButton onConfirm={clear} disabled={!rolled} className="w-full">
+        <ConfirmButton onConfirm={() => clear(setId)} disabled={!rolled} className="w-full">
           <IconReset className="size-5" aria-hidden />
           {t('common.clear')}
         </ConfirmButton>

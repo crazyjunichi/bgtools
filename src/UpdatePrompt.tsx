@@ -9,7 +9,7 @@ import { IconClose, IconUpdate } from './shared/icons'
  *
  * 只在构建产物里真的干活：dev 下 virtual:pwa-register 是空实现，needRefresh 恒为 false。
  *
- * 位置贴底居中而不是顶部：顶栏是会自动收起的 overlay，提示挂在那儿会跟它抢同一块热区。
+ * 位置贴底居中而不是顶部：顶部整条归顶栏，提示挂在那儿会盖住返回键与朝向键。
  * z-30 与 quick 的 dialog 同层、DOM 里排在它前面，所以浮层开着时提示被压在下面。
  */
 export function UpdatePrompt() {

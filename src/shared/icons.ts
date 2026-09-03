@@ -26,6 +26,8 @@ export {
   X as IconClose,
   Compass as IconCompass,
   Crown as IconCrown,
+  /** 发身份：洗好一副牌沿桌传。交叉箭头是「洗牌」的通行字形，与 IconRepeat 的循环箭头区分 */
+  Shuffle as IconDeal,
   /** 导出为 CSV。用表格而非文档字形，才和 IconImage 一眼区分得开 */
   Sheet as IconCsv,
   Trash2 as IconDelete,
@@ -33,7 +35,6 @@ export {
   Pencil as IconEdit,
   /** 「整格清空」，与退格区分：退格删一位，橡皮擦整格 */
   Eraser as IconEraser,
-  Minimize as IconExitFull,
   Maximize as IconFullscreen,
   Boxes as IconGroups,
   History as IconHistory,
@@ -58,6 +59,8 @@ export {
   LayoutGrid as IconQuickMenu,
   RefreshCw as IconRepeat,
   RotateCcw as IconReset,
+  /** 切换屏幕朝向。方框里的旋转箭头才读得出「转的是屏幕」，与 IconReset 的裸箭头分开 */
+  RotateCcwSquare as IconRotate,
   /** 存到本地文件 */
   Download as IconSave,
   Search as IconSearch,

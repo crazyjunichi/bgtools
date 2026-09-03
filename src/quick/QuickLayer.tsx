@@ -17,7 +17,7 @@ type Props = {
 
 /**
  * 小工具的浮层宿主，挂在 App 最外层且**不带 key** —— 必须跨页面常驻：
- * - 顶栏是 absolute + translate + backdrop-blur，会成为 fixed 的包含块，浮层不能挂在里面
+ * - 顶栏横屏是带 overflow-y-auto 的 64px 竖条，会裁掉挂在里面的浮层
  * - 计时器到时判定要在 dialog 关掉、甚至换了工具页之后依然生效
  */
 export function QuickLayer({ sidebar }: Props) {

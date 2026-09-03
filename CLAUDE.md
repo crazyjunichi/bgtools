@@ -57,7 +57,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 
 不许违反的三条：
 
-- **浮层绝不能挂在 `<header>` 内部**。工具页顶栏带 `translate-y-*` + `backdrop-blur`，两者都会成为 `fixed` 的包含块 —— 挂里面的 dialog 会跟着顶栏平移出屏并继承 `pointer-events-none`。顶栏里只放按钮（[QuickBar](src/quick/QuickBar.tsx)），浮层由 [QuickLayer](src/quick/QuickLayer.tsx) 在 App 层渲染，两边靠 [quick/store.ts](src/quick/store.ts) 通信
+- **浮层绝不能挂在 `<header>` 内部**。横屏下顶栏是 64px 宽、带 `overflow-y-auto` 的竖条，挂里面的浮层会被它裁掉；旧版竖屏顶栏还带 `translate-y-*` + `backdrop-blur`，那两者会成为 `fixed` 的包含块，dialog 会跟着顶栏滑出屏并继承 `pointer-events-none`（所以也别改回自动收起的 overlay）。顶栏里只放按钮（[QuickBar](src/quick/QuickBar.tsx)），浮层由 [QuickLayer](src/quick/QuickLayer.tsx) 在 App 层渲染，两边靠 [quick/store.ts](src/quick/store.ts) 通信
 - **`<QuickLayer />` 不带 key**，必须跨页面常驻：计时器的到时判定要在 dialog 关掉、甚至换了工具页之后依然生效
 - **持续型状态（倒计时）存绝对时刻**（`endAt`），不存累减的剩余秒 —— 平板切后台 / 息屏时 interval 会被节流甚至挂起，累减必然漂移
 
@@ -86,13 +86,13 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 
 ## 运行场景基线（每个工具都要满足）
 
-**平板横屏、平放在桌面中央、多人斜视、视距 50–70cm。** 完整规范与取值依据见 [docs/DESIGN.md](docs/DESIGN.md)，以下是不许违反的部分：
+**平板平放在桌面中央、多人斜视、视距 50–70cm；竖屏更常见，横屏也照常用 —— 两个朝向都要成立，拿不准先按竖屏验。** 完整规范与取值依据见 [docs/DESIGN.md](docs/DESIGN.md)，以下是不许违反的部分：
 
 - **一屏放完，页面级不滚动**。高度锁在 `html` / `body` / `#root` 的 `height:100% + overflow:hidden`（[src/index.css](src/index.css)），[App.tsx](src/App.tsx) 外壳跟着用 `h-full overflow-hidden`。**不要改回 `h-dvh`** —— PWA standalone 下 `100dvh` 会把状态栏算进视口，整页多出一条滚动条。工具页统一套 [ToolLayout](src/shared/components/ToolLayout.tsx)（横屏左控制栏 + 右主显示区；竖屏自动变主显示在上 + 控制栏贴底，仍不滚）。次要列表可以在自己的框里 `overflow-y-auto`，页面不许翻页
 - **横竖屏判据只用 `wide` variant**（`orientation: landscape`，定义在 [src/index.css](src/index.css)）。**禁止用宽度断点（`lg:` / `max-lg:`）判横竖屏** —— 安卓平板横屏 CSS 宽常不足 1024px，会被整批误判成竖屏。主显示区放两块信息时用 [Split](src/shared/components/Split.tsx)（横屏并排 / 竖屏上下），不要自己写朝向类
 - **关键数字的视口单位一律 `vmin`，不用 `vh`**：横屏下二者等价，竖屏下 `vh` 会把数字撑爆容器
-- **返回/全屏/通用小工具入口由 [AppHeader](src/AppHeader.tsx) 统一提供**，工具页里不要自己画返回键、全屏键或标题栏。它在工具页 3 秒后自动收起（`absolute` overlay，不占布局高度），轻点屏幕顶部热区唤出 —— 所以工具页最顶部别放需要精准点击的控件
-- **会让自己消失的元素，一律 `onClick`，不许 `onPointerDown`** —— 浮层遮罩、顶栏热区、全屏提醒都算。pointerdown 里改布局会当场卸载按下时的 target，触屏抬手补发的兼容鼠标事件按**抬手坐标**重新 hit-test，click 就穿透到底下的控件上了（关个计时器顺手把骰子投了、点热区反而跳回首页）。`onPointerDown` 只留给不改变自身存在的持续交互，如 [Stepper](src/shared/components/Stepper.tsx) 的长按连增。改了外层还要检查内层的 `stopPropagation` 是否跟着换事件类型
+- **返回/朝向切换/通用小工具入口由 [AppHeader](src/AppHeader.tsx) 统一提供**，工具页里不要自己画返回键、标题栏，也不要自己实现全屏。它**常显且正常占位**：竖屏通栏、横屏变左侧 64px 竖条（**不要改回自动收起的 overlay**，理由见 [docs/DESIGN.md](docs/DESIGN.md) §8）。全屏不再是独立按钮 —— `screen.orientation.lock()` 只在全屏或已安装 PWA 下生效，全屏因此降级成朝向键内部的前提步骤（[useOrientation](src/shared/hooks/useOrientation.ts)）
+- **会让自己消失的元素，一律 `onClick`，不许 `onPointerDown`** —— 浮层遮罩、全屏提醒、任何点一下就自我卸载的临时层都算。pointerdown 里改布局会当场卸载按下时的 target，触屏抬手补发的兼容鼠标事件按**抬手坐标**重新 hit-test，click 就穿透到底下的控件上了（关个计时器顺手把骰子投了）。`onPointerDown` 只留给不改变自身存在的持续交互，如 [Stepper](src/shared/components/Stepper.tsx) 的长按连增。改了外层还要检查内层的 `stopPropagation` 是否跟着换事件类型
 - **矮屏用 `short` variant**（`max-height: 480px`，同样定义在 [src/index.css](src/index.css)）。它与 `wide` 是**正交的两个维度**：`wide` 判朝向决定布局方向，`short` 判可视高决定尺寸档位，手机横屏同时命中两者。只有这一档允许把触控目标降到 44px（手持、视距 ≈30cm），别扩散到别处；要压 `card` / `btn-base` 里 `@apply` 进来的值得带 `!`（如 `short:!p-3`），否则自定义 utility 的规则位置在内置之后会赢
 - 触控目标 **≥ 56px**（`size-14` / `min-h-14`，即 `btn-base` 默认值），次要按钮不低于 `min-h-12`
 - 最小字号 `text-xs`（12px，仅限角标/图例），标签说明用 `text-sm` 起
