@@ -45,6 +45,12 @@ const router = createHashRouter([
    * 顶栏的名单/设置按钮对他没有意义，他一进来就该看到自己那张牌。
    */
   { path: '/join', element: <Join /> },
+  // 行动代号队长扫码的落地页，同 /join 的理由挂在 App 之外；懒加载以免词表拖首屏
+  {
+    path: '/key',
+    lazy: async () => ({ Component: (await import('./tools/codenames/KeyView')).default }),
+    errorElement: <LoadError />,
+  },
 ])
 
 createRoot(document.getElementById('root')!).render(

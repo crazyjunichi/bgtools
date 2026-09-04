@@ -1,12 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { newBoard, otherTeam, remaining, type CellKind, type Team } from './game'
+import { newBoard, otherTeam, remaining, type CellKind, type Mark, type Team } from './game'
 
 type State = {
   phase: 'setup' | 'playing' | 'over'
   words: string[]
   key: CellKind[]
   revealed: boolean[]
+  /** 与 revealed 等长。旧存档没有这字段，浅合并补成空数组，老格子视为无角标 */
+  marks: (Mark | null)[]
+  /** 各队自己的回合计数（从 1 起）：角标显示的是「我队第 N 回合」，双方首回合都是 1 */
+  turnNo: Record<Team, number>
   turn: Team
   winner: Team | null
   byAssassin: boolean
@@ -24,6 +28,8 @@ const INITIAL: State = {
   words: [],
   key: [],
   revealed: [],
+  marks: [],
+  turnNo: { red: 0, blue: 0 },
   turn: 'red',
   winner: null,
   byAssassin: false,
@@ -31,7 +37,12 @@ const INITIAL: State = {
 }
 
 function endTurn(s: State): Partial<State> {
-  return { turn: otherTeam(s.turn), lastActiveAt: Date.now() }
+  const next = otherTeam(s.turn)
+  return {
+    turn: next,
+    turnNo: { ...s.turnNo, [next]: s.turnNo[next] + 1 },
+    lastActiveAt: Date.now(),
+  }
 }
 
 export const useCodenamesStore = create<State & Actions>()(
@@ -46,6 +57,8 @@ export const useCodenamesStore = create<State & Actions>()(
           words: b.words,
           key: b.key,
           revealed: b.words.map(() => false),
+          marks: b.words.map(() => null),
+          turnNo: { red: 0, blue: 0, [b.starting]: 1 },
           turn: b.starting,
           winner: null,
           byAssassin: false,
@@ -61,8 +74,11 @@ export const useCodenamesStore = create<State & Actions>()(
 
         const revealed = s.revealed.slice()
         revealed[i] = true
+        // 旧存档 marks 是空数组，先补齐再落标记；turnNo 同为后补字段，缺省从 1 记起
+        const marks = s.marks.length === s.words.length ? s.marks.slice() : s.words.map(() => null)
+        marks[i] = { by: s.turn, turn: Math.max(1, s.turnNo[s.turn]) }
         const cell = s.key[i]
-        const base = { revealed, lastActiveAt: Date.now() }
+        const base = { revealed, marks, lastActiveAt: Date.now() }
 
         if (cell === 'assassin') {
           set({ ...base, phase: 'over', winner: otherTeam(s.turn), byAssassin: true })
