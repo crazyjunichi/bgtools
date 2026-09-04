@@ -419,6 +419,7 @@ export const en: Resources = {
     failedHint:
       'Your phone and the host must be on the same Wi-Fi. If it keeps failing, ask the organizer to play offline instead.',
     retry: 'Retry',
+    retryIn: 'Auto-retry in {{n}}s',
     rejected: 'The host has no seat for you — watch the shared screen.',
     badLink: 'This QR code is incomplete or expired. Ask the organizer for a new one.',
     insecure:

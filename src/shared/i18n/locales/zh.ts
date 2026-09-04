@@ -494,6 +494,8 @@ export const zh = {
     failed: '连不上主机。',
     failedHint: '手机和主机要在同一个 Wi-Fi 下。一直连不上的话，请组织者改用离线玩法。',
     retry: '重试',
+    /** 失败后的自动重试倒计时 */
+    retryIn: '{{n}} 秒后自动重试',
     rejected: '主机没有给你留位置，看桌上的公共屏吧。',
     badLink: '这个二维码不完整或已过期，请组织者重新出一次。',
     insecure: '联机需要 HTTPS 页面（或本机 localhost）。当前是明文 HTTP 地址，浏览器不允许建立加密通道。',

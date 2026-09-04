@@ -46,7 +46,7 @@ const CONNECT_BUDGET_MS = 60000
  * 没配上就定时 leave + 重新 joinRoom，每轮换一波新的 announce 连发。
  * 抖动用计数推，不引入随机源（冷启动时各端时序本就错开）。
  */
-const REJOIN_INTERVAL_MS = 10000
+const REJOIN_INTERVAL_MS = 5000
 const REJOIN_STAGGER_MS = 1300
 
 export async function joinSession(

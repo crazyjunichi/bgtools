@@ -69,6 +69,21 @@ export async function createHostSession(
   }
   const debugTimer = window.setInterval(emitDebug, 2000)
 
+  /*
+   * 空房看门狗：relay socket 可能假死（TCP 半开，状态字仍是 OPEN，mqtt.js 要靠
+   * keepalive 最长约九十秒才察觉）。房间没人时主动 close 全部 socket，
+   * mqtt.js 会秒级自动重连，trystero 在重连后重新订阅并重发 announce ——
+   * 假死的恢复窗口 thus 从 keepalive 量级压到本周期量级。已配对 peer 走
+   * DataChannel 不经过 relay，不受影响；只在空房时跑是为了不打断进行中的配对。
+   */
+  const relayWatchdog = window.setInterval(() => {
+    if (closed || peers > 0) return
+    const socks = getRelaySockets() as Record<string, WebSocket>
+    for (const s of Object.values(socks)) {
+      if (s.readyState === WebSocket.OPEN) s.close()
+    }
+  }, 15000)
+
   const pushTo = (rid: string) => {
     const peerId = bound.get(rid)
     if (!peerId) return
@@ -122,6 +137,7 @@ export async function createHostSession(
     close() {
       closed = true
       window.clearInterval(debugTimer)
+      window.clearInterval(relayWatchdog)
       void room.leave()
     },
   }

@@ -1,5 +1,5 @@
 import type { JsonValue } from '@trystero-p2p/mqtt'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { htmlLangOf } from '../shared/i18n'
@@ -25,6 +25,7 @@ export default function Play() {
   const [attempt, setAttempt] = useState(0)
   const [done, setDone] = useState<{ round: string; state: Round } | null>(null)
   const sendRef = useRef<(a: JsonValue) => void>(() => {})
+  const retry = useCallback(() => setAttempt((n) => n + 1), [])
 
   /*
    * 状态带上它属于哪一轮，在渲染期推导出当前值而不是在 effect 里同步置 ——
@@ -114,13 +115,7 @@ export default function Play() {
             <p className="text-base leading-relaxed text-amber-300">{t('play.failed')}</p>
             <p className="text-sm leading-relaxed text-text-muted">{t('play.failedHint')}</p>
             {debugLine}
-            <button
-              type="button"
-              onClick={() => setAttempt((n) => n + 1)}
-              className="btn-base self-start bg-sky-400 px-5 text-base text-ink"
-            >
-              {t('play.retry')}
-            </button>
+            <AutoRetry onRetry={retry} />
           </div>
         )
       case 'rejected':
@@ -138,5 +133,36 @@ export default function Play() {
     <div className="safe-x safe-t safe-b flex h-full flex-col items-center justify-center gap-4 p-4 short:gap-2 short:p-2">
       {body}
     </div>
+  )
+}
+
+/**
+ * 失败不判死刑：主机的 relay 假死自愈有窗口期，到点自动重试覆盖它。
+ * 玩家把手机放桌上等即可，按钮只是不想等时的立即入口。
+ */
+function AutoRetry({ onRetry }: { onRetry: () => void }) {
+  const { t } = useTranslation()
+  const [left, setLeft] = useState(8)
+
+  useEffect(() => {
+    if (left <= 0) {
+      onRetry()
+      return
+    }
+    const id = window.setTimeout(() => setLeft((n) => n - 1), 1000)
+    return () => window.clearTimeout(id)
+  }, [left, onRetry])
+
+  return (
+    <>
+      <p className="text-sm text-text-muted">{t('play.retryIn', { n: left })}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="btn-base self-start bg-sky-400 px-5 text-base text-ink"
+      >
+        {t('play.retry')}
+      </button>
+    </>
   )
 }
