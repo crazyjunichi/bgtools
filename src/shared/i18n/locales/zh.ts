@@ -128,12 +128,21 @@ export const zh = {
     select: {
       empty: '名单是空的。',
       manage: '管理玩家',
+      /** 待选区上方那行引导，不说「池」 */
+      poolHint: '点击玩家加入',
+      /** 待选卡点一下进参与区，参与卡点一下放回 —— 动作文案给读屏 */
+      join: '{{name}}，点击加入',
+      leave: '{{name}}，点击移出',
     },
-    /** 计分工具的开局选人空态（[SeatStart](../../players/SeatStart.tsx)），两个计分工具共用 */
+    /** 计分工具的开局选人空态（[SeatStart](../../players/SeatStart.tsx)），计分工具共用 */
     seatStart: {
-      label: '这局谁在玩',
+      /** n = 已加入人数（名单勾选 + 临时席），主角区的人数要一眼可见 */
+      label: '这局谁在玩（{{n}} 人）',
       start: '就坐（{{n}} 人）',
-      temp: '加一个临时席位',
+      /** 参与卡末尾那张虚线卡：加一个待入座的临时席 */
+      tempAdd: '临时玩家',
+      /** 待入座卡点了就删，卡上显示的是落座后的名字（玩家N），文案给读屏 */
+      tempRemove: '移除 {{name}}',
     },
     /**
      * 席位面板（[SeatPicker](../../players/SeatPicker.tsx)），多轮计分与计分纸共用。
@@ -779,7 +788,6 @@ export const zh = {
     diceThrone: {
       name: '王权骰铸',
       desc: '血量 · 战斗点 · 状态标记',
-      empty: '选出这局对决的人就能开始。',
       finish: '结算',
       addSeat: '加一位',
       newGame: '新一局',
@@ -817,7 +825,6 @@ export const zh = {
     score: {
       name: '多轮计分',
       desc: '多人加减分 · 逐轮历史 · 总分表',
-      empty: '选出这局在玩的人就能开始。',
       /** 完整记录里首列的列头，只给读屏用（视觉上是空白，轮次号自己会说明） */
       roundCol: '轮',
       /** 调分浮层里两个数字块的标签 */
@@ -866,7 +873,6 @@ export const zh = {
     scoreSheet: {
       name: '计分纸',
       desc: '固定条目逐项结算 · 游戏模板 · 自动合计',
-      empty: '选出这局在玩的人就能开始。',
       /** 矩阵首列的列头，视觉上是空的（下面每行自己写着条目名） */
       entryCol: '计分条目',
       total: '合计',
@@ -885,7 +891,7 @@ export const zh = {
       cellEmpty: '{{name}} 的{{entry}}：还没填，点击输入',
       editEntry: '{{name}}，点击看换算表或改输入方式',
       addEntry: '添加条目',
-      /** 列头行末尾那个 ＋ 的 aria-label */
+      /** 「更多」浮层里的加人按钮（原先是矩阵列头末尾的 ＋） */
       addSeat: '加人',
       /** 列头整块是按钮，点开席位面板 */
       editSeat: '{{name}}，点击改名、换人或移除这一列',
@@ -925,6 +931,11 @@ export const zh = {
       /** 更多操作浮层（[SheetMore](../../../tools/score-sheet/SheetMore.tsx)）：一局的收尾出口 */
       more: {
         title: '更多操作',
+        /** 加人与清空所有人那一组的标签 */
+        seats: '席位',
+        /** 连人带分全清，回到开局入座 */
+        clearSeats: '清空所有人',
+        confirmClearSeats: '确认清空所有人',
         /** 分享与历史那一组的标签 */
         output: '本局',
         /** 排版与外观在分享面板里选（[MatchShare](../../match/MatchShare.tsx)），这里只是入口 */

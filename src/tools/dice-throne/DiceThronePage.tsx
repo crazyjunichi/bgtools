@@ -97,12 +97,7 @@ export default function DiceThronePage() {
       }
     >
       {views.length === 0 ? (
-        <SeatStart
-          icon={diceThroneMeta.icon}
-          hint={t('tools.diceThrone.empty')}
-          onSeat={seatPlayers}
-          onAddTemp={addSeat}
-        />
+        <SeatStart onSeat={seatPlayers} />
       ) : (
         <div className={`grid min-h-0 flex-1 auto-rows-fr gap-3 short:gap-2 ${grid}`}>
           {views.map((seat) => (

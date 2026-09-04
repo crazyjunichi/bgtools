@@ -84,12 +84,7 @@ export default function ScorePage() {
      */
     <div className="flex h-full min-h-0 flex-col gap-3 wide:flex-row short:gap-2">
       {views.length === 0 ? (
-        <SeatStart
-          icon={scoreMeta.icon}
-          hint={t('tools.score.empty')}
-          onSeat={seatPlayers}
-          onAddTemp={addSeat}
-        />
+        <SeatStart onSeat={seatPlayers} />
       ) : (
         <ScoreGrid
           seats={views}

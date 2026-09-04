@@ -55,6 +55,7 @@ export default function ScoreSheetPage() {
     addSeat,
     seatPlayers,
     removeSeat,
+    clearSeats,
     bindPlayer,
     renameSeat,
     setPick,
@@ -165,13 +166,8 @@ export default function ScoreSheetPage() {
      */
     <div className="flex h-full min-h-0 flex-col gap-3 wide:flex-row short:gap-2">
       {views.length === 0 ? (
-        /* 没人时矩阵不渲染，列头那个 ＋ 也就不存在 —— 空态自己得带落座入口 */
-        <SeatStart
-          icon={scoreSheetMeta.icon}
-          hint={t('tools.scoreSheet.empty')}
-          onSeat={seatPlayers}
-          onAddTemp={addSeat}
-        />
+        /* 没人时矩阵不渲染 —— 空态自己得带落座入口；开局后的加人/清人收在「更多」里 */
+        <SeatStart onSeat={seatPlayers} />
       ) : (
         <SheetGrid
           seats={views}
@@ -186,10 +182,6 @@ export default function ScoreSheetPage() {
           onEditEntry={(entryId) => setPanel({ kind: 'entry', entryId })}
           onAddEntry={() => {
             addEntry()
-            buzz(20)
-          }}
-          onAddSeat={() => {
-            addSeat()
             buzz(20)
           }}
         />
@@ -221,6 +213,11 @@ export default function ScoreSheetPage() {
         <SheetMore
           canShare={Object.keys(cells).length > 0}
           canFinish={isComplete(seats, cells)}
+          onAddSeat={() => {
+            addSeat()
+            buzz(20)
+          }}
+          onClearSeats={clearSeats}
           onShare={() => setShare(sheetMatchDraft())}
           onOpenHistory={() => setPanel({ kind: 'history' })}
           onFinish={() => setFinish(sheetMatchDraft())}

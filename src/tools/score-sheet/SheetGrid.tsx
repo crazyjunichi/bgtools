@@ -40,8 +40,6 @@ type Props = {
   onEditSeat?: (seatId: string) => void
   onEditEntry?: (entryId: string) => void
   onAddEntry?: () => void
-  /** 给了才多出末尾那一列（只读回看不给）。加人紧贴列头：新增的就是一列 */
-  onAddSeat?: () => void
 }
 
 /** 行首列：条目名要放得下「未使用空地」这种五字词，横屏再宽一点 */
@@ -49,13 +47,6 @@ const LEAD = 'w-28 wide:w-32'
 
 /** 每人一列，宽度按「三位数还留得下一位余量」定，容量校核见 docs/DESIGN.md §3 */
 const COL = 'w-24'
-
-/**
- * 加人列。**列宽给最小档**：table-fixed 会把富余宽度按各列声明宽度的比例摊下去，
- * 声明得越窄，人少时这条空白带被拉得越少；人多到要横滚时没有富余可摊，它就正好是这个宽度。
- * 全列 sticky 钉在右缘，横滚时 ＋ 不会跟着滚出视野（滚动区在最外层那个 div）。
- */
-const ADD_COL = 'sticky right-0 w-12'
 
 /** 列头胶囊（可编辑态）：整格是改名/换人按钮 */
 const SEAT_CHIP =
@@ -92,11 +83,8 @@ export function SheetGrid({
   onEditSeat,
   onEditEntry,
   onAddEntry,
-  onAddSeat,
 }: Props) {
   const { t, i18n } = useTranslation()
-
-  const addSeatCol = !readOnly && onAddSeat !== undefined
 
   /**
    * 选中格滚进可见区。挂在 ref 而不是 effect 上：identity 稳定（useCallback），
@@ -161,18 +149,6 @@ export function SheetGrid({
                 )}
               </th>
             ))}
-            {addSeatCol && (
-              <th className={`top-0 z-20 bg-surface p-1 ${ADD_COL}`}>
-                <button
-                  type="button"
-                  onClick={onAddSeat}
-                  aria-label={t('tools.scoreSheet.addSeat')}
-                  className="btn-quiet !min-h-12 w-full short:!min-h-11"
-                >
-                  <IconPlus className="size-5" aria-hidden />
-                </button>
-              </th>
-            )}
           </tr>
         </thead>
 
@@ -265,9 +241,6 @@ export function SheetGrid({
                     </td>
                   )
                 })}
-
-                {/* 加人列在正文里只是一条空白带，给底色是为了横滚时盖住从下面滚过去的格子 */}
-                {addSeatCol && <td className={`z-10 bg-surface p-1 ${ADD_COL}`} />}
               </tr>
             )
           })}
@@ -284,8 +257,6 @@ export function SheetGrid({
                   {t('tools.scoreSheet.addEntry')}
                 </button>
               </td>
-              {/* 这一行也留出加人列，否则横滚时它的按钮会从别人被遮住的位置探出来 */}
-              {addSeatCol && <td className={`z-10 bg-surface p-1 ${ADD_COL}`} />}
             </tr>
           )}
         </tbody>
@@ -312,7 +283,6 @@ export function SheetGrid({
                 </span>
               </td>
             ))}
-            {addSeatCol && <td className={`bottom-0 z-20 bg-surface-2 p-1 ${ADD_COL}`} />}
           </tr>
         </tfoot>
       </table>

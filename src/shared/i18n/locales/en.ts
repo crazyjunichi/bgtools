@@ -116,11 +116,15 @@ export const en: Resources = {
     select: {
       empty: 'Roster is empty.',
       manage: 'Manage players',
+      poolHint: 'Tap a player to join',
+      join: '{{name}}, tap to join',
+      leave: '{{name}}, tap to remove',
     },
     seatStart: {
-      label: "Who's playing",
+      label: "Who's playing ({{n}})",
       start: 'Seat {{n}}',
-      temp: 'Add a temp seat',
+      tempAdd: 'Guest',
+      tempRemove: 'Remove {{name}}',
     },
     seat: {
       nameInput: 'Rename this column',
@@ -694,7 +698,6 @@ export const en: Resources = {
     diceThrone: {
       name: 'Dice Throne',
       desc: 'HP · CP · status tokens',
-      empty: 'Pick the players in this duel to start.',
       finish: 'Finish',
       addSeat: 'Add seat',
       newGame: 'New game',
@@ -732,7 +735,6 @@ export const en: Resources = {
     score: {
       name: 'Multi-round Scoring',
       desc: 'Rounds · log · totals',
-      empty: "Pick who's playing to start.",
       // 首列的列头只给读屏用，长度不受列宽限制
       roundCol: 'Round',
       total: 'Total',
@@ -773,7 +775,6 @@ export const en: Resources = {
     scoreSheet: {
       name: 'Score Pad',
       desc: 'Categories · templates · totals',
-      empty: "Pick who's playing to start.",
       entryCol: 'Category',
       total: 'Total',
       defaultEntry: 'Item {{n}}',
@@ -817,6 +818,9 @@ export const en: Resources = {
       },
       more: {
         title: 'More actions',
+        seats: 'Seats',
+        clearSeats: 'Clear everyone',
+        confirmClearSeats: 'Clear everyone?',
         output: 'This game',
         share: 'Share',
         history: 'History',

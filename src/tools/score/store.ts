@@ -44,7 +44,7 @@ type ScoreState = {
    * 一次落座：按名单顺序建席位并绑定玩家。**只给空桌开局用** ——
    * 一局重新添加玩家是常态，逐列点太慢
    */
-  seatPlayers: (picked: Player[]) => void
+  seatPlayers: (picked: Player[], temps?: number) => void
   removeSeat: (seatId: string) => void
   bindPlayer: (seatId: string, player: Player | null) => void
   /** 只改临时席位的快照名。绑定了名单玩家的列由 [SeatPicker] 直接改名单，不到这里 */
@@ -84,10 +84,11 @@ export const useScoreStore = create<ScoreState>()(
         set({ seats: [...seats, makeSeat(seats)] })
       },
 
-      seatPlayers: (picked) =>
-        set({
-          seats: picked.reduce<Seat[]>((acc, p) => [...acc, bindSeat(makeSeat(acc), p)], []),
-        }),
+      seatPlayers: (picked, temps = 0) => {
+        const seated = picked.reduce<Seat[]>((acc, p) => [...acc, bindSeat(makeSeat(acc), p)], [])
+        for (let i = 0; i < temps; i++) seated.push(makeSeat(seated))
+        set({ seats: seated })
+      },
 
       removeSeat: (seatId) => {
         const { seats, rounds, draft, undoStack } = get()

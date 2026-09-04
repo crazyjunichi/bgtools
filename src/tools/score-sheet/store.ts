@@ -82,11 +82,13 @@ type SheetState = {
   /** 列数不设上限：列多了矩阵转横滚、颜色开始复用，但不拦着加 */
   addSeat: () => void
   /**
-   * 一次落座：按名单顺序建席位并绑定玩家。**只给空桌开局用** ——
+   * 一次落座：按名单顺序建席位并绑定玩家，末尾追加 temps 个临时席位。**只给空桌开局用** ——
    * 一局重新添加玩家是常态，逐列点太慢
    */
-  seatPlayers: (picked: Player[]) => void
+  seatPlayers: (picked: Player[], temps?: number) => void
   removeSeat: (seatId: string) => void
+  /** 清空所有人：连人带分一起撤，回到开局入座。模板与自定义条目保留（取舍同 newGame） */
+  clearSeats: () => void
   bindPlayer: (seatId: string, player: Player | null) => void
   /** 只改临时席位的快照名。绑定了名单玩家的列由 [SeatPicker] 直接改名单，不到这里 */
   renameSeat: (seatId: string, name: string) => void
@@ -205,8 +207,11 @@ export const useSheetStore = create<SheetState>()(
         set({ seats: [...seats, makeSeat(seats)] })
       },
 
-      seatPlayers: (picked) =>
-        set({ seats: picked.reduce<Seat[]>((acc, p) => [...acc, bindSeat(makeSeat(acc), p)], []) }),
+      seatPlayers: (picked, temps = 0) => {
+        const seated = picked.reduce<Seat[]>((acc, p) => [...acc, bindSeat(makeSeat(acc), p)], [])
+        for (let i = 0; i < temps; i++) seated.push(makeSeat(seated))
+        set({ seats: seated })
+      },
 
       removeSeat: (seatId) => {
         const { seats, cells, pick } = get()
@@ -215,6 +220,11 @@ export const useSheetStore = create<SheetState>()(
           cells: dropCells(cells, (k) => k.startsWith(`${seatId}|`)),
           pick: pick?.seatId === seatId ? null : pick,
         })
+      },
+
+      clearSeats: () => {
+        const now = Date.now()
+        set({ seats: [], cells: {}, pick: null, startedAt: now, lastActiveAt: now })
       },
 
       bindPlayer: (seatId, player) =>

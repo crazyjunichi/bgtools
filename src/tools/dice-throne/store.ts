@@ -44,7 +44,7 @@ type ThroneState = {
   /** 最后一次改动数值的时刻（结算 endAt 取它）。换人、改名不算 */
   lastActiveAt: number
 
-  seatPlayers: (picked: Player[]) => void
+  seatPlayers: (picked: Player[], temps?: number) => void
   /** 席位数不设上限，与计分工具一致 */
   addSeat: () => void
   removeSeat: (seatId: string) => void
@@ -78,13 +78,14 @@ export const useThroneStore = create<ThroneState>()(
         startedAt: Date.now(),
         lastActiveAt: Date.now(),
 
-        seatPlayers: (picked) =>
-          set({
-            seats: picked.reduce<ThroneSeat[]>(
-              (acc, p) => [...acc, bindSeat(makeThroneSeat(acc), p) as ThroneSeat],
-              [],
-            ),
-          }),
+        seatPlayers: (picked, temps = 0) => {
+          const seated = picked.reduce<ThroneSeat[]>(
+            (acc, p) => [...acc, bindSeat(makeThroneSeat(acc), p) as ThroneSeat],
+            [],
+          )
+          for (let i = 0; i < temps; i++) seated.push(makeThroneSeat(seated))
+          set({ seats: seated })
+        },
 
         addSeat: () => set({ seats: [...get().seats, makeThroneSeat(get().seats)] }),
 
