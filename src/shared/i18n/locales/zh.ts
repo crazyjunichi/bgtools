@@ -182,6 +182,7 @@ export const zh = {
       bombBusters: '炸弹克星',
       werewolf: '狼人杀',
       yahtzee: '快艇骰子',
+      diceThrone: '王权骰铸',
     },
     /**
      * **只参与搜索、永不渲染**：桌上的口头叫法常常不是官方译名（农家乐 / 翼展 / 车票之旅），
@@ -208,6 +209,7 @@ export const zh = {
       bombBusters: '拆弹 拆炸弹 排线 Bomb Busters',
       werewolf: '狼人 狼 Werewolf',
       yahtzee: '快艇 大话骰 Yahtzee',
+      diceThrone: '骰子王座 王权 Dice Throne',
     },
   },
 
@@ -764,6 +766,44 @@ export const zh = {
         /** 人数下限是 2，英文永远是复数，不需要 i18next 的复数变体 */
         playerCount: '{{n}}人',
         warn: '切到 {{n}} 人将重开一局：生命重置为 {{n}}、装备重发、拆弹进度清空',
+      },
+    },
+    diceThrone: {
+      name: '王权骰铸',
+      desc: '血量 · 战斗点 · 状态标记',
+      empty: '选出这局对决的人就能开始。',
+      finish: '结算',
+      addSeat: '加一位',
+      newGame: '新一局',
+      confirmNewGame: '确认重开',
+      hp: '生命',
+      cp: '战斗点',
+      /** 改它会同时把当前血量重置满，开局定档用 */
+      startHp: '初始生命',
+      statuses: '状态标记',
+      eliminated: '已淘汰',
+      changeSeat: '换人 / 移除',
+      remove: '移出本局',
+      confirmRemove: '确认移出',
+      /** 整张面板卡的读屏文本（卡上信息多，读屏只说最关键的两轨） */
+      cardAria: '{{name}}：生命 {{hp}}，战斗点 {{cp}}',
+      status: {
+        burn: '灼烧',
+        poison: '中毒',
+        bleed: '流血',
+        chill: '寒冷',
+        stun: '昏迷',
+        concussion: '脑震荡',
+        knockdown: '击倒',
+        blind: '致盲',
+        paralyze: '麻痹',
+        hex: '诅咒',
+        evasive: '闪避',
+        untargetable: '不可选中',
+        protect: '护盾',
+        counter: '反击',
+        regeneration: '再生',
+        berserk: '狂暴',
       },
     },
     score: {

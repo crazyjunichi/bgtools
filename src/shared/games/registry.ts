@@ -205,6 +205,17 @@ export const GAMES: readonly Game[] = [
     aliasKey: 'games.alias.yahtzee',
     resultMode: 'ranked',
   },
+  {
+    // 人数区间来自规则书：1v1 / 2v2 / 3–6 人 FFA
+    id: 'dice-throne',
+    nameKey: 'games.name.diceThrone',
+    icon: '👑',
+    cover: 'covers/dice-throne.png',
+    hue: 'purple',
+    aliasKey: 'games.alias.diceThrone',
+    players: { min: 2, max: 6 },
+    resultMode: 'ranked',
+  },
 ]
 
 /** 找不到就是 undefined：游戏 id 可能来自老存档，消费方自己决定退回什么 */
