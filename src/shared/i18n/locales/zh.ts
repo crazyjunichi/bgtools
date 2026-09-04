@@ -488,6 +488,8 @@ export const zh = {
     rejected: '主机没有给你留位置，看桌上的公共屏吧。',
     badLink: '这个二维码不完整或已过期，请组织者重新出一次。',
     insecure: '联机需要 HTTPS 页面（或本机 localhost）。当前是明文 HTTP 地址，浏览器不允许建立加密通道。',
+    /** 连接诊断一行（主机/玩家共用）：信令连通数 · 配对数 · 握手数，三段对应三层断点 */
+    debug: '信令 {{open}}/{{total}} · 配对 {{peers}} · 握手 ×{{hellos}}',
   },
 
   tools: {

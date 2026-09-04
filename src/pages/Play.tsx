@@ -1,9 +1,9 @@
 import type { JsonValue } from '@trystero-p2p/mqtt'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { htmlLangOf } from '../shared/i18n'
-import { joinSession, type ClientConn, type ClientSession } from '../shared/session/client'
+import { joinSession, type ClientConn, type ClientDebug, type ClientSession } from '../shared/session/client'
 import { decodePlayLink } from '../shared/session/payload'
 import { PLAYER_VIEWS, type AnyPlayerView } from '../shared/session/registry'
 
@@ -33,8 +33,11 @@ export default function Play() {
   const round = `${attempt}:${search}`
   const state: Round = done?.round === round ? done.state : { conn: { k: 'connecting' }, Comp: null }
 
-  const target = decodePlayLink(search)
+  // decodePlayLink 每次渲染都返回新对象，直接当 effect 依赖会让它每次渲染重跑 ——
+  // 会话被反复重建，20s 连接预算永远走不完（表现就是永远卡在 connecting）
+  const target = useMemo(() => decodePlayLink(search), [search])
   const loader = target ? PLAYER_VIEWS[target.tool] : undefined
+  const [dbg, setDbg] = useState<{ round: string; d: ClientDebug } | null>(null)
 
   // App 里那个 effect 管不到这条路由（这一页不在它下面），lang 得自己设
   useEffect(() => {
@@ -55,7 +58,13 @@ export default function Play() {
     }
 
     void loader().then((m) => patch({ Comp: m.default }))
-    void joinSession(target, (conn) => patch({ conn })).then((s) => {
+    void joinSession(
+      target,
+      (conn) => patch({ conn }),
+      (d) => {
+        if (alive) setDbg({ round, d })
+      },
+    ).then((s) => {
       if (alive) {
         session = s
         sendRef.current = s.send
@@ -70,6 +79,18 @@ export default function Play() {
     }
   }, [round, target, loader])
 
+  const debug = dbg?.round === round ? dbg.d : null
+  const debugLine = debug && (
+    <p className="font-mono text-xs text-dim">
+      {t('play.debug', {
+        open: debug.relaysOpen,
+        total: debug.relaysTotal,
+        peers: debug.peers,
+        hellos: debug.hellos,
+      })}
+    </p>
+  )
+
   const body = (() => {
     if (!target || !loader) {
       return <p className="text-base text-amber-300">{t('play.badLink')}</p>
@@ -81,12 +102,18 @@ export default function Play() {
     const { conn, Comp } = state
     switch (conn.k) {
       case 'connecting':
-        return <span className="text-data-sm font-bold text-text">{t('play.connecting')}</span>
+        return (
+          <div className="flex flex-col items-center gap-3">
+            <span className="text-data-sm font-bold text-text">{t('play.connecting')}</span>
+            {debugLine}
+          </div>
+        )
       case 'failed':
         return (
           <div className="card flex w-full max-w-lg flex-col gap-4">
             <p className="text-base leading-relaxed text-amber-300">{t('play.failed')}</p>
             <p className="text-sm leading-relaxed text-text-muted">{t('play.failedHint')}</p>
+            {debugLine}
             <button
               type="button"
               onClick={() => setAttempt((n) => n + 1)}

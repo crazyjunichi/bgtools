@@ -7,7 +7,8 @@ import { useWakeLock } from '../../shared/hooks/useWakeLock'
 import { IconEye, IconQr, IconReset, IconSkip } from '../../shared/icons'
 import type { I18nKey } from '../../shared/i18n/types'
 import { encodePlayLink } from '../../shared/session/payload'
-import { remaining as remainingOf, type CellKind, type Team } from './game'
+import { BoardGrid } from './BoardGrid'
+import { remaining as remainingOf, type Team } from './game'
 import { closeSession, ensureSession, useSessionPeers } from './session'
 import { useCodenamesStore } from './store'
 
@@ -27,17 +28,11 @@ const TEAM_NAME: Record<Team, I18nKey> = {
   blue: 'tools.codenames.team.blue',
 }
 
-const REVEALED_CELL: Record<CellKind, string> = {
-  red: 'bg-red-600 text-white',
-  blue: 'bg-blue-600 text-white',
-  neutral: 'bg-stone-400 text-ink',
-  assassin: 'bg-ink text-canvas',
-}
-
 export default function CodenamesPage() {
   const { t } = useTranslation()
   const s = useCodenamesStore()
   const peers = useSessionPeers((p) => p.n)
+  const peerDebug = useSessionPeers((p) => p.debug)
   const [peek, setPeek] = useState(false)
   useWakeLock()
 
@@ -119,7 +114,7 @@ export default function CodenamesPage() {
 
           <button
             type="button"
-            onClick={() => setPeek(true)}
+            onClick={() => setPeek((p) => !p)}
             disabled={s.phase === 'setup'}
             className="btn-base btn-quiet w-full justify-center gap-2 text-base disabled:opacity-40"
           >
@@ -150,6 +145,16 @@ export default function CodenamesPage() {
                 <p className="text-sm text-text-muted">
                   {t('tools.codenames.peersOnline', { n: peers })}
                 </p>
+                {peerDebug && (
+                  <p className="font-mono text-xs text-dim">
+                    {t('play.debug', {
+                      open: peerDebug.relaysOpen,
+                      total: peerDebug.relaysTotal,
+                      peers: peerDebug.peers,
+                      hellos: peerDebug.hellos,
+                    })}
+                  </p>
+                )}
                 <div className="flex w-full justify-between gap-2 text-sm">
                   {(['red', 'blue'] as const).map((team) => (
                     <span key={team} className={`font-bold ${TEAM_TEXT[team]}`}>
@@ -210,49 +215,25 @@ export default function CodenamesPage() {
             {t('tools.codenames.start')}
           </button>
         </div>
+      ) : peek ? (
+        /* 队长键卡偷看：单机降级的核心。原位替换牌面（同一槽位同一网格，卡片位置不变形），
+           整区点一下就关，必须 onClick（会自我消失的元素不准 onPointerDown） */
+        <div className="flex min-h-0 flex-1 flex-col gap-3" onClick={() => setPeek(false)}>
+          <p className="text-center text-lg text-text-muted">{t('tools.codenames.peekHint')}</p>
+          <BoardGrid words={s.words} keys={s.key} revealed={s.revealed} showKey />
+        </div>
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-3">{banner}</div>
-          <div className="grid min-h-0 flex-1 grid-cols-5 grid-rows-5 gap-2">
-            {s.words.map((word, i) => (
-              <button
-                key={i}
-                type="button"
-                disabled={!tappable || s.revealed[i]}
-                onClick={() => s.tapWord(i)}
-                className={`flex items-center justify-center rounded-lg p-1 text-center text-sm leading-tight font-bold break-all transition-transform duration-75 wide:text-base ${
-                  s.revealed[i]
-                    ? REVEALED_CELL[s.key[i]]
-                    : 'card !p-1 text-text enabled:active:scale-95 disabled:opacity-100'
-                }`}
-              >
-                {word}
-              </button>
-            ))}
-          </div>
+          <BoardGrid
+            words={s.words}
+            keys={s.key}
+            revealed={s.revealed}
+            showKey={false}
+            onTap={(i) => s.tapWord(i)}
+            tappable={tappable}
+          />
         </>
-      )}
-
-      {/* 队长键卡偷看：单机降级的核心。整层点一下就关，必须 onClick（会自我消失的元素不准 onPointerDown） */}
-      {peek && s.phase !== 'setup' && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col gap-3 bg-ink/90 p-4"
-          onClick={() => setPeek(false)}
-        >
-          <p className="text-center text-sm text-text-dim">{t('tools.codenames.peekHint')}</p>
-          <div className="grid min-h-0 flex-1 grid-cols-5 grid-rows-5 gap-1.5">
-            {s.key.map((cell, i) => (
-              <div
-                key={i}
-                className={`flex items-center justify-center rounded-md p-0.5 text-center text-sm leading-tight font-bold break-all ${REVEALED_CELL[cell]} ${
-                  s.revealed[i] ? 'opacity-35 line-through' : ''
-                }`}
-              >
-                {s.words[i]}
-              </div>
-            ))}
-          </div>
-        </div>
       )}
     </ToolLayout>
   )

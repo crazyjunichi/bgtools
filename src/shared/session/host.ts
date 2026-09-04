@@ -20,6 +20,16 @@ export type HostHooks = {
   viewFor(rid: string): JsonValue | null
   /** 在线玩家数变化（给「已连接 X 台」用） */
   onPeers?(n: number): void
+  /** 连接诊断（配对数 / 收到握手数 / relay 状态），给主机侧面板用 */
+  onDebug?(d: HostDebug): void
+}
+
+export type HostDebug = {
+  relaysOpen: number
+  relaysTotal: number
+  /** WebRTC 配对上的原始 peer 数（还没发 hello 认座位的也算） */
+  peers: number
+  hellos: number
 }
 
 export type HostSession = {
@@ -33,7 +43,7 @@ export async function createHostSession(
   password: string,
   hooks: HostHooks,
 ): Promise<HostSession> {
-  const { joinRoom } = await loadSessionTransport()
+  const { joinRoom, getRelaySockets } = await loadSessionTransport()
   const room: Room = joinRoom({ appId: 'bgtools', password }, roomId)
 
   // rid → 当前连接的 peerId。rid 稳定、peerId 每次重连都变，绑定关系只活在内存里
@@ -42,6 +52,22 @@ export async function createHostSession(
 
   const up = room.makeAction<UpMsg>('up')
   const down = room.makeAction<DownMsg>('down')
+
+  let closed = false
+  let peers = 0
+  let hellos = 0
+  const emitDebug = () => {
+    if (closed || !hooks.onDebug) return
+    const socks = getRelaySockets() as Record<string, WebSocket>
+    const all = Object.values(socks)
+    hooks.onDebug({
+      relaysOpen: all.filter((s) => s.readyState === WebSocket.OPEN).length,
+      relaysTotal: all.length,
+      peers,
+      hellos,
+    })
+  }
+  const debugTimer = window.setInterval(emitDebug, 2000)
 
   const pushTo = (rid: string) => {
     const peerId = bound.get(rid)
@@ -60,6 +86,8 @@ export async function createHostSession(
     if (hello) {
       bound.set(rid, peerId)
       lastSeq.set(rid, 0)
+      hellos += 1
+      emitDebug()
       hooks.onPeers?.(bound.size)
       pushTo(rid)
       return
@@ -70,7 +98,14 @@ export async function createHostSession(
     hooks.onAction(rid, data)
   }
 
+  room.onPeerJoin = () => {
+    peers += 1
+    emitDebug()
+  }
+
   room.onPeerLeave = (peerId) => {
+    peers = Math.max(0, peers - 1)
+    emitDebug()
     for (const [rid, pid] of bound) {
       if (pid === peerId) {
         bound.delete(rid)
@@ -85,6 +120,8 @@ export async function createHostSession(
       for (const rid of bound.keys()) pushTo(rid)
     },
     close() {
+      closed = true
+      window.clearInterval(debugTimer)
       void room.leave()
     },
   }

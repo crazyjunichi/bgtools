@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { createHostSession, type HostSession } from '../../shared/session/host'
+import { createHostSession, type HostDebug, type HostSession } from '../../shared/session/host'
 import { remaining } from './game'
 import { useCodenamesStore } from './store'
 import type { ClientAction, PublicView, SpymasterView } from './view'
@@ -9,8 +9,11 @@ import type { ClientAction, PublicView, SpymasterView } from './view'
  * 把动作收进来」的那条边。store 一变就重推，动作校验全在 store 里。
  */
 
-/** 在线玩家数：瞬时连接状态，不进持久化的局面 store */
-export const useSessionPeers = create<{ n: number }>(() => ({ n: 0 }))
+/** 在线玩家数 + 连接诊断：瞬时连接状态，不进持久化的局面 store */
+export const useSessionPeers = create<{ n: number; debug: HostDebug | null }>(() => ({
+  n: 0,
+  debug: null,
+}))
 
 let session: HostSession | null = null
 let opening = false
@@ -76,6 +79,7 @@ export async function ensureSession(): Promise<void> {
       },
       viewFor: viewForRid,
       onPeers: (n) => useSessionPeers.setState({ n }),
+      onDebug: (debug) => useSessionPeers.setState({ debug }),
     })
     // 等 chunk 加载的间隙里房间可能已被关掉（关联机/离页），迟到的 session 立即销毁
     const cur = useCodenamesStore.getState().room
@@ -97,5 +101,5 @@ export function closeSession(): void {
   unsub = null
   session?.close()
   session = null
-  useSessionPeers.setState({ n: 0 })
+  useSessionPeers.setState({ n: 0, debug: null })
 }

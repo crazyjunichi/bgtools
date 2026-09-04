@@ -24,6 +24,18 @@ export type ClientSession = {
   close(): void
 }
 
+/**
+ * 连接诊断。卡在 connecting 时全靠它分辨断点在哪一层：
+ * relay 0 = 信令都连不上（网络/relay 问题）；relay 有而 peer 0 = 配对没发生
+ * （主机不在线）；peer ≥1 而 hello 发了没回音 = 通道通了但主机没回（主机侧的锅）。
+ */
+export type ClientDebug = {
+  relaysOpen: number
+  relaysTotal: number
+  peers: number
+  hellos: number
+}
+
 /** 握手没等到第一张视图的重发间隔与总预算 */
 const HELLO_INTERVAL_MS = 3000
 const CONNECT_BUDGET_MS = 20000
@@ -31,8 +43,9 @@ const CONNECT_BUDGET_MS = 20000
 export async function joinSession(
   target: PlayTarget,
   onConn: (c: ClientConn) => void,
+  onDebug?: (d: ClientDebug) => void,
 ): Promise<ClientSession> {
-  const { joinRoom } = await loadSessionTransport()
+  const { joinRoom, getRelaySockets } = await loadSessionTransport()
   const rid = ridFor(target.room)
   const room = joinRoom({ appId: 'bgtools', password: target.key }, target.room)
 
@@ -47,8 +60,25 @@ export async function joinSession(
   let helloTimer = 0
   let budgetTimer = 0
 
+  let peers = 0
+  let hellos = 0
+  const emitDebug = () => {
+    if (closed || !onDebug) return
+    const socks = getRelaySockets() as Record<string, WebSocket>
+    const all = Object.values(socks)
+    onDebug({
+      relaysOpen: all.filter((s) => s.readyState === WebSocket.OPEN).length,
+      relaysTotal: all.length,
+      peers,
+      hellos,
+    })
+  }
+  const debugTimer = window.setInterval(emitDebug, 2000)
+
   const hello = () => {
     if (closed || ready) return
+    hellos += 1
+    emitDebug()
     // 广播而非找主机：房间里谁是主机玩家不知道也没必要知道，非主机会静默忽略
     void up.send({ rid, seq: 0, hello: true, data: null })
   }
@@ -71,9 +101,15 @@ export async function joinSession(
   }
 
   // 主机可能比我们晚开房（先举码后开局），每个新 peer 都试一次握手
-  room.onPeerJoin = () => hello()
+  room.onPeerJoin = () => {
+    peers += 1
+    emitDebug()
+    hello()
+  }
 
   room.onPeerLeave = (peerId) => {
+    peers = Math.max(0, peers - 1)
+    emitDebug()
     if (peerId !== hostPeer || closed) return
     hostPeer = null
     ready = false
@@ -99,11 +135,13 @@ export async function joinSession(
     if (closed) return
     closed = true
     disarmTimers()
+    window.clearInterval(debugTimer)
     void room.leave()
   }
 
   armTimers()
   hello()
+  emitDebug()
 
   return {
     send(data) {

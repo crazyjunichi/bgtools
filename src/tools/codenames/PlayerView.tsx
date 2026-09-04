@@ -3,22 +3,16 @@ import { useTranslation } from 'react-i18next'
 import { Stepper } from '../../shared/components/Stepper'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
 import type { I18nKey } from '../../shared/i18n/types'
-import type { CellKind, Team } from './game'
+import { BoardGrid } from './BoardGrid'
+import type { Team } from './game'
 import type { ClientAction, SpymasterView } from './view'
 
 /**
  * 队长手机端：私有键卡 + 出题。渲染的全部内容都是主机裁剪后下发的，
  * 本组件不算任何规则 —— 校验在 store，这里只做形状对应的界面。
  *
- * 键卡/队伍用红蓝实心色：那是实物游戏的内容色，不是语义色。
- * 已翻开的格子除了压暗还加删除线 —— 桌上斜视下颜色差异不够可靠。
+ * 队伍色用红蓝实心色：那是实物游戏的内容色，不是语义色。
  */
-const KEY_CELL: Record<CellKind, string> = {
-  red: 'bg-red-600 text-white',
-  blue: 'bg-blue-600 text-white',
-  neutral: 'bg-stone-400 text-ink',
-  assassin: 'bg-ink text-canvas',
-}
 
 const TEAM_SOLID: Record<Team, string> = {
   red: 'bg-red-600 text-white',
@@ -106,19 +100,8 @@ export default function PlayerView({ view, send }: Props) {
         </span>
       </div>
 
-      {/* 键卡：私有信息的全部 */}
-      <div className="grid min-h-0 flex-1 grid-cols-5 grid-rows-5 gap-1">
-        {view.key.map((cell, i) => (
-          <div
-            key={i}
-            className={`flex items-center justify-center rounded-md p-0.5 text-center text-xs leading-tight font-bold break-all ${KEY_CELL[cell]} ${
-              view.revealed[i] ? 'opacity-35 line-through' : ''
-            }`}
-          >
-            {view.words[i]}
-          </div>
-        ))}
-      </div>
+      {/* 键卡：私有信息的全部，与桌面同一套网格视图 */}
+      <BoardGrid words={view.words} keys={view.key} revealed={view.revealed} showKey />
 
       {/* 操作区 */}
       {view.phase === 'over' ? (

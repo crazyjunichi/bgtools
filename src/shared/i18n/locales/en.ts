@@ -419,6 +419,8 @@ export const en: Resources = {
     badLink: 'This QR code is incomplete or expired. Ask the organizer for a new one.',
     insecure:
       'Online play needs HTTPS (or localhost). This page is plain HTTP, so the browser refuses the encrypted channel.',
+    /** Same debug line as the host panel: relays · paired peers · hellos */
+    debug: 'relay {{open}}/{{total}} · peer {{peers}} · hello ×{{hellos}}',
   },
 
   tools: {
