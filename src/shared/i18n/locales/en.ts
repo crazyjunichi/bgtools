@@ -705,7 +705,7 @@ export const en: Resources = {
       startHp: 'Starting HP',
       statuses: 'Statuses',
       eliminated: 'Eliminated',
-      changeSeat: 'Swap / remove',
+      editSeat: '{{name}}, tap to rename or swap',
       remove: 'Remove from game',
       confirmRemove: 'Confirm removal',
       /** 整张面板卡的读屏文本（卡上信息多，读屏只说最关键的两轨） */

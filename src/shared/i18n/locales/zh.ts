@@ -790,7 +790,7 @@ export const zh = {
       startHp: '初始生命',
       statuses: '状态标记',
       eliminated: '已淘汰',
-      changeSeat: '换人 / 移除',
+      editSeat: '{{name}}，点击改名或换人',
       remove: '移出本局',
       confirmRemove: '确认移出',
       /** 整张面板卡的读屏文本（卡上信息多，读屏只说最关键的两轨） */

@@ -115,6 +115,7 @@ export default function DiceThronePage() {
         <SeatPanel
           seat={editView}
           onEditSeat={() => setPicking(editView.id)}
+          onRemove={() => removeSeat(editView.id)}
           onClose={() => setEditing(null)}
         />
       )}
