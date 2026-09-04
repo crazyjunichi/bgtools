@@ -23,6 +23,8 @@ export type Equipment = {
   nameKey: I18nKey
   descKey: I18nKey
   icon: string
+  /** 激活所需拆弹进度：1 拆过一次即激活；2 须全拆完（高级装备），缺省 1 */
+  activateAt?: 1 | 2
 }
 
 /**
@@ -120,7 +122,19 @@ export const useBombBustersStore = create<BombBustersState>()(
       setLives: (lives) => set({ lives }),
 
       cycleWire: (index) =>
-        set({ wires: get().wires.map((s, i) => (i === index ? nextState(s) : s)) }),
+        set((state) => {
+          const wires = state.wires.map((s, i) => (i === index ? nextState(s) : s))
+          const reached = wires[index]
+          // 线缆编号与装备卡 no 对应：拆到门槛且手牌中该卡未激活则自动激活。
+          // 只单向联动：线缆循环回未拆不回退（分不清撤销误点与继续循环）
+          const hand = state.hand.map((c) => {
+            const equip = findEquipment(c.equipId)
+            return c.state === 0 && equip?.no === index + 1 && reached >= (equip.activateAt ?? 1)
+              ? { ...c, state: 1 as const }
+              : c
+          })
+          return { wires, hand }
+        }),
 
       cycleEquip: (index) =>
         set({
