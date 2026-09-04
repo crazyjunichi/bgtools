@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createHostSession, type HostDebug, type HostSession } from '../../shared/session/host'
+import { watchResume } from '../../shared/session/resume'
 import { remaining } from './game'
 import { useCodenamesStore } from './store'
 import type { ClientAction, PublicView, SpymasterView } from './view'
@@ -18,6 +19,7 @@ export const useSessionPeers = create<{ n: number; debug: HostDebug | null }>(()
 let session: HostSession | null = null
 let opening = false
 let unsub: (() => void) | null = null
+let unwatchResume: (() => void) | null = null
 
 /** 这些字段变了才重推；peersOnline 这类运行时状态不在其列（它不在这份 store 里） */
 const SYNC_FIELDS = [
@@ -91,6 +93,12 @@ export async function ensureSession(): Promise<void> {
     unsub = useCodenamesStore.subscribe((state, prev) => {
       if (SYNC_FIELDS.some((f) => state[f] !== prev[f])) s.push()
     })
+    // tab 冻结恢复后旧 peer 全是僵尸（断开事件没派发过），重建房间让大家重配。
+    // 房间凭据不变，二维码不用重扫；玩家侧的自动重连会认回座位
+    unwatchResume = watchResume(() => {
+      closeSession()
+      void ensureSession()
+    })
   } finally {
     opening = false
   }
@@ -99,6 +107,8 @@ export async function ensureSession(): Promise<void> {
 export function closeSession(): void {
   unsub?.()
   unsub = null
+  unwatchResume?.()
+  unwatchResume = null
   session?.close()
   session = null
   useSessionPeers.setState({ n: 0, debug: null })

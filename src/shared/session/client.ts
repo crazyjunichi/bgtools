@@ -1,6 +1,7 @@
 import type { JsonValue } from '@trystero-p2p/mqtt'
 import { loadSessionTransport } from './transport'
 import { ridFor } from './playerStore'
+import { watchResume } from './resume'
 import type { PlayTarget } from './payload'
 import type { DownMsg, UpMsg } from './types'
 
@@ -185,8 +186,21 @@ export async function joinSession(
     closed = true
     disarmTimers()
     window.clearInterval(debugTimer)
+    unwatchResume()
     void room.leave()
   }
+
+  // 冻结恢复后旧通道状态不可信：自以为 ready 就降级重握手，否则立刻换一波 announce
+  const unwatchResume = watchResume(() => {
+    if (closed) return
+    if (ready) {
+      ready = false
+      hostPeer = null
+      onConn({ k: 'connecting' })
+      armTimers()
+    }
+    void rejoin()
+  })
 
   armTimers()
   hello()
