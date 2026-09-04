@@ -15,8 +15,8 @@ import type { ClientAction, SpymasterView } from './view'
  */
 
 const TEAM_SOLID: Record<Team, string> = {
-  red: 'bg-red-600 text-white',
-  blue: 'bg-blue-600 text-white',
+  red: 'bg-red-700 text-white',
+  blue: 'bg-blue-700 text-white',
 }
 
 const TEAM_TEXT: Record<Team, string> = {

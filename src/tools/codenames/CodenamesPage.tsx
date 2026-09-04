@@ -14,8 +14,8 @@ import { useCodenamesStore } from './store'
 
 /** 队伍色是实物游戏的内容色（红蓝两队），不走语义色 */
 const TEAM_SOLID: Record<Team, string> = {
-  red: 'bg-red-600 text-white',
-  blue: 'bg-blue-600 text-white',
+  red: 'bg-red-700 text-white',
+  blue: 'bg-blue-700 text-white',
 }
 
 const TEAM_TEXT: Record<Team, string> = {

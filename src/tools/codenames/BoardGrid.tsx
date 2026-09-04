@@ -11,8 +11,8 @@ import type { CellKind } from './game'
 
 // 键卡视图：按键卡实心上色；中立格用米色（tan），不用亮白 —— 整屏最亮的要留给桌面未猜的牌
 const KEY_CELL: Record<CellKind, string> = {
-  red: 'bg-red-600 text-white',
-  blue: 'bg-blue-600 text-white',
+  red: 'bg-red-700 text-white',
+  blue: 'bg-blue-700 text-white',
   neutral: 'bg-amber-200 text-ink',
   assassin: 'bg-ink text-canvas',
 }
