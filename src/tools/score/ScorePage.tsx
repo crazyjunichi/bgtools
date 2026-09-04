@@ -44,6 +44,7 @@ export default function ScorePage() {
     nextRound,
     undo,
     newGame,
+    resetTable,
   } = useScoreStore()
   const players = usePlayersStore((s) => s.players)
 
@@ -101,10 +102,6 @@ export default function ScorePage() {
       <ScoreBar
         canNextRound={scoredCount > 0}
         canUndo={undoStack.length > 0}
-        onAddSeat={() => {
-          addSeat()
-          buzz(20)
-        }}
         onNextRound={() => {
           nextRound()
           buzz([10, 30])
@@ -116,9 +113,15 @@ export default function ScorePage() {
 
       {overlay?.kind === 'settings' && (
         <ScoreSettings
+          hasSeats={views.length > 0}
           canFinish={views.length > 0 && (rounds.length > 0 || scoredCount > 0)}
+          onAddSeat={() => {
+            addSeat()
+            buzz(20)
+          }}
           onFinish={() => setFinish(scoreMatchDraft())}
           onNewGame={newGame}
+          onClearAll={resetTable}
           onClose={() => setOverlay(null)}
         />
       )}

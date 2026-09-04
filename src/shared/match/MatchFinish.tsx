@@ -80,7 +80,6 @@ export function MatchFinish({ draft, exports, onDone, onClose }: Props) {
   )
 
   const unavailable = status === 'unavailable'
-  const hasTemp = players.some((p) => p.playerId === null)
 
   const toggleWin = (i: number) =>
     setPlayers(
@@ -319,7 +318,6 @@ export function MatchFinish({ draft, exports, onDone, onClose }: Props) {
             )
           })}
         </div>
-        {hasTemp && <p className="text-xs leading-relaxed text-text-dim">{t('match.tempHint')}</p>}
       </div>
 
       <div className="flex flex-col gap-2">

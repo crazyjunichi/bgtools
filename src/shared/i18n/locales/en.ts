@@ -42,7 +42,7 @@ export const en: Resources = {
     sheetDesc: 'Score pad · {{n}} rows',
     // 输入框窄，与标题同排，"Filter games" 已是上限
     filter: 'Filter games',
-    noMatch: 'No match. Try the other language or a nickname.',
+    noMatch: 'No match.',
   },
 
   notFound: {
@@ -86,7 +86,6 @@ export const en: Resources = {
       roll: 'Roll {{n}}',
       reroll: 'Reroll {{n}}',
       emptyPick: 'Pick the dice to roll',
-      hint: 'Tap Roll to get numbers',
       lock: 'Lock {{name}}: {{face}}',
       unlock: 'Unlock {{name}}: {{face}}',
       tally: 'Faces',
@@ -115,7 +114,7 @@ export const en: Resources = {
       black: 'Black',
     },
     select: {
-      empty: 'Roster is empty. Add players once and every tool can use them.',
+      empty: 'Roster is empty.',
       manage: 'Manage players',
     },
     seatStart: {
@@ -126,10 +125,11 @@ export const en: Resources = {
     seat: {
       nameInput: 'Rename this column',
       roster: 'On the roster',
-      emptyRoster: 'Roster is empty. Tap Roster to add players — every tool can use them.',
+      emptyRoster: 'Roster is empty.',
       current: '{{name}}, already this column',
       seated: '{{name}} is seated in another column',
       unlink: 'Unlink, back to temp seat',
+      tempHint: 'Temp seats are left out of player stats — pick from the roster to track them.',
       // 列表最后一格只有约 128px，中文「管理名单」四个字的位置英文放不下 "Manage roster"
       manage: 'Roster',
     },
@@ -199,7 +199,6 @@ export const en: Resources = {
     durationShort: 'under a minute',
     note: 'Note',
     notePlaceholder: 'Anything worth remembering (optional)',
-    tempHint: 'Temp seats are left out of player stats — add them to the roster via 👥 to track them.',
     save: 'Save this game',
     discard: 'Skip saving, start next',
     confirmDiscard: 'Discard this game',
@@ -210,7 +209,6 @@ export const en: Resources = {
 
     share: {
       title: 'Share game',
-      hint: 'Long-press or right-click the image to save or share.',
       save: 'Save',
       shareBtn: 'Share',
       copyText: 'Copy text',
@@ -231,7 +229,6 @@ export const en: Resources = {
     },
 
     detail: {
-      title: 'Details',
       unreadable: 'The details of this game cannot be read, probably saved by an older version. Places and scores are still above.',
       failed: 'Details did not load, probably a fresh update. Reload the page and try again.',
     },
@@ -248,7 +245,6 @@ export const en: Resources = {
     dice: {
       name: 'Quick dice',
       desc: 'Roll a few dice',
-      hint: 'Tap Roll to get a number',
     },
     timer: {
       name: 'Timer',
@@ -265,7 +261,6 @@ export const en: Resources = {
         title: "Time's up",
         again: 'Again {{time}}',
         dismiss: 'Got it',
-        tapToClose: 'Tap anywhere to close',
       },
     },
     pointer: {
@@ -273,32 +268,28 @@ export const en: Resources = {
       desc: 'Point a random way',
       spinning: 'Spinning…',
       oclock: "≈ {{hour}} o'clock",
-      hint: 'Tap the needle or the button',
       spin: 'Spin',
     },
     pick: {
       name: 'Pick One',
       desc: 'Pick from who is playing',
       candidates: 'This match',
-      hint: 'Tap “Pick” to draw',
       spinning: 'Drawing…',
       result: 'It’s them',
       spin: 'Pick',
       again: 'Pick again',
-      empty: 'Nobody in this match yet. Seat the players in a scoring tool first.',
+      empty: 'Nobody in this match yet.',
     },
     players: {
       name: 'Players',
       desc: 'Who is at the table',
       roster: 'Players',
-      emptyList: 'Roster is empty — tap Add above.',
+      emptyList: 'Roster is empty.',
       // 与「已添加玩家」标签同排，左栏窄的时候放不进 "Add player"
       add: 'Add',
       nameInput: 'Player name',
       colorLabel: 'Preferred color',
       colorTaken: '{{color}}, also used by {{who}}',
-      emptyHint: 'Add a player to rename and pick a color',
-      pickHint: 'Tap a player on the left to edit',
     },
     settings: {
       name: 'Settings',
@@ -349,7 +340,7 @@ export const en: Resources = {
     pick: 'Roles · tap to add one',
     pool: 'This game · tap to remove',
     total: '{{n}} cards',
-    emptyPool: 'No roles yet. Tap a role above, or pick a setup.',
+    emptyPool: 'No roles yet.',
     addRole: 'Add {{name}}',
     removeRole: 'Remove one {{name}}',
     start: 'Pass around · {{n}}',
@@ -404,6 +395,11 @@ export const en: Resources = {
       name: 'Werewolf Host',
       desc: 'Voice-hosted night · deal roles',
       flow: 'Standard night',
+      home: {
+        dealDesc: 'Pass around or scan — everyone peeks privately',
+        host: 'Host',
+        hostDesc: 'Voice-hosted game, waking each role in turn',
+      },
       param: {
         guard: 'Guard',
         witch: 'Witch',
@@ -504,6 +500,53 @@ export const en: Resources = {
       },
     },
 
+    avalon: {
+      name: 'Avalon',
+      desc: 'Role deal · voice-hosted opening night',
+      flow: 'Opening night',
+      home: {
+        dealDesc: 'Pass around or scan — everyone peeks privately',
+        host: 'Host',
+        hostDesc: 'Voice host for the opening night, every line on cue',
+      },
+      param: {
+        percival: 'Percival & Morgana',
+        mordred: 'Mordred',
+        oberon: 'Oberon',
+        roleSec: 'Eyes-open time',
+      },
+      say: {
+        nightFall: 'Night falls. Everyone, close your eyes.',
+        oberonStay: 'Oberon, keep your eyes closed.',
+        minionsOpen: 'All evil players, open your eyes and find each other.',
+        minionsClose: 'Evil players, close your eyes.',
+        thumbsUp: 'All evil players, raise your thumbs.',
+        mordredDown: 'Mordred, put your thumb down.',
+        merlinOpen: 'Merlin, open your eyes and see the evil players.',
+        merlinClose: 'Merlin, close your eyes. Evil players, put your thumbs down.',
+        percivalOpen: 'Merlin and Morgana, raise your thumbs. Percival, open your eyes.',
+        percivalClose: 'Percival, close your eyes. Everyone, put your thumbs down.',
+        dayBreak: 'Day breaks. Everyone, open your eyes. The game begins.',
+      },
+      roles: {
+        set: 'Standard roles',
+        role: {
+          merlin: 'Merlin',
+          percival: 'Percival',
+          servant: 'Loyal Servant',
+          assassin: 'Assassin',
+          morgana: 'Morgana',
+          mordred: 'Mordred',
+          oberon: 'Oberon',
+          minion: 'Minion',
+        },
+        team: {
+          good: 'Good team',
+          evil: 'Evil team',
+        },
+      },
+    },
+
     bombBusters: {
       name: 'Bomb Busters',
       desc: 'Defuse · gear · lives',
@@ -568,35 +611,36 @@ export const en: Resources = {
     score: {
       name: 'Multi-round Scoring',
       desc: 'Rounds · log · totals',
-      empty:
-        "Pick who's playing to start. Not on the roster? Add a temp seat — you can also keep adding with Seat on the action bar later.",
+      empty: "Pick who's playing to start.",
       // 首列的列头只给读屏用，长度不受列宽限制
       roundCol: 'Round',
       total: 'Total',
       thisRound: 'Now',
       // 卡片里的行首，"Round 3" 会撑破，缩成 R3
       roundNo: 'R{{n}}',
-      noRounds: 'No archived rounds yet. Tap Next round and this one lands here as a row.',
+      noRounds: 'No archived rounds yet.',
       seatCell: '{{name}}, total {{total}}, {{delta}} this round, tap to score or swap',
       seatCellLeader:
         '{{name}}, leading, total {{total}}, {{delta}} this round, tap to score or swap',
-      // 操作条只有 80px 宽，"Add seat" / "Next round" 都会折行，各缩成一个词
+      // 操作条只有 80px 宽，"Next round" 会折行，缩成一个词
       bar: {
-        addSeat: 'Seat',
         nextRound: 'Next',
         undo: 'Undo',
         history: 'Log',
-        settings: 'Game',
+        settings: 'More',
       },
       history: {
         title: 'Full log',
         hint: '{{n}} rounds archived · totals include this round',
       },
       settings: {
-        title: 'Game',
+        title: 'More',
+        addSeat: 'Add a seat',
         finish: 'Wrap up',
         newGame: 'New game (clear scores)',
         confirmNewGame: 'Clear history?',
+        clearAll: 'New game, clear everyone',
+        confirmClearAll: 'Clear all seats and scores?',
       },
       sheet: {
         editSeat: '{{name}}, tap to rename or swap',
@@ -608,8 +652,7 @@ export const en: Resources = {
     scoreSheet: {
       name: 'Score Pad',
       desc: 'Categories · templates · totals',
-      empty:
-        "Pick who's playing to start. Not on the roster? Add a temp seat — you can also keep adding with the ＋ at the top right of the table later.",
+      empty: "Pick who's playing to start.",
       entryCol: 'Category',
       total: 'Total',
       defaultEntry: 'Item {{n}}',
@@ -635,7 +678,7 @@ export const en: Resources = {
       },
       keypad: {
         // 占着条目名那一行，必须单行放得下
-        idle: 'Tap a cell to enter a score',
+        idle: 'Tap a cell to score',
         count: 'Count',
         score: 'Score',
         derived: '= {{score}}',
@@ -649,16 +692,13 @@ export const en: Resources = {
         search: 'Search games',
         current: 'Now: {{name}}',
         entryCount: '{{n}} rows',
-        noMatch: 'No template matches. Try the other language or a nickname.',
-        keepHint: 'Switching templates keeps your scores — the other items are just hidden.',
+        noMatch: 'No matching template.',
       },
       more: {
         title: 'More actions',
         output: 'This game',
         share: 'Share',
         history: 'History',
-        archiveHint:
-          'Once everyone has a score, the exit becomes “Wrap up”: it records who played and how they placed, then starts the next game.',
         finish: 'Wrap up',
         newGame: 'New game (clear all scores)',
         confirmNewGame: 'Clear scores?',
@@ -666,7 +706,7 @@ export const en: Resources = {
       history: {
         title: 'History',
         unavailable: 'This device cannot store local archives — private mode, perhaps. Everything else still works.',
-        empty: 'Nothing saved yet. Finish a game, tap “Wrap up”, and it lands here.',
+        empty: 'Nothing saved yet.',
         more: 'Show earlier',
         back: 'Back to list',
         load: 'Load this game',
@@ -687,7 +727,6 @@ export const en: Resources = {
         name: 'Item name',
         namePlaceholder: 'e.g. Fields',
         scoring: 'How this item scores',
-        switchHint: 'Switching clears whatever this row already holds.',
         modeDirect: 'Enter the score',
         modeCounted: 'Enter a count · auto-converted',
         modePerUnit: 'Enter a count · N each',
@@ -903,10 +942,8 @@ export const en: Resources = {
       topGame: 'Most played',
       /** 局数最多的名单玩家 */
       topPlayer: 'Most active',
-      legacyHint:
-        '{{n}} older score sheet records have no results or scores, so they stay out of the overview above. They are still listed under “By time”.',
       unavailable: 'This device cannot read local archives — private mode, perhaps. Everything else still works.',
-      empty: 'Nothing recorded yet. Finish a game in a scoring tool, tap “Wrap up”, and it lands here.',
+      empty: 'Nothing recorded yet.',
       playerEmpty: 'Every seat on record was temporary. Add people via 👥 in the top bar to track them.',
       // 不用复数变体：'{{n}} played' / '{{n}} won' 在 1 和 5 上都读得通
       gameCount: '{{n}} played',

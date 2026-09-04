@@ -1,16 +1,9 @@
 import { useTranslation } from 'react-i18next'
-import {
-  IconCheck,
-  IconHistory,
-  IconPlayerAdd,
-  IconReset,
-  IconSettings,
-} from '../../shared/icons'
+import { IconCheck, IconHistory, IconMore, IconReset } from '../../shared/icons'
 
 type Props = {
   canNextRound: boolean
   canUndo: boolean
-  onAddSeat: () => void
   onNextRound: () => void
   onUndo: () => void
   onOpenHistory: () => void
@@ -24,10 +17,10 @@ const SMALL =
 /**
  * 操作条：横屏是右侧窄竖条，竖屏是贴底横条（宽度档见 DESIGN.md §5 的「窄条变体」）。
  *
- * 顶上是「加人」—— 摆桌是每局的第一个动作，埋在浮层里等于开局先找设置。
  * 「下一轮」吃掉主轴上的全部余量（`flex-1` 在竖条里是高、在横条里是宽，一个类管两个朝向）。
  * 「撤销」紧跟着它，因为要撤的几乎总是刚点错的那一下。
- * **没有说明文字** —— 五个动作的名字本身就是说明，真正需要引导的只有"一个席位都没有"
+ * 加人不在条上：开局后极少再加，收进「更多操作」浮层，竖屏横条的余量完整让给「下一轮」。
+ * **没有说明文字** —— 四个动作的名字本身就是说明，真正需要引导的只有"一个席位都没有"
  * 那一种情况，那句话占主区的位置。
  *
  * 加减分不在这里，它跟着人走（点卡片开 [SeatSheet]）：操作点和反馈点必须重合。
@@ -35,7 +28,6 @@ const SMALL =
 export function ScoreBar({
   canNextRound,
   canUndo,
-  onAddSeat,
   onNextRound,
   onUndo,
   onOpenHistory,
@@ -45,11 +37,6 @@ export function ScoreBar({
 
   return (
     <div className="flex shrink-0 gap-2 wide:w-20 wide:flex-col short:gap-1.5">
-      <button type="button" onClick={onAddSeat} className={SMALL}>
-        <IconPlayerAdd className="size-6 short:size-5" aria-hidden />
-        {t('tools.score.bar.addSeat')}
-      </button>
-
       <button
         type="button"
         onClick={onNextRound}
@@ -71,7 +58,7 @@ export function ScoreBar({
       </button>
 
       <button type="button" onClick={onOpenSettings} className={SMALL}>
-        <IconSettings className="size-6 short:size-5" aria-hidden />
+        <IconMore className="size-6 short:size-5" aria-hidden />
         {t('tools.score.bar.settings')}
       </button>
     </div>

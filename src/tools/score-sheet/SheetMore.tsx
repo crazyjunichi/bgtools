@@ -65,10 +65,6 @@ export function SheetMore({
           <IconHistory className="size-6 short:size-5" aria-hidden />
           {t('tools.scoreSheet.more.history')}
         </button>
-
-        <p className="text-xs leading-relaxed text-text-dim">
-          {t('tools.scoreSheet.more.archiveHint')}
-        </p>
       </div>
 
       {/*

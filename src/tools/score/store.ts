@@ -59,6 +59,8 @@ type ScoreState = {
   undo: () => void
   /** 新一局：清分数与历史，席位留着（换个游戏通常还是这桌人） */
   newGame: () => void
+  /** 换一桌人：席位也一起清，回到开局选人的空桌 */
+  resetTable: () => void
 }
 
 function without(deltas: Record<string, number>, seatId: string): Record<string, number> {
@@ -143,6 +145,11 @@ export const useScoreStore = create<ScoreState>()(
       newGame: () => {
         const now = Date.now()
         set({ rounds: [], draft: {}, undoStack: [], startedAt: now, lastActiveAt: now })
+      },
+
+      resetTable: () => {
+        get().newGame()
+        set({ seats: [] })
       },
     }),
     {

@@ -88,9 +88,9 @@ export function QuickPick() {
           >
             {spinning ? t('quick.pick.spinning') : landed ? picked.name : '--'}
           </span>
-          <span className="text-center text-sm text-text-muted">
-            {landed ? t('quick.pick.result') : t('quick.pick.hint')}
-          </span>
+          {landed && (
+            <span className="text-center text-sm text-text-muted">{t('quick.pick.result')}</span>
+          )}
         </div>
 
         <button

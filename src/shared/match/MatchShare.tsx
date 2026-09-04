@@ -213,12 +213,6 @@ export function MatchShare({ match, exports, onClose }: Props) {
               />
             )}
           </div>
-          {/* 说的是图，就贴着图 */}
-          {!failed && (
-            <span className="shrink-0 text-center text-xs text-text-dim">
-              {t('match.share.hint')}
-            </span>
-          )}
         </div>
       </div>
 

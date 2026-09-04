@@ -141,13 +141,6 @@ export default function StatsPage() {
           </p>
         )}
 
-        {/* 说清为什么这里的局数比计分纸历史里少 */}
-        {sum.legacy > 0 && (
-          <p className="px-1 pb-1 text-xs leading-relaxed text-text-dim">
-            {t('tools.stats.legacyHint', { n: sum.legacy })}
-          </p>
-        )}
-
         {view === 'players' && <PlayerList rows={players} />}
         {view === 'games' && <GameList rows={games} />}
         {view === 'time' && <TimeList matches={matches} onOpen={setOpenMatchId} />}

@@ -79,9 +79,7 @@ export function QuickDice() {
           读数最挤的一档是 4 颗（横屏 88px 两行 + 总和 56px ≈ 212px），
           416px 才能给画布留下 ~156px；用 vmin 而非 vh，竖屏取长边会把整块撑爆 */}
       <div className="order-1 flex min-h-[min(26rem,58vmin)] min-w-0 flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface-2 p-4 short:gap-1 short:p-2 wide:order-2">
-        {last === null ? (
-          <span className="text-sm text-text-dim">{t('quick.dice.hint')}</span>
-        ) : (
+        {last !== null && (
           <>
             {/* fallback 撑住同样的空间，加载完不会让下方读数跳一下；
                 没有 WebGL 时 DiceCanvas 返回 null，这块空间跟着收掉 */}

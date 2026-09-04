@@ -86,7 +86,6 @@ export function MatchDetail({ match, onClose }: Props) {
 
       {loader !== undefined && (
         <div className="flex min-h-0 flex-col gap-2">
-          <span className="section-label">{t('match.detail.title')}</span>
           {Detail ? (
             <Detail match={match} />
           ) : failed ? (

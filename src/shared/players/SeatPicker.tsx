@@ -180,6 +180,11 @@ export function SeatPicker({
         </div>
       </div>
 
+      {/* 没绑名单玩家时说一句：这一列进不了个人战绩 —— 上面的名单就是补救入口 */}
+      {!seat.linked && (
+        <p className="text-xs leading-relaxed text-text-dim">{t('players.seat.tempHint')}</p>
+      )}
+
       {/* 解除关联不丢分数，所以不必二次确认 */}
       {seat.linked && (
         <button

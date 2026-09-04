@@ -59,13 +59,11 @@ export function QuickPointer() {
           ) : (
             <span className="font-mono text-data-sm font-bold tabular-nums text-text-dim">--</span>
           )}
-          <span className="text-center text-sm text-text-muted">
-            {spinning
-              ? t('quick.pointer.spinning')
-              : landed
-                ? t('quick.pointer.oclock', { hour })
-                : t('quick.pointer.hint')}
-          </span>
+          {(spinning || landed) && (
+            <span className="text-center text-sm text-text-muted">
+              {spinning ? t('quick.pointer.spinning') : t('quick.pointer.oclock', { hour })}
+            </span>
+          )}
         </div>
 
         <button

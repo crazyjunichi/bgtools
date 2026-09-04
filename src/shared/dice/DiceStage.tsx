@@ -52,9 +52,9 @@ export function DiceStage({ setId }: { setId: string }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-surface-2 p-4 short:gap-2 short:p-2">
       {rolled.length === 0 ? (
-        <span className="text-sm text-text-dim">
-          {t(selected.length ? 'dice.pool.hint' : 'dice.pool.emptyPick')}
-        </span>
+        selected.length === 0 && (
+          <span className="text-sm text-text-dim">{t('dice.pool.emptyPick')}</span>
+        )
       ) : (
         <>
           {/* fallback 占住同样的空间，加载完下方读数不会跳；

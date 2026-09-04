@@ -48,7 +48,7 @@ export const zh = {
     sheetDesc: '计分纸 · {{n}} 项条目',
     /** 只筛游戏专用区。与计分纸的模板搜索同一套判据：中英文名、别名都能命中 */
     filter: '筛选游戏',
-    noMatch: '没有匹配的游戏。换个语言或试试别名。',
+    noMatch: '没有匹配的游戏。',
   },
 
   notFound: {
@@ -97,7 +97,6 @@ export const zh = {
       roll: '投掷 {{n}} 颗',
       reroll: '重掷 {{n}} 颗',
       emptyPick: '先勾选要投的骰子',
-      hint: '点「投掷」出数',
       lock: '锁定 {{name}}：{{face}}',
       unlock: '解锁 {{name}}：{{face}}',
       tally: '各面',
@@ -127,7 +126,7 @@ export const zh = {
       black: '黑',
     },
     select: {
-      empty: '名单是空的。先添加玩家，之后每个工具都能直接用。',
+      empty: '名单是空的。',
       manage: '管理玩家',
     },
     /** 计分工具的开局选人空态（[SeatStart](../../players/SeatStart.tsx)），两个计分工具共用 */
@@ -144,11 +143,13 @@ export const zh = {
     seat: {
       nameInput: '改这一列的名字',
       roster: '名单里的人',
-      emptyRoster: '名单是空的，点「管理名单」加人，之后每个工具都能直接用。',
+      emptyRoster: '名单是空的。',
       /** 已经是这一列的人：格子上另有 ✓ 与描边，这条只给读屏 */
       current: '{{name}}，当前就是这一列',
       seated: '{{name}}，已在别的列入座',
       unlink: '解除关联，改回临时席位',
+      /** 这一列还是临时席位（没绑名单玩家）时显示的一句，在席位面板里 */
+      tempHint: '临时席位不计入个人战绩，从名单选人可长期统计',
       /** 列表最后一格，宽度只有约 128px */
       manage: '管理名单',
     },
@@ -231,8 +232,6 @@ export const zh = {
     durationShort: '不到 1 分钟',
     note: '备注',
     notePlaceholder: '随便记一句（可留空）',
-    /** 临时席位没绑名单玩家，进不了个人战绩 —— 得先说清楚再让人存 */
-    tempHint: '临时席位不计入个人战绩，去顶栏 👥 把人加进名单可以长期统计',
     save: '记录这一局',
     discard: '不记录，直接开新局',
     confirmDiscard: '确认丢弃本局',
@@ -247,7 +246,6 @@ export const zh = {
     share: {
       /** 面板标题，也当图片的 alt 与系统分享面板的标题 */
       title: '分享本局',
-      hint: '长按或右键图片可保存、分享。',
       save: '保存',
       /** 走系统分享面板。与 `save` 并排，所以只留一个词 */
       shareBtn: '分享',
@@ -276,7 +274,6 @@ export const zh = {
 
     /** 回看一局的细则视图（[MatchTool.Detail](../../match/detail.ts)），各工具自己画 */
     detail: {
-      title: '本局细则',
       /** 反解不出那一局的局面时（别的版本记下的）只少这一块，名单与备注照显示 */
       unreadable: '这一局的细则读不出来，可能是旧版本记下的。名次与分数仍在上面。',
       /** 细则那份代码没加载出来（通常是刚更新过，旧 chunk 没了） */
@@ -298,7 +295,6 @@ export const zh = {
       name: '快速骰子',
       /** 首页快捷卡上的一行说明，下同 */
       desc: '随手投一把',
-      hint: '点「投掷」出数',
     },
     timer: {
       name: '计时器',
@@ -315,7 +311,6 @@ export const zh = {
         title: '时间到',
         again: '再计 {{time}}',
         dismiss: '知道了',
-        tapToClose: '点任意处关闭',
       },
     },
     pointer: {
@@ -323,7 +318,6 @@ export const zh = {
       desc: '随机指一个方向',
       spinning: '旋转中…',
       oclock: '≈ {{hour}} 点方向',
-      hint: '点指针或按钮开始',
       spin: '随机指向',
     },
     /** 随机点人。候选只能是当前这一局的席位，所以入口只在工具页里有人时才出现 */
@@ -331,25 +325,22 @@ export const zh = {
       name: '随机点人',
       desc: '从这局的人里抽一个',
       candidates: '这局的人',
-      hint: '点「抽一个」出人',
       spinning: '抽…',
       result: '就是这位',
       spin: '抽一个',
       again: '再抽一个',
       /** 浮层开着时切回首页会走到这里 */
-      empty: '这局还没有人。在计分工具里选好参与者，就能从他们里面抽了。',
+      empty: '这局还没有人。',
     },
     players: {
       name: '玩家名单',
       desc: '桌上是谁 · 名字与颜色',
       roster: '已添加玩家',
-      emptyList: '名单是空的，点上方「添加玩家」。',
+      emptyList: '名单是空的。',
       add: '添加玩家',
       nameInput: '玩家名字',
       colorLabel: '偏好颜色',
       colorTaken: '{{color}}，{{who}} 也在用',
-      emptyHint: '添加玩家后在这里改名、选颜色',
-      pickHint: '点左侧玩家开始编辑',
     },
     settings: {
       name: '设置',
@@ -413,7 +404,7 @@ export const zh = {
     pick: '可选身份 · 点一下加一张',
     pool: '这局的身份 · 点一下减一张',
     total: '共 {{n}} 张',
-    emptyPool: '还没放身份。点上面的身份加一张，或选一档常见板子。',
+    emptyPool: '还没放身份。',
     addRole: '加入 {{name}}',
     removeRole: '移除一张 {{name}}',
     /** 两种发牌方式并列，所以这句要点明是哪一种 */
@@ -469,6 +460,11 @@ export const zh = {
       name: '狼人杀主持',
       desc: '语音主持一整夜 · 顺手发身份',
       flow: '标准夜晚流程',
+      home: {
+        dealDesc: '轮传或扫码，各看各的身份',
+        host: '主持',
+        hostDesc: '语音主持一整局，夜里按身份逐个叫醒',
+      },
       param: {
         guard: '守卫',
         witch: '女巫',
@@ -573,6 +569,55 @@ export const zh = {
       },
     },
 
+    avalon: {
+      name: '阿瓦隆',
+      desc: '发身份 · 语音主持开局夜',
+      flow: '开局认身份',
+      home: {
+        dealDesc: '轮传或扫码，各看各的身份',
+        host: '主持',
+        hostDesc: '语音主持开局认身份夜，口诀一句不落',
+      },
+      param: {
+        percival: '派西维尔与莫甘娜',
+        mordred: '莫德雷德',
+        oberon: '奥伯伦',
+        roleSec: '睁眼时长',
+      },
+      /** 这些是**要被念出来**的台词：写口语、带标点（TTS 靠标点断句和收尾） */
+      say: {
+        nightFall: '天黑请闭眼。',
+        oberonStay: '奥伯伦请保持闭眼。',
+        minionsOpen: '所有坏人请睁眼，互相确认身份。',
+        minionsClose: '坏人请闭眼。',
+        thumbsUp: '所有坏人请竖起大拇指。',
+        mordredDown: '莫德雷德请放下大拇指。',
+        merlinOpen: '梅林请睁眼，记住这些坏人。',
+        merlinClose: '梅林请闭眼。坏人请放下大拇指。',
+        percivalOpen: '梅林和莫甘娜请竖起大拇指。派西维尔请睁眼。',
+        percivalClose: '派西维尔请闭眼。大家请放下大拇指。',
+        dayBreak: '天亮了，所有人请睁眼。游戏开始。',
+      },
+      /** 发身份用的身份集（[roles.ts](../../../../tools/avalon/roles.ts)） */
+      roles: {
+        set: '标准身份',
+        role: {
+          merlin: '梅林',
+          percival: '派西维尔',
+          servant: '忠臣',
+          assassin: '刺客',
+          morgana: '莫甘娜',
+          mordred: '莫德雷德',
+          oberon: '奥伯伦',
+          minion: '爪牙',
+        },
+        team: {
+          good: '好人阵营',
+          evil: '坏人阵营',
+        },
+      },
+    },
+
     bombBusters: {
       name: '炸弹克星',
       desc: '拆弹进度 · 装备发放 · 生命追踪',
@@ -645,7 +690,7 @@ export const zh = {
     score: {
       name: '多轮计分',
       desc: '多人加减分 · 逐轮历史 · 总分表',
-      empty: '选出这局在玩的人就能开始。名单里没有的人加个临时席位，开局后还能用操作条的「加人」继续加。',
+      empty: '选出这局在玩的人就能开始。',
       /** 完整记录里首列的列头，只给读屏用（视觉上是空白，轮次号自己会说明） */
       roundCol: '轮',
       /** 调分浮层里两个数字块的标签 */
@@ -653,20 +698,19 @@ export const zh = {
       thisRound: '本轮',
       /** 卡片里最近三轮那几行的行首，窄得只放得下三四个字 */
       roundNo: '第{{n}}轮',
-      noRounds: '还没有封档的轮次。这一轮记完点「下一轮」，就会在这里落一行。',
+      noRounds: '还没有封档的轮次。',
       /**
        * 整张卡片是一个按钮，三个数字一起念出来。
        * 领先态另起一条完整字面量而不是拼接后缀 —— 拼接会丢掉类型校验，标点也做不到两种语言都对
        */
       seatCell: '{{name}}，合计 {{total}} 分，本轮 {{delta}} 分，点击调分或换人',
       seatCellLeader: '{{name}}，领先，合计 {{total}} 分，本轮 {{delta}} 分，点击调分或换人',
-      /** 操作条只有 80px 宽，可见文字最多三个字，剩下的语义靠图标 */
+      /** 操作条只有 80px 宽，可见文字最多四个字，剩下的语义靠图标 */
       bar: {
-        addSeat: '加人',
         nextRound: '下一轮',
         undo: '撤销',
         history: '记录',
-        settings: '局面',
+        settings: '更多操作',
       },
       history: {
         title: '完整记录',
@@ -674,11 +718,14 @@ export const zh = {
         hint: '已封档 {{n}} 轮 · 合计含本轮',
       },
       settings: {
-        title: '局面',
+        title: '更多操作',
+        addSeat: '加一个席位',
         /** 加过分才出现，走结算面板（[MatchFinish](../../match/MatchFinish.tsx)） */
         finish: '本局结算',
         newGame: '新一局（清空分数）',
         confirmNewGame: '确认清空历史',
+        clearAll: '新开一局并清空所有人',
+        confirmClearAll: '确认清空所有席位与分数',
       },
       sheet: {
         /** 名字那块实心色是按钮，点开席位面板 */
@@ -692,7 +739,7 @@ export const zh = {
     scoreSheet: {
       name: '计分纸',
       desc: '固定条目逐项结算 · 游戏模板 · 自动合计',
-      empty: '选出这局在玩的人就能开始。名单里没有的人加个临时席位，开局后还能用表格右上角的「＋」继续加。',
+      empty: '选出这局在玩的人就能开始。',
       /** 矩阵首列的列头，视觉上是空的（下面每行自己写着条目名） */
       entryCol: '计分条目',
       total: '合计',
@@ -727,7 +774,7 @@ export const zh = {
       },
       keypad: {
         /** 未选中时占着条目名那一行，**必须压在单行内** —— 折行会让下面的键区跟着漂 */
-        idle: '点击单元格填写得分',
+        idle: '点格子填分',
         /** 缓冲大数字的可见 label，按条目语义二选一 */
         count: '数量',
         score: '得分',
@@ -746,9 +793,7 @@ export const zh = {
         current: '当前：{{name}}',
         /** 每个模板右侧的条目数：这张表有多长，选之前就该知道 */
         entryCount: '{{n}} 项',
-        noMatch: '没有匹配的模板。中英文名、常用别名都能搜。',
-        /** 打消「切模板会不会把分数弄丢」的顾虑，省掉一次二次确认 */
-        keepHint: '切换模板不清分数：切走的条目只是先收起来，切回来还在。',
+        noMatch: '没有匹配的模板。',
       },
       /** 更多操作浮层（[SheetMore](../../../tools/score-sheet/SheetMore.tsx)）：一局的收尾出口 */
       more: {
@@ -758,8 +803,6 @@ export const zh = {
         /** 排版与外观在分享面板里选（[MatchShare](../../match/MatchShare.tsx)），这里只是入口 */
         share: '分享本局',
         history: '历史记录',
-        /** 说明记录是怎么进去的，也说明为什么这里有时是「结算」有时是「清空」 */
-        archiveHint: '每人都填过分之后，出口会变成「本局结算」：记下参与者与名次，再开新局。',
         /** 填齐了才出现，走结算面板（[MatchFinish](../../match/MatchFinish.tsx)） */
         finish: '本局结算',
         newGame: '新一局（清空所有分数）',
@@ -770,7 +813,7 @@ export const zh = {
         title: '历史记录',
         /** IndexedDB 被禁（隐私模式等）时只关掉这一块，其余功能照用 */
         unavailable: '这台设备不能保存本地存档，可能开着隐私模式。其余功能不受影响。',
-        empty: '还没有存档。一局填完后按「本局结算」，记录就会存到这里。',
+        empty: '还没有存档。',
         /** 列表只渲染最近 50 条，更早的按需展开 */
         more: '显示更早的',
         back: '返回列表',
@@ -799,7 +842,6 @@ export const zh = {
         namePlaceholder: '例如：田地',
         scoring: '这一条怎么算分',
         /** 换算方式由模板定死，所以这里只有两个选项：填数量 or 填总分 */
-        switchHint: '换一种填法会清空这一行已填的数。',
         modeDirect: '直接填得分',
         /** 模板条目：怎么折算是模板的事，不必在按钮上重复 */
         modeCounted: '填数量 · 模板自动折算',
@@ -1049,10 +1091,8 @@ export const zh = {
       topGame: '最常玩',
       /** 局数最多的名单玩家 */
       topPlayer: '最活跃',
-      /** 旧版计分纸的存档没有胜负与分数，进不了统计，得说清为什么这里的局数少 */
-      legacyHint: '另有 {{n}} 条旧版计分纸记录没有胜负与分数，不算进上面的总览，在「按时间」里仍能找到。',
       unavailable: '这台设备不能读本地存档，可能开着隐私模式。其余功能不受影响。',
-      empty: '还没有记录。在计分工具里打完一局，按「本局结算」存下来就会出现在这里。',
+      empty: '还没有记录。',
       /** 有记录但一个都没绑名单玩家 */
       playerEmpty: '记录里都是临时席位。去顶栏 👥 把人加进名单，之后的对局才能算进个人战绩。',
       gameCount: '{{n}} 局',

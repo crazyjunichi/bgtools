@@ -122,10 +122,6 @@ export function EntryPanel({
 
       <div className="flex flex-col gap-2">
         <span className="section-label">{t('tools.scoreSheet.entry.scoring')}</span>
-        {/* 常驻而不是等点下去才说：清行是不可逆的，得让人在点之前就知道 */}
-        <span className="text-xs leading-snug text-text-dim">
-          {t('tools.scoreSheet.entry.switchHint')}
-        </span>
         {/*
          * 二选一，不是三选一：数量怎么折算由模板定死（perUnit / table 互斥），
          * 这里只问「填数量还是填总分」。自定义条目没有模板规则，数量方式就只有「每个 N 分」

@@ -150,10 +150,6 @@ export function SheetSettings({ templateId, customCount, onPickTemplate, onClose
             </span>
           )}
         </div>
-
-        <p className="text-xs leading-relaxed text-text-dim">
-          {t('tools.scoreSheet.settings.keepHint')}
-        </p>
       </div>
     </Overlay>
   )

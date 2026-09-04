@@ -202,11 +202,8 @@ export function QuickPlayers() {
             </div>
           </>
         ) : (
-          <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-center wide:min-h-0 wide:flex-1">
+          <div className="flex min-h-32 flex-col items-center justify-center wide:min-h-0 wide:flex-1">
             <IconPlayers className="size-10 text-text-dim" aria-hidden />
-            <span className="text-sm leading-relaxed text-text-muted">
-              {t(players.length === 0 ? 'quick.players.emptyHint' : 'quick.players.pickHint')}
-            </span>
           </div>
         )}
       </div>

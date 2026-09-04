@@ -55,7 +55,6 @@ export function TimerAlarm() {
         </button>
       </div>
 
-      <span className="text-sm text-white/80">{t('quick.timer.alarm.tapToClose')}</span>
     </div>
   )
 }
