@@ -419,8 +419,10 @@ export const en: Resources = {
     badLink: 'This QR code is incomplete or expired. Ask the organizer for a new one.',
     insecure:
       'Online play needs HTTPS (or localhost). This page is plain HTTP, so the browser refuses the encrypted channel.',
-    /** Same debug line as the host panel: relays · paired peers · hellos */
-    debug: 'relay {{open}}/{{total}} · peer {{peers}} · hello ×{{hellos}}',
+    /** Sub-line under "connecting": diagnostics rendered as the current step */
+    stageNet: 'Reaching the network…',
+    stageWaitHost: 'Network OK, looking for the host…',
+    stageSeating: 'Host found, taking your seat…',
   },
 
   tools: {
@@ -450,6 +452,8 @@ export const en: Resources = {
       onlineInsecure:
         'Online play needs HTTPS (or localhost). A plain-HTTP LAN address cannot open the encrypted channel — use the deployed URL.',
       peersOnline: 'Phones connected: {{n}}',
+      onlineNetDown: 'No network signal — players cannot join yet.',
+      onlineJoining: 'Devices connecting: {{n}}',
       seatTaken: 'seated',
       seatFree: 'open',
       resetSeats: 'Reset seats',

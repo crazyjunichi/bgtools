@@ -145,14 +145,12 @@ export default function CodenamesPage() {
                 <p className="text-sm text-text-muted">
                   {t('tools.codenames.peersOnline', { n: peers })}
                 </p>
-                {peerDebug && (
-                  <p className="font-mono text-xs text-dim">
-                    {t('play.debug', {
-                      open: peerDebug.relaysOpen,
-                      total: peerDebug.relaysTotal,
-                      peers: peerDebug.peers,
-                      hellos: peerDebug.hellos,
-                    })}
+                {peerDebug?.relaysOpen === 0 && (
+                  <p className="text-xs text-amber-300">{t('tools.codenames.onlineNetDown')}</p>
+                )}
+                {peerDebug !== null && peerDebug.peers > peers && (
+                  <p className="text-xs text-dim">
+                    {t('tools.codenames.onlineJoining', { n: peerDebug.peers - peers })}
                   </p>
                 )}
                 <div className="flex w-full justify-between gap-2 text-sm">

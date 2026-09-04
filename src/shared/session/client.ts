@@ -38,7 +38,15 @@ export type ClientDebug = {
 
 /** 握手没等到第一张视图的重发间隔与总预算 */
 const HELLO_INTERVAL_MS = 3000
-const CONNECT_BUDGET_MS = 20000
+const CONNECT_BUDGET_MS = 60000
+/*
+ * 重进房间隔：trystero 只在进房头两秒连发 3 次 announce，之后沉默 60 秒一轮，
+ * 公共 MQTT relay 丢消息又是常态 —— 干等 announce 会被 20 秒预算截杀。
+ * 没配上就定时 leave + 重新 joinRoom，每轮换一波新的 announce 连发。
+ * 抖动用计数推，不引入随机源（冷启动时各端时序本就错开）。
+ */
+const REJOIN_INTERVAL_MS = 10000
+const REJOIN_STAGGER_MS = 1300
 
 export async function joinSession(
   target: PlayTarget,
@@ -47,10 +55,8 @@ export async function joinSession(
 ): Promise<ClientSession> {
   const { joinRoom, getRelaySockets } = await loadSessionTransport()
   const rid = ridFor(target.room)
-  const room = joinRoom({ appId: 'bgtools', password: target.key }, target.room)
 
-  const up = room.makeAction<UpMsg>('up')
-  const down = room.makeAction<DownMsg>('down')
+  let sendUp: ((msg: UpMsg) => void) | null = null
 
   let seq = 0
   let ready = false
@@ -59,6 +65,8 @@ export async function joinSession(
   let hostPeer: string | null = null
   let helloTimer = 0
   let budgetTimer = 0
+  let rejoinTimer = 0
+  let rejoining = false
 
   let peers = 0
   let hellos = 0
@@ -76,11 +84,19 @@ export async function joinSession(
   const debugTimer = window.setInterval(emitDebug, 2000)
 
   const hello = () => {
-    if (closed || ready) return
+    if (closed || ready || !sendUp) return
     hellos += 1
     emitDebug()
     // 广播而非找主机：房间里谁是主机玩家不知道也没必要知道，非主机会静默忽略
-    void up.send({ rid, seq: 0, hello: true, data: null })
+    sendUp({ rid, seq: 0, hello: true, data: null })
+  }
+
+  const scheduleRejoin = () => {
+    window.clearTimeout(rejoinTimer)
+    rejoinTimer = window.setTimeout(
+      () => void rejoin(),
+      REJOIN_INTERVAL_MS + (hellos % 3) * REJOIN_STAGGER_MS,
+    )
   }
 
   const armTimers = () => {
@@ -93,41 +109,74 @@ export async function joinSession(
         close()
       }
     }, CONNECT_BUDGET_MS)
+    scheduleRejoin()
   }
 
   const disarmTimers = () => {
     window.clearInterval(helloTimer)
     window.clearTimeout(budgetTimer)
+    window.clearTimeout(rejoinTimer)
   }
 
-  // 主机可能比我们晚开房（先举码后开局），每个新 peer 都试一次握手
-  room.onPeerJoin = () => {
-    peers += 1
-    emitDebug()
-    hello()
-  }
-
-  room.onPeerLeave = (peerId) => {
-    peers = Math.max(0, peers - 1)
-    emitDebug()
-    if (peerId !== hostPeer || closed) return
+  const attach = () => {
+    const room = joinRoom({ appId: 'bgtools', password: target.key }, target.room)
+    const up = room.makeAction<UpMsg>('up')
+    const down = room.makeAction<DownMsg>('down')
+    sendUp = (msg) => void up.send(msg)
+    peers = 0
     hostPeer = null
-    ready = false
-    onConn({ k: 'connecting' })
-    armTimers()
-    hello()
+
+    // 主机可能比我们晚开房（先举码后开局），每个新 peer 都试一次握手
+    room.onPeerJoin = () => {
+      peers += 1
+      emitDebug()
+      hello()
+    }
+
+    room.onPeerLeave = (peerId) => {
+      peers = Math.max(0, peers - 1)
+      emitDebug()
+      if (peerId !== hostPeer || closed) return
+      hostPeer = null
+      ready = false
+      onConn({ k: 'connecting' })
+      armTimers()
+      hello()
+    }
+
+    down.onMessage = (msg, { peerId }) => {
+      if (closed || !msg || typeof msg !== 'object') return
+      if (msg.ok) {
+        hostPeer = peerId
+        ready = true
+        disarmTimers()
+        onConn({ k: 'ready', view: msg.view })
+      } else {
+        onConn({ k: 'rejected' })
+        close()
+      }
+    }
+
+    return room
   }
 
-  down.onMessage = (msg, { peerId }) => {
-    if (closed || !msg || typeof msg !== 'object') return
-    if (msg.ok) {
-      hostPeer = peerId
-      ready = true
-      disarmTimers()
-      onConn({ k: 'ready', view: msg.view })
-    } else {
-      onConn({ k: 'rejected' })
-      close()
+  let room = attach()
+
+  const rejoin = async () => {
+    if (closed || ready || rejoining) return
+    rejoining = true
+    try {
+      const old = room
+      sendUp = null
+      // joinRoom 对同 roomId 有缓存，必须先 leave 干净再进，否则拿到的是旧房间
+      await old.leave()
+      if (closed || ready) return
+      room = attach()
+      emitDebug()
+      hello()
+    } finally {
+      rejoining = false
+      if (!ready) scheduleRejoin()
     }
   }
 
@@ -147,7 +196,7 @@ export async function joinSession(
     send(data) {
       if (closed || !ready) return
       seq += 1
-      void up.send({ rid, seq, hello: false, data })
+      sendUp?.({ rid, seq, hello: false, data })
     },
     close,
   }

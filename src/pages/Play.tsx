@@ -80,14 +80,14 @@ export default function Play() {
   }, [round, target, loader])
 
   const debug = dbg?.round === round ? dbg.d : null
+  // 原始计数翻成「进行到哪一步」的一句话，普通玩家看不懂 relay/握手这些词
   const debugLine = debug && (
-    <p className="font-mono text-xs text-dim">
-      {t('play.debug', {
-        open: debug.relaysOpen,
-        total: debug.relaysTotal,
-        peers: debug.peers,
-        hellos: debug.hellos,
-      })}
+    <p className="text-sm text-dim">
+      {debug.relaysOpen === 0
+        ? t('play.stageNet')
+        : debug.peers === 0
+          ? t('play.stageWaitHost')
+          : t('play.stageSeating')}
     </p>
   )
 

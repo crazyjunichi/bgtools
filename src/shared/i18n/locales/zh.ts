@@ -488,8 +488,10 @@ export const zh = {
     rejected: '主机没有给你留位置，看桌上的公共屏吧。',
     badLink: '这个二维码不完整或已过期，请组织者重新出一次。',
     insecure: '联机需要 HTTPS 页面（或本机 localhost）。当前是明文 HTTP 地址，浏览器不允许建立加密通道。',
-    /** 连接诊断一行（主机/玩家共用）：信令连通数 · 配对数 · 握手数，三段对应三层断点 */
-    debug: '信令 {{open}}/{{total}} · 配对 {{peers}} · 握手 ×{{hellos}}',
+    /** 连接中那句话下面的小字：把诊断计数翻成「进行到哪一步」，三层断点对应三句 */
+    stageNet: '正在接通网络信号…',
+    stageWaitHost: '信号正常，正在寻找主机…',
+    stageSeating: '已找到主机，正在入座…',
   },
 
   tools: {
@@ -518,6 +520,10 @@ export const zh = {
       onlineOpen: '队长扫码入局',
       onlineInsecure: '联机需要 HTTPS 页面（或本机 localhost）。局域网 IP 的明文 HTTP 地址建不了加密通道，请用部署后的地址。',
       peersOnline: '手机已连 {{n}} 台',
+      /** relay 全断时的提醒：玩家扫了也连不进来 */
+      onlineNetDown: '联机信号未接通，玩家暂时连不进来',
+      /** 有设备配对上了但还没入座（hellos 没到） */
+      onlineJoining: '{{n}} 台设备正在连接…',
       seatTaken: '已入座',
       seatFree: '虚位',
       resetSeats: '重置座位',
