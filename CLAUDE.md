@@ -9,7 +9,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 - **Tailwind 4 无配置文件**：主题在 [src/index.css](src/index.css) 的 `@theme` 里，不要创建 `tailwind.config.js` 或 `postcss.config.js`
 - **hash 路由**（`createHashRouter`）：为了静态托管免配 rewrite，不要改成 BrowserRouter
 - **`base: './'`**：产物路径必须保持相对，新增静态资源引用不要写绝对路径 `/xxx`
-- **纯本地、无后端**：不引入网络请求。存储分两级，见下方「持久化」一节。**仅有两处出网**：扫码发牌（[deal-roles/online](src/shared/deal-roles/online)，约束见「扫码发牌」一节）与联机会话（[session](src/shared/session)，约束见「联机会话」一节）—— 别把它们当成"可以出网了"的口子
+- **纯本地、无后端**：不引入网络请求。存储分两级，见下方「持久化」一节。**仅有一处出网**：扫码发牌（[deal-roles/online](src/shared/deal-roles/online)，约束见「扫码发牌」一节）—— 别把它当成"可以出网了"的口子。**实时联机不做**：曾有过主机权威 + WebRTC P2P 的联机会话模块，因双流程维护成本与定位原因拆除，迁往独立联机项目；架构与坑位清单封存在 [docs/SESSION-ARCHIVE.md](docs/SESSION-ARCHIVE.md)。私密信息分发优先用二维码静态承载，其次轮传
 - **PWA 更新走 `prompt`**：不要改回 `registerType: 'autoUpdate'` —— GH Pages 是整站全量替换，autoUpdate 的 skipWaiting 会在旧页面还开着时清掉它正在用的 chunk，懒加载的工具页当场 404。新版本由 [UpdatePrompt](src/UpdatePrompt.tsx) 交给用户择时更新，SW 还没接管时的兜底重载见 [shared/staleChunk.ts](src/shared/staleChunk.ts)
 
 ## 新增工具的机械流程
@@ -97,7 +97,7 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 
 ## 扫码发牌（deal-roles/online）
 
-发身份有两种方式：**轮传**（一台设备沿桌传，零配置、不用网络，是默认那条路）和**扫码**（组织者举二维码，各人用自己手机扫，扫到即看到身份、零额外点击）。它与下方「联机会话」是全项目仅有的两处出网。组织者那一侧的准备工作（建库、要发布的数据库规则、隐私边界）在 [docs/DEAL-ONLINE.md](docs/DEAL-ONLINE.md) —— **改了协议或规则要求就要同步它**，那是组织者唯一的说明书。
+发身份有两种方式：**轮传**（一台设备沿桌传，零配置、不用网络，是默认那条路）和**扫码**（组织者举二维码，各人用自己手机扫，扫到即看到身份、零额外点击）。它是全项目唯一出网处。组织者那一侧的准备工作（建库、要发布的数据库规则、隐私边界）在 [docs/DEAL-ONLINE.md](docs/DEAL-ONLINE.md) —— **改了协议或规则要求就要同步它**，那是组织者唯一的说明书。
 
 不许违反的：
 
@@ -119,20 +119,6 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 - 生成方只管拼 URL 喂 [Qr](src/shared/components/Qr.tsx)，协议细节（版本号、参数字符集）归各自模块
 - 站内扫码（quick 的 `scan`）只调 [qrLink.ts](src/shared/qrLink.ts) 的 `sitePathOf` 做同源 + `#/` 校验，然后直转 router；扫到非本站码只提示，不认领
 - 新增一种可扫码功能 = 新增一条路由，扫码端不许跟着改
-
-## 联机会话（session）
-
-游戏中途各人要在自己手机上做私密操作（看键卡、出题、投票）的场景：**主机权威 + WebRTC P2P**，没有服务器。主机就是桌上那台平板（状态真源在工具自己的 store），玩家手机是哑终端 —— 只渲染主机按人裁剪后下发的视图、把点击变成动作上报，**不算任何游戏规则**。
-
-- **信令走 [trystero](https://github.com/dmotz/trystero) 的公共 MQTT relay**（默认列表含国内节点），只做配对瞬间的 SDP 交换；游戏数据全部 DataChannel 直连，不经过 relay。这些公共 relay 是人人可用的基础设施（同 CDN），**不属于**「后端地址不进仓库」那条管的私有地址；但仓库里同样不许出现任何自建的、私有的 relay 地址
-- **加密口令只走二维码 fragment**（[session/payload.ts](src/shared/session/payload.ts)），不进信令。relay 只看见随机房间号，反推不出会话密钥
-- **传输库只在联机路径懒加载**（[session/transport.ts](src/shared/session/transport.ts)）：mqtt.js 体积不进首屏
-- **上行动作带 `(rid, seq)`，主机幂等去重**；rid 存玩家手机（`bgtools:play`），刷新/重连凭它认回座位。座位绑定（rid ↔ 角色）持久化在主机 store 里
-- **按人裁剪在主机端做**（`viewFor(rid)`）：私有信息（如键卡）从不离开主机去错设备。会话层只搬运信封（[session/types.ts](src/shared/session/types.ts)），不解释游戏内容
-- **必须能完整降级到单机**。连不上只让「联机」这一个入口走不通，工具页其余功能一个字不受影响；每个联机工具都要有不依赖网络的替代操作路径（如行动代号的「队长键卡」偷看层）。NAT 打不通（蜂窝 + 对称 NAT）是已知形态，玩家侧给一句人话 + 重试，不出异常堆栈
-- 玩家落地页 [Play](src/pages/Play.tsx) **挂在 `App` 之外**（与 `/` 平级，同 Join 的理由）；新增一个联机游戏要在 [session/registry.ts](src/shared/session/registry.ts) 补一行，否则主机开得出房、玩家扫码认不出
-- 主机离开工具页即收房（页面卸载 = 会话结束）；房间凭据持久化，主机刷新后同一张二维码仍有效
-- **tab 从后台恢复 = 传输层不可信，必须重建**：被系统冻结期间 WebRTC/WebSocket 的断开事件不会派发，双方状态字里连接还是"活的"（僵尸连接），trystero 会因此拒绝重新配对（selfId 没变 = 还连着）。主机端重建房间（凭据不变）、客户端降级重握手，都走 [session/resume.ts](src/shared/session/resume.ts) 的 `watchResume`
 
 ## 运行场景基线（每个工具都要满足）
 

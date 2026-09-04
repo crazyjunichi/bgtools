@@ -485,76 +485,25 @@ export const zh = {
     },
   },
 
-  /**
-   * 联机会话（[shared/session](../../session)）的玩家落地页文案。
-   * 主机侧的操作文案在各游戏的 `tools.<id>.*` 下。
-   */
-  play: {
-    connecting: '正在连接主机…',
-    failed: '连不上主机。',
-    failedHint: '手机和主机要在同一个 Wi-Fi 下。一直连不上的话，请组织者改用离线玩法。',
-    retry: '重试',
-    /** 失败后的自动重试倒计时 */
-    retryIn: '{{n}} 秒后自动重试',
-    rejected: '主机没有给你留位置，看桌上的公共屏吧。',
-    badLink: '这个二维码不完整或已过期，请组织者重新出一次。',
-    insecure: '联机需要 HTTPS 页面（或本机 localhost）。当前是明文 HTTP 地址，浏览器不允许建立加密通道。',
-    /** 连接中那句话下面的小字：把诊断计数翻成「进行到哪一步」，三层断点对应三句 */
-    stageNet: '正在接通网络信号…',
-    stageWaitHost: '信号正常，正在寻找主机…',
-    stageSeating: '已找到主机，正在入座…',
-  },
-
   tools: {
     codenames: {
       name: '行动代号',
-      desc: '红蓝猜词对抗 · 队长手机看键卡出题',
+      desc: '红蓝猜词对抗 · 队长偷看答案',
       start: '开局',
       startHint:
         '25 个词里藏着两队的目标。只有队长知道答案，只能给「一个词 + 一个数字」的线索；队员讨论后点词翻开，翻到刺客当场判负。',
       newGame: '新一局',
       confirmNewGame: '重开？当前牌面作废',
       pass: '结束回合',
-      peekKey: '队长键卡',
+      peekKey: '队长答案',
       peekHint: '仅队长查看 · 点任意处关闭',
       team: {
         red: '红队',
         blue: '蓝队',
       },
       turn: '{{team}}回合',
-      waitingClue: '等待队长出题',
-      clueNow: '线索：{{word}} × {{n}}',
-      guessesLeft: '还可猜 {{n}} 个',
-      remaining: '红 {{red}} · 蓝 {{blue}}',
       winner: '{{team}}获胜',
       byAssassin: '翻到了刺客',
-      onlineOpen: '队长扫码入局',
-      onlineInsecure: '联机需要 HTTPS 页面（或本机 localhost）。局域网 IP 的明文 HTTP 地址建不了加密通道，请用部署后的地址。',
-      peersOnline: '手机已连 {{n}} 台',
-      /** relay 全断时的提醒：玩家扫了也连不进来 */
-      onlineNetDown: '联机信号未接通，玩家暂时连不进来',
-      /** 有设备配对上了但还没入座（hellos 没到） */
-      onlineJoining: '{{n}} 台设备正在连接…',
-      seatTaken: '已入座',
-      seatFree: '虚位',
-      resetSeats: '重置座位',
-      resetSeatsConfirm: '两位队长都要重新认领？',
-      onlineClose: '关闭联机',
-      onlineCloseConfirm: '关闭后所有手机断开？',
-      /** 队长手机端（/play 落地页里的视图） */
-      p: {
-        claimTitle: '认领你的队伍',
-        seatTaken: '已有人',
-        full: '两个队长位都满了，公共牌面在桌上的平板。',
-        youAre: '你是{{team}}队长',
-        giveClue: '轮到你出题',
-        clueWordPh: '一个线索词（不能在牌面上）',
-        clueN: '关联个数',
-        submitClue: '公布线索',
-        badWord: '线索词不能在牌面上',
-        waitGuess: '线索「{{word}} × {{n}}」· 队员猜词中，还可翻 {{left}} 个',
-        waitClue: '对方队长出题中…',
-      },
     },
     werewolf: {
       name: '狼人杀主持',

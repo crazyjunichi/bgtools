@@ -35,7 +35,7 @@ const BASE36 = '0123456789abcdefghijklmnopqrstuvwxyz'
 
 /**
  * crypto 的定长 base36 串，用作各类会话/牌局 id。拒绝采样同 randomBelow。
- * 从 deal-roles/online/ids.ts 上提：联机会话（shared/session）是第二个用点。
+ * 从 deal-roles/online/ids.ts 上提：发身份之外的功能（如分组抽签）也会用到定长 id。
  */
 export function randomBase36(len: number): string {
   const out: string[] = []

@@ -413,27 +413,10 @@ export const en: Resources = {
     },
   },
 
-  play: {
-    connecting: 'Connecting to the host…',
-    failed: 'Cannot reach the host.',
-    failedHint:
-      'Your phone and the host must be on the same Wi-Fi. If it keeps failing, ask the organizer to play offline instead.',
-    retry: 'Retry',
-    retryIn: 'Auto-retry in {{n}}s',
-    rejected: 'The host has no seat for you — watch the shared screen.',
-    badLink: 'This QR code is incomplete or expired. Ask the organizer for a new one.',
-    insecure:
-      'Online play needs HTTPS (or localhost). This page is plain HTTP, so the browser refuses the encrypted channel.',
-    /** Sub-line under "connecting": diagnostics rendered as the current step */
-    stageNet: 'Reaching the network…',
-    stageWaitHost: 'Network OK, looking for the host…',
-    stageSeating: 'Host found, taking your seat…',
-  },
-
   tools: {
     codenames: {
       name: 'Codenames',
-      desc: 'Word duel · spymasters peek the key and clue from their phones',
+      desc: 'Word duel · spymasters peek the answer key',
       start: 'Start',
       startHint:
         'Two teams hide among 25 words. Only spymasters know the key and may hint with one word plus a number; teammates tap words to reveal. Revealing the assassin loses the game on the spot.',
@@ -447,37 +430,8 @@ export const en: Resources = {
         blue: 'Blue',
       },
       turn: "{{team}}'s turn",
-      waitingClue: 'Waiting for the clue',
-      clueNow: 'Clue: {{word}} × {{n}}',
-      guessesLeft: '{{n}} left',
-      remaining: 'Red {{red}} · Blue {{blue}}',
       winner: '{{team}} wins',
       byAssassin: 'Assassin revealed',
-      onlineOpen: 'Spymasters scan to join',
-      onlineInsecure:
-        'Online play needs HTTPS (or localhost). A plain-HTTP LAN address cannot open the encrypted channel — use the deployed URL.',
-      peersOnline: 'Phones connected: {{n}}',
-      onlineNetDown: 'No network signal — players cannot join yet.',
-      onlineJoining: 'Devices connecting: {{n}}',
-      seatTaken: 'seated',
-      seatFree: 'open',
-      resetSeats: 'Reset seats',
-      resetSeatsConfirm: 'Both spymasters must re-claim?',
-      onlineClose: 'Close session',
-      onlineCloseConfirm: 'Disconnect all phones?',
-      p: {
-        claimTitle: 'Claim your team',
-        seatTaken: 'taken',
-        full: 'Both spymaster seats are taken — the shared board is on the tablet.',
-        youAre: 'You are the {{team}} spymaster',
-        giveClue: 'Your clue now',
-        clueWordPh: 'One word (not on the board)',
-        clueN: 'Related count',
-        submitClue: 'Reveal clue',
-        badWord: 'Clue word must not be on the board',
-        waitGuess: 'Clue "{{word}} × {{n}}" · team guessing, {{left}} left',
-        waitClue: 'Waiting for the other spymaster…',
-      },
     },
     werewolf: {
       name: 'Werewolf Host',
