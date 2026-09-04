@@ -119,6 +119,8 @@ const SOLID: Record<Accent, string> = {
   rose: 'bg-rose-400 text-ink',
   teal: 'bg-teal-400 text-ink',
   fuchsia: 'bg-fuchsia-400 text-ink',
+  indigo: 'bg-indigo-400 text-ink',
+  cyan: 'bg-cyan-400 text-ink',
   neutral: 'bg-surface-3 text-text',
 }
 
@@ -192,6 +194,8 @@ const BAR: Record<Accent, string> = {
   rose: 'bg-rose-400',
   teal: 'bg-teal-400',
   fuchsia: 'bg-fuchsia-400',
+  indigo: 'bg-indigo-400',
+  cyan: 'bg-cyan-400',
   neutral: 'bg-surface-3',
 }
 
@@ -300,6 +304,18 @@ const HARD: Record<Accent, { edge: string; block: string; shadow: string; press:
     shadow: 'shadow-[5px_5px_0_0_var(--color-fuchsia-500,#d946ef)]',
     press: 'active:shadow-[2px_2px_0_0_var(--color-fuchsia-500,#d946ef)]',
   },
+  indigo: {
+    edge: 'border-indigo-400',
+    block: 'bg-indigo-400 text-ink',
+    shadow: 'shadow-[5px_5px_0_0_var(--color-indigo-500,#6366f1)]',
+    press: 'active:shadow-[2px_2px_0_0_var(--color-indigo-500,#6366f1)]',
+  },
+  cyan: {
+    edge: 'border-cyan-400',
+    block: 'bg-cyan-400 text-ink',
+    shadow: 'shadow-[5px_5px_0_0_var(--color-cyan-500,#06b6d4)]',
+    press: 'active:shadow-[2px_2px_0_0_var(--color-cyan-500,#06b6d4)]',
+  },
   neutral: {
     edge: 'border-line',
     block: 'bg-surface-3 text-text',
@@ -379,6 +395,8 @@ const UNDER: Record<Accent, string> = {
   rose: 'border-rose-400',
   teal: 'border-teal-400',
   fuchsia: 'border-fuchsia-400',
+  indigo: 'border-indigo-400',
+  cyan: 'border-cyan-400',
   neutral: 'border-line',
 }
 

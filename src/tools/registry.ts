@@ -1,5 +1,6 @@
 import { avalonMeta } from './avalon/meta'
 import { bombBustersMeta } from './bomb-busters/meta'
+import { codenamesMeta } from './codenames/meta'
 import { scoreSheetMeta } from './score-sheet/meta'
 import { scoreMeta } from './score/meta'
 import { statsMeta } from './stats/meta'
@@ -35,6 +36,7 @@ export const tools: ToolEntry[] = [
   { ...werewolfMeta, load: () => import('./werewolf/WerewolfPage') },
   { ...werewordsMeta, load: () => import('./werewords/WerewordsPage') },
   { ...avalonMeta, load: () => import('./avalon/AvalonPage') },
+  { ...codenamesMeta, load: () => import('./codenames/CodenamesPage') },
 ]
 
 export function findTool(pathname: string): ToolEntry | undefined {

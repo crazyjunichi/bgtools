@@ -35,6 +35,8 @@ const ACCENT: Record<ToolMeta['accent'] | QuickAccent, { under: string; glyph: s
   rose: { under: 'border-rose-400', glyph: 'text-rose-300' },
   teal: { under: 'border-teal-400', glyph: 'text-teal-300' },
   fuchsia: { under: 'border-fuchsia-400', glyph: 'text-fuchsia-300' },
+  indigo: { under: 'border-indigo-400', glyph: 'text-indigo-300' },
+  cyan: { under: 'border-cyan-400', glyph: 'text-cyan-300' },
   neutral: { under: 'border-line', glyph: 'text-text-muted' },
 }
 

@@ -8,6 +8,7 @@ import Home from './pages/Home'
 import Join from './pages/Join'
 import LoadError from './pages/LoadError'
 import NotFound from './pages/NotFound'
+import Play from './pages/Play'
 import StyleLab from './pages/StyleLab'
 import { reloadOnceForStaleChunk } from './shared/staleChunk'
 // 副作用模块：主题要在 React 树外就生效（监听系统偏好），见 shared/theme/store.ts
@@ -45,6 +46,8 @@ const router = createHashRouter([
    * 顶栏的名单/设置按钮对他没有意义，他一进来就该看到自己那张牌。
    */
   { path: '/join', element: <Join /> },
+  /* 联机会话的玩家落地页，同 /join 平级的理由：扫码进来的人只该看到自己那份私有视图 */
+  { path: '/play', element: <Play /> },
 ])
 
 createRoot(document.getElementById('root')!).render(

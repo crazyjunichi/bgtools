@@ -68,8 +68,10 @@ export {
   UserPlus as IconPlayerAdd,
   Users as IconPlayers,
   Plus as IconPlus,
-  /** 扫码发牌。二维码本身就是这个动作的字形，不必再叠相机 */
+  /** 「出示一个码给别人扫」（扫码发牌、分享本站）。二维码本身就是这个动作的字形，不必再叠相机 */
   QrCode as IconQr,
+  /** 拿起相机扫别人的码。取景框 + 扫描线，与 IconQr（展示码给别人扫）分工相对 */
+  ScanLine as IconScan,
   LayoutGrid as IconQuickMenu,
   RefreshCw as IconRepeat,
   RotateCcw as IconReset,

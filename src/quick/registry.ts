@@ -5,6 +5,8 @@ import {
   IconDice,
   IconPick,
   IconPlayers,
+  IconQr,
+  IconScan,
   IconSettings,
   IconTimer,
   type LucideIcon,
@@ -13,7 +15,9 @@ import { QuickDice } from './dice/QuickDice'
 import { QuickPick } from './pick/QuickPick'
 import { QuickPlayers } from './players/QuickPlayers'
 import { QuickPointer } from './pointer/QuickPointer'
+import { QuickScan } from './scan/QuickScan'
 import { QuickSettings } from './settings/QuickSettings'
+import { QuickShare } from './share/QuickShare'
 import { QuickTimer } from './timer/QuickTimer'
 
 /**
@@ -21,7 +25,7 @@ import { QuickTimer } from './timer/QuickTimer'
  * （骰子 amber、计时器 sky、指针 violet、名单 teal）—— 点开前后色相不变，
  * 面板认色和界面认色是同一套记忆。`neutral` 留给设置：它不是"用一下"的工具。
  */
-export type QuickAccent = 'amber' | 'sky' | 'violet' | 'teal' | 'fuchsia' | 'neutral'
+export type QuickAccent = 'amber' | 'sky' | 'violet' | 'teal' | 'fuchsia' | 'indigo' | 'cyan' | 'neutral'
 
 /** 所有游戏都可能临时要用的小工具，入口常驻顶栏，点开是 dialog */
 export type QuickTool = {
@@ -108,6 +112,26 @@ export const quickTools: QuickTool[] = [
     accent: 'teal',
     Component: QuickPlayers,
     wide: true,
+  },
+  // 扫本站链接直转路由（发牌的 join 码、分享本站出示的页面码都算），开局前的动作，不进宫格
+  {
+    id: 'scan',
+    nameKey: 'quick.scan.name',
+    descKey: 'quick.scan.desc',
+    onHome: false,
+    icon: IconScan,
+    accent: 'indigo',
+    Component: QuickScan,
+  },
+  // 与 scan 相对：出示当前页面（含路由）的二维码让别的设备打开，也是开局前拉人进站的动作
+  {
+    id: 'share',
+    nameKey: 'quick.share.name',
+    descKey: 'quick.share.desc',
+    onHome: false,
+    icon: IconQr,
+    accent: 'cyan',
+    Component: QuickShare,
   },
   // 全局设置排最后：不是"用一下"的工具，而是改完就走的配置项
   {

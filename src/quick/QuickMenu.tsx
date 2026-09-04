@@ -15,6 +15,8 @@ const ACCENT: Record<QuickAccent, string> = {
   violet: 'bg-violet-500/15 text-violet-300',
   teal: 'bg-teal-500/15 text-teal-300',
   fuchsia: 'bg-fuchsia-500/15 text-fuchsia-300',
+  indigo: 'bg-indigo-500/15 text-indigo-300',
+  cyan: 'bg-cyan-500/15 text-cyan-300',
   neutral: 'bg-surface-3 text-text-muted',
 }
 
