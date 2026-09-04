@@ -26,17 +26,17 @@ const TONE: Record<Level, string> = {
   ok: 'text-emerald-200 light:text-emerald-700',
 }
 
-/** 状态 chips 的只读形态：卡片与回看详情共用 */
+/** 状态 chips 的只读形态：卡片与回看详情共用。字号跟名字同级 —— 对手挂的状态是出牌约束，必须在桌对面也读得出 */
 export function StatusChips({ statuses }: { statuses: Record<string, number> }) {
   const { t } = useTranslation()
   const active = STATUSES.filter((s) => (statuses[s.id] ?? 0) > 0)
   if (active.length === 0) return null
   return (
-    <span className="flex min-h-0 flex-wrap items-center justify-center gap-1.5">
+    <span className="flex min-h-0 flex-wrap items-center justify-center gap-2">
       {active.map((s) => (
         <span
           key={s.id}
-          className="inline-flex items-center gap-1 rounded-full border border-line bg-surface-3 px-2 py-0.5 text-xs text-text"
+          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-3 px-3 py-1 text-base text-text"
         >
           <span aria-hidden>{s.icon}</span>
           {t(s.nameKey)}
@@ -68,28 +68,28 @@ export function ThroneCard({ seat, onOpen }: Props) {
       type="button"
       onClick={onOpen}
       aria-label={t('tools.diceThrone.cardAria', { name: seat.name, hp: seat.hp, cp: seat.cp })}
-      className={`card flex min-h-0 flex-col items-center justify-center gap-2 border-2 transition-colors short:gap-1 ${CARD[level]} ${dead ? 'opacity-60' : ''}`}
+      className={`card flex min-h-0 flex-col items-center justify-center gap-3 border-2 transition-colors short:gap-2 ${CARD[level]} ${dead ? 'opacity-60' : ''}`}
     >
-      <span className="flex min-w-0 items-center gap-2 text-base font-semibold text-text">
+      <span className="flex min-w-0 items-center gap-2 text-lg font-semibold text-text">
         <span className={`size-3 shrink-0 rounded-full ${PLAYER_DOT[seat.color]}`} aria-hidden />
         <span className="truncate">{seat.name}</span>
       </span>
 
       <span className="flex items-baseline gap-1 font-mono font-bold leading-none tabular-nums">
         <span className={`text-data ${TONE[level]}`}>{seat.hp}</span>
-        <span className="text-xl text-text-dim">/{maxHp(seat)}</span>
+        <span className="text-2xl text-text-dim">/{maxHp(seat)}</span>
       </span>
 
       {/* 淘汰有文案，不只靠压暗与红色（颜色不许是唯一编码） */}
       {dead && (
-        <span className="text-sm font-bold text-rose-300 light:text-rose-700">
+        <span className="text-base font-bold text-rose-300 light:text-rose-700">
           {t('tools.diceThrone.eliminated')}
         </span>
       )}
 
-      <span className="flex items-baseline gap-2 text-sm text-text-muted">
+      <span className="flex items-baseline gap-2 text-base text-text-muted">
         <span>{t('tools.diceThrone.cp')}</span>
-        <span className="font-mono text-2xl font-bold leading-none tabular-nums text-text short:text-xl">
+        <span className="font-mono text-3xl font-bold leading-none tabular-nums text-text short:text-2xl">
           {seat.cp}
         </span>
       </span>

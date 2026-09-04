@@ -82,7 +82,7 @@ const SLOT = 'bg-surface'
  * 卡是「无框条目」而非卡片：不要再加回描边、圆角底色或渐变，那三样正是要去掉的东西。
  */
 const CARD =
-  'flex items-center gap-3 border-b-2 p-3 text-left transition-transform duration-75 active:scale-95 short:gap-2 short:p-2'
+  'flex items-center gap-4 border-b-2 p-4 text-left transition-transform duration-75 active:scale-95 short:gap-3 short:p-3'
 
 /**
  * 卡片同款，列数也就没有理由不同。
@@ -114,7 +114,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-line" aria-hidden />
         {/* 负 me 吃掉末字后面那份字距，否则标题看着偏左 */}
-        <h2 className="-me-[0.3em] text-sm font-bold tracking-[0.3em] text-text">{title}</h2>
+        <h2 className="-me-[0.3em] text-base font-bold tracking-[0.3em] text-text">{title}</h2>
         <span className="h-px flex-1 bg-line" aria-hidden />
       </div>
       {children}
@@ -132,7 +132,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function Cover({ cover, icon }: { cover?: string; icon: string }) {
   const [failed, setFailed] = useState(false)
   return (
-    <span className={`flex size-12 shrink-0 items-center justify-center short:size-10 ${SLOT}`}>
+    <span className={`flex size-14 shrink-0 items-center justify-center short:size-12 ${SLOT}`}>
       {cover && !failed ? (
         <img
           // base 为相对路径，绝对的 /covers/... 在子目录部署下会 404
@@ -143,7 +143,7 @@ function Cover({ cover, icon }: { cover?: string; icon: string }) {
           onError={() => setFailed(true)}
         />
       ) : (
-        <span className="text-3xl short:text-2xl">{icon}</span>
+        <span className="text-4xl short:text-3xl">{icon}</span>
       )}
     </span>
   )
@@ -152,9 +152,9 @@ function Cover({ cover, icon }: { cover?: string; icon: string }) {
 /** 卡面文字。两行都 `truncate`：换行会让同一排的卡高矮不齐 */
 function CardText({ name, desc }: { name: string; desc: string }) {
   return (
-    <span className="flex min-w-0 flex-1 flex-col">
-      <span className="truncate text-base font-bold tracking-wide text-text">{name}</span>
-      <span className="truncate text-xs text-text-muted">{desc}</span>
+    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <span className="truncate text-lg font-bold tracking-wide text-text">{name}</span>
+      <span className="truncate text-sm text-text-muted">{desc}</span>
     </span>
   )
 }
@@ -279,10 +279,10 @@ export default function Home() {
               >
                 {/* 槽位与另两个区的封面槽同尺寸；字形自己带身份色，盒图那边靠图本身 */}
                 <span
-                  className={`flex size-12 shrink-0 items-center justify-center short:size-10 ${SLOT}`}
+                  className={`flex size-14 shrink-0 items-center justify-center short:size-12 ${SLOT}`}
                 >
                   <tool.icon
-                    className={`size-7 short:size-6 ${ACCENT[tool.accent].glyph}`}
+                    className={`size-8 short:size-7 ${ACCENT[tool.accent].glyph}`}
                     aria-hidden
                   />
                 </span>

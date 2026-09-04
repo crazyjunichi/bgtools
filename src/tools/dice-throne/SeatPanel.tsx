@@ -57,7 +57,7 @@ function MiniStepper({
           disabled={value <= min}
           onClick={() => bump(-1)}
           aria-label={t('stepper.decrease')}
-          className="btn-quiet min-h-12 w-12 shrink-0"
+          className="btn-base min-h-12 w-12 shrink-0"
         >
           <IconMinus className="size-6" aria-hidden />
         </button>
@@ -69,7 +69,7 @@ function MiniStepper({
           disabled={value >= max}
           onClick={() => bump(1)}
           aria-label={t('stepper.increase')}
-          className="btn-quiet min-h-12 w-12 shrink-0"
+          className="btn-base min-h-12 w-12 shrink-0"
         >
           <IconPlus className="size-6" aria-hidden />
         </button>
@@ -203,7 +203,9 @@ export function SeatPanel({ seat, onEditSeat, onRemove, onClose }: Props) {
                         buzz(12)
                       }}
                       aria-label={`${t(s.nameKey)} −1`}
-                      className={`btn-quiet min-h-12 w-12 shrink-0 ${active ? '' : 'text-text-muted'}`}
+                      className={`btn-base min-h-12 w-12 shrink-0 ${
+                        active ? 'text-violet-300 light:text-violet-700' : 'text-text-muted'
+                      }`}
                     >
                       <IconMinus className="size-5" aria-hidden />
                     </button>
@@ -224,7 +226,9 @@ export function SeatPanel({ seat, onEditSeat, onRemove, onClose }: Props) {
                         buzz(12)
                       }}
                       aria-label={`${t(s.nameKey)} +1`}
-                      className={`btn-quiet min-h-12 w-12 shrink-0 ${active ? '' : 'text-text-muted'}`}
+                      className={`btn-base min-h-12 w-12 shrink-0 ${
+                        active ? 'text-violet-300 light:text-violet-700' : 'text-text-muted'
+                      }`}
                     >
                       <IconPlus className="size-5" aria-hidden />
                     </button>

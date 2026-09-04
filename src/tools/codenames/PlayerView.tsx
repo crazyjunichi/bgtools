@@ -86,9 +86,9 @@ export default function PlayerView({ view, send }: Props) {
   }
 
   return (
-    <div className="flex h-full w-full max-w-lg flex-col gap-3">
+    <div className="flex h-full w-full max-w-lg flex-col gap-3 wide:max-w-none">
       {/* 状态条 */}
-      <div className="card flex items-center justify-between gap-2 !p-3">
+      <div className="card flex shrink-0 items-center justify-between gap-2 !p-3">
         <span className={`text-base font-bold ${TEAM_TEXT[view.team]}`}>
           {t('tools.codenames.p.youAre', { team: teamName(view.team) })}
         </span>
@@ -100,58 +100,72 @@ export default function PlayerView({ view, send }: Props) {
         </span>
       </div>
 
-      {/* 键卡：私有信息的全部，与桌面同一套网格视图 */}
-      <BoardGrid words={view.words} keys={view.key} revealed={view.revealed} showKey />
+      <div className="flex min-h-0 flex-1 flex-col items-center gap-3 wide:flex-row wide:justify-center">
+        {/* 键卡：与桌面牌面同比例（正方形 vmin 尺寸），不撑满整屏，余量留给下方操作区 */}
+        <div className="flex aspect-square w-[92vmin] max-w-full shrink-0 flex-col wide:w-[75vmin] wide:max-w-[55%]">
+          <BoardGrid words={view.words} keys={view.key} revealed={view.revealed} showKey />
+        </div>
 
-      {/* 操作区 */}
-      {view.phase === 'over' ? (
-        <div className="card !p-3 text-center">
-          <span className={`text-lg font-bold ${TEAM_TEXT[view.winner ?? view.team]}`}>
-            {t('tools.codenames.winner', { team: teamName(view.winner ?? view.team) })}
-          </span>
-          {view.byAssassin && (
-            <span className="ml-2 text-sm text-text-muted">{t('tools.codenames.byAssassin')}</span>
+        {/* 操作区：占满剩余空间，后续要加的信息也放这里 */}
+        <div className="flex min-h-0 w-full flex-1 flex-col justify-center gap-3">
+          {view.phase === 'over' ? (
+            <div className="card !p-3 text-center">
+              <span className={`text-lg font-bold ${TEAM_TEXT[view.winner ?? view.team]}`}>
+                {t('tools.codenames.winner', { team: teamName(view.winner ?? view.team) })}
+              </span>
+              {view.byAssassin && (
+                <span className="ml-2 text-sm text-text-muted">
+                  {t('tools.codenames.byAssassin')}
+                </span>
+              )}
+            </div>
+          ) : myTurnToClue ? (
+            <div className="card flex flex-col gap-3 !p-3">
+              <p className="text-sm font-bold text-text">{t('tools.codenames.p.giveClue')}</p>
+              <input
+                value={word}
+                onChange={(e) => {
+                  setWord(e.target.value)
+                  setRejected(false)
+                }}
+                placeholder={t('tools.codenames.p.clueWordPh')}
+                maxLength={12}
+                className="min-h-12 w-full rounded-lg bg-surface-2 px-3 text-lg text-text outline-none placeholder:text-text-dim"
+              />
+              {rejected && (
+                <p className="text-sm text-amber-300">{t('tools.codenames.p.badWord')}</p>
+              )}
+              <div className="flex items-center justify-between gap-3">
+                <Stepper
+                  value={n}
+                  onChange={setN}
+                  min={0}
+                  max={9}
+                  label={t('tools.codenames.p.clueN')}
+                />
+                <button
+                  type="button"
+                  onClick={submit}
+                  disabled={!word.trim()}
+                  className="btn-base bg-sky-400 px-5 text-base text-ink disabled:opacity-40"
+                >
+                  {t('tools.codenames.p.submitClue')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="card !p-3 text-center text-base text-text-muted">
+              {view.clue !== null
+                ? t('tools.codenames.p.waitGuess', {
+                    word: view.clue.word,
+                    n: view.clue.n,
+                    left: view.guessesLeft,
+                  })
+                : t('tools.codenames.p.waitClue')}
+            </div>
           )}
         </div>
-      ) : myTurnToClue ? (
-        <div className="card flex flex-col gap-3 !p-3">
-          <p className="text-sm font-bold text-text">{t('tools.codenames.p.giveClue')}</p>
-          <input
-            value={word}
-            onChange={(e) => {
-              setWord(e.target.value)
-              setRejected(false)
-            }}
-            placeholder={t('tools.codenames.p.clueWordPh')}
-            maxLength={12}
-            className="min-h-12 w-full rounded-lg bg-surface-2 px-3 text-lg text-text outline-none placeholder:text-text-dim"
-          />
-          {rejected && (
-            <p className="text-sm text-amber-300">{t('tools.codenames.p.badWord')}</p>
-          )}
-          <div className="flex items-center justify-between gap-3">
-            <Stepper value={n} onChange={setN} min={0} max={9} label={t('tools.codenames.p.clueN')} />
-            <button
-              type="button"
-              onClick={submit}
-              disabled={!word.trim()}
-              className="btn-base bg-sky-400 px-5 text-base text-ink disabled:opacity-40"
-            >
-              {t('tools.codenames.p.submitClue')}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="card !p-3 text-center text-base text-text-muted">
-          {view.clue !== null
-            ? t('tools.codenames.p.waitGuess', {
-                word: view.clue.word,
-                n: view.clue.n,
-                left: view.guessesLeft,
-              })
-            : t('tools.codenames.p.waitClue')}
-        </div>
-      )}
+      </div>
     </div>
   )
 }
