@@ -1,4 +1,4 @@
-import { randomBase36 } from './ids'
+import { randomBase36 } from '../../random'
 
 /**
  * 可复现的洗牌。

@@ -30,3 +30,29 @@ function randomBelow(n: number): number {
   } while (x >= limit)
   return x % n
 }
+
+const BASE36 = '0123456789abcdefghijklmnopqrstuvwxyz'
+
+/**
+ * crypto 的定长 base36 串，用作各类会话/牌局 id。拒绝采样同 randomBelow。
+ * 从 deal-roles/online/ids.ts 上提：联机会话（shared/session）是第二个用点。
+ */
+export function randomBase36(len: number): string {
+  const out: string[] = []
+  const buf = new Uint8Array(len)
+  const limit = Math.floor(256 / BASE36.length) * BASE36.length
+  while (out.length < len) {
+    crypto.getRandomValues(buf)
+    for (const b of buf) {
+      if (b >= limit) continue
+      out.push(BASE36[b % BASE36.length])
+      if (out.length === len) break
+    }
+  }
+  return out.join('')
+}
+
+/** base36 定长串的格式校验：二维码里的 id 是外部输入，进网络请求前先按形态卡一道 */
+export function isBase36(s: string, len: number): boolean {
+  return s.length === len && [...s].every((c) => BASE36.includes(c))
+}

@@ -16,7 +16,7 @@ type Props = {
  *
  * **必须白底黑码**，哪怕整个应用是深色主题：反色二维码有相当一部分手机相机认不出来。
  *
- * 只喂 ASCII（[payload.ts](payload.ts) 拼出来的 URL 就是）—— 库默认的 Byte 模式
+ * 只喂 ASCII（各处拼出来的 URL 就是）—— 库默认的 Byte 模式
  * 不带 UTF-8 转换，中文得额外引入它的可选模块。
  */
 export function Qr({ value, label, className }: Props) {
