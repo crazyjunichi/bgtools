@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IconCheck, IconClose, IconCopy, IconOrder, IconSave, IconShare } from '../icons'
+import { IconCheck, IconClose, IconCopy, IconOrder, IconSave, IconSend, IconShare } from '../icons'
+import { bgStatsUrl } from './bgstats'
 import type { MatchExport } from './detail'
 import { durationText } from './format'
 import { gameLabel } from './label'
@@ -64,7 +65,11 @@ export function MatchShare({ match, exports, onClose }: Props) {
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const forms = useMemo(() => [...(exports ?? []), RANK], [exports])
+  // RANK 排的是名次：没有胜负的局（mode 'none'，如冒牌艺术家）不该出这张兜底
+  const forms = useMemo(
+    () => (match.mode === 'none' ? (exports ?? []) : [...(exports ?? []), RANK]),
+    [match.mode, exports],
+  )
   /*
    * 形态选择只收**能预览的**（png）：它回答「这局摆成什么样给人看」。
    * CSV 这类文件形态回答的是「拿什么格式拿走」，归到操作区做直接下载按钮，
@@ -164,6 +169,9 @@ export function MatchShare({ match, exports, onClose }: Props) {
   }
 
   const { name: gameName } = gameLabel(t, match.gameId)
+
+  // null = 这局推不了（旧存档、没指定游戏），按钮整个不渲染 —— 详情见 bgstats.ts
+  const pushUrl = bgStatsUrl(match)
 
   return (
     <div className="safe-b safe-t fixed inset-0 z-30 flex flex-col gap-3 bg-ink/95 p-3 backdrop-blur-sm wide:flex-row">
@@ -351,6 +359,23 @@ export function MatchShare({ match, exports, onClose }: Props) {
             </button>
           )}
         </div>
+
+        {/*
+          推送到 BGStats 独占一行：它是「记到另一个 app」而不是导出形态，
+          挤进上面的图标行会跟保存/复制分不清。用真链接而非 window.open ——
+          iOS universal link 跳进 app 的行为只有 <a> 最稳
+        */}
+        {pushUrl !== null && (
+          <a
+            href={pushUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
+          >
+            <IconSend className="size-6 short:size-5" aria-hidden />
+            {t('match.share.pushBgStats')}
+          </a>
+        )}
       </div>
     </div>
   )

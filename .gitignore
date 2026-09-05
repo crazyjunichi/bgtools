@@ -29,3 +29,6 @@ dist-ssr
 # 图标/封面挑图时的暖场目录（icon-fetch / bgg-cover skill 会往这里写）
 .tmp-icons
 .tmp-bgg
+
+# Python 脚本缓存（bgg-cover / icon-fetch skill）
+__pycache__/

@@ -51,6 +51,12 @@ export type Game = {
    * 所以两套命名混在一起（camelCase 与 kebab-case），**不要为了整齐去统一它**。
    */
   id: string
+  /**
+   * BGG 条目 id，**开发期手工策展的常量，运行时不访问 BGG**
+   * （其 API 需注册 token 且不发 CORS 头，浏览器直连不通）。
+   * 用途是推送到外部平台（BGStats）时按 id 精确匹配游戏，而不是靠名字猜
+   */
+  bggId?: number
   nameKey: I18nKey
   /**
    * 兜底图标。`cover` 缺失或加载失败（离线、图没抓到）时显示它，

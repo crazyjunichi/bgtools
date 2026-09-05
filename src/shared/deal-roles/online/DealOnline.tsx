@@ -8,7 +8,7 @@ import { IconCheck, IconClose, IconQr } from '../../icons'
 import { ACCENT_SOLID, ACCENT_TEXT, type DealAccent } from '../accent'
 import { totalOf } from '../deck'
 import type { RoleCounts, RoleSet } from '../types'
-import { DealFault, faultCodeOf, type DealBackend, type DealErrorCode } from './backend'
+import { DealFault, faultCodeOf, type DealBackend, type DealErrorCode, type DealPool } from './backend'
 import { claimCard } from './claim'
 import { databaseUrlOf, parseDatabaseUrl } from './firebase'
 import { newGameId } from './ids'
@@ -33,13 +33,13 @@ type Opened = { gameId: string; seed: string }
 /**
  * 占下一个牌局。**必须在显示二维码之前跑完** —— 内容池的写权限是"不存在才能写"，
  * 有人抢先写入就锁死了；这一步同时也把 gameId 占下来。
+ * 内容型游戏（如冒牌艺术家）在这里把 pool 随局写入；普通游戏不传。
  */
-async function openGame(backend: DealBackend): Promise<Opened> {
+async function openGame(backend: DealBackend, pool?: DealPool): Promise<Opened> {
   for (let i = 0; i < OPEN_ATTEMPTS; i++) {
     const gameId = newGameId()
     try {
-      // 本期还没有内容型游戏，所以不带内容池；通道见 backend.createGame 的说明
-      await backend.createGame(gameId)
+      await backend.createGame(gameId, pool)
       return { gameId, seed: newSeed() }
     } catch (e) {
       if (faultCodeOf(e) !== 'taken') throw e
@@ -60,6 +60,8 @@ type Props = {
   set: RoleSet
   counts: RoleCounts
   accent: DealAccent
+  /** 内容型游戏的每身份一句内容，开局时随局写入内容池；普通游戏不传 */
+  pool?: DealPool
   onClose: () => void
 }
 
@@ -70,7 +72,7 @@ type Props = {
  * 这里不套 [Overlay](../../components/Overlay.tsx)：那个点遮罩即关闭，
  * 而关掉就等于把还没领到牌的人撂下。出口只有右上角那个二次确认。
  */
-export function DealOnline({ set, counts, accent, onClose }: Props) {
+export function DealOnline({ set, counts, accent, pool, onClose }: Props) {
   const { t } = useTranslation()
   const target = useDealOnlineStore((s) => s.target)
   const setTarget = useDealOnlineStore((s) => s.setTarget)
@@ -97,7 +99,7 @@ export function DealOnline({ set, counts, accent, onClose }: Props) {
     let alive = true
     const run = async () => {
       try {
-        const opened = await openGame(backend)
+        const opened = await openGame(backend, pool)
         if (alive) {
           setGame(opened)
           setStage({ k: 'qr' })
@@ -110,7 +112,7 @@ export function DealOnline({ set, counts, accent, onClose }: Props) {
     return () => {
       alive = false
     }
-  }, [backend, round])
+  }, [backend, round, pool])
 
   /** 重开一局：置 opening 态并让上面那个 effect 再跑一遍 */
   const reopen = () => {

@@ -6,6 +6,7 @@ import { useWakeLock } from '../hooks/useWakeLock'
 import { IconCheck, IconClose, IconRepeat } from '../icons'
 import { ACCENT_SOFT, ACCENT_SOLID, ACCENT_TEXT, type DealAccent } from './accent'
 import { buildDeck } from './deck'
+import type { DealPool } from './online/backend'
 import type { RoleCounts, RoleSet } from './types'
 
 /**
@@ -27,6 +28,8 @@ type Props = {
   set: RoleSet
   counts: RoleCounts
   accent: DealAccent
+  /** 内容型游戏的每身份一句内容，揭示时多显示一行；没有内容的身份不出这行 */
+  pool?: DealPool
   onClose: () => void
 }
 
@@ -40,7 +43,7 @@ type Props = {
  * 牌堆只活在这个组件的 state 里，卸载即消失 —— 不落盘是刻意的，
  * 存下来等于把"谁是狼"留在本机上。
  */
-export function DealRunner({ set, counts, accent, onClose }: Props) {
+export function DealRunner({ set, counts, accent, pool, onClose }: Props) {
   const { t } = useTranslation()
   const [deck, setDeck] = useState(() => buildDeck(set, counts))
   const [index, setIndex] = useState(0)
@@ -52,6 +55,7 @@ export function DealRunner({ set, counts, accent, onClose }: Props) {
 
   const done = index >= deck.length
   const role = set.roles.find((r) => r.id === deck[index])
+  const content = role ? pool?.[role.id] : undefined
   const last = index === deck.length - 1
 
   // 过场到时自己散场，不需要谁来点一下
@@ -112,6 +116,10 @@ export function DealRunner({ set, counts, accent, onClose }: Props) {
             <span className={`text-base font-semibold ${ACCENT_TEXT[accent]}`}>
               {t(role.teamKey)}
             </span>
+            {/* 内容型游戏里这行才是真正要记住的东西（词/主题），与身份名同一档；形制同 RoleCard */}
+            {content && (
+              <span className="text-data-sm font-bold leading-tight text-text">{content}</span>
+            )}
             <span className="mt-2 text-sm leading-relaxed text-text-muted short:mt-0">
               {t(last ? 'dealRoles.tapToFinish' : 'dealRoles.tapToHide')}
             </span>
@@ -137,23 +145,27 @@ export function DealRunner({ set, counts, accent, onClose }: Props) {
 
       {/* 出口都在卡外：与卡是兄弟节点，点它们不会顺手把牌翻了 */}
       {done ? (
+        /*
+         * 发完了，主按钮是「关闭」—— 身份已经发好，回到游戏才是常态路径。
+         * 「重新洗牌」作废所有人刚看过的身份，等于整轮重发：降级成次要位 + 二次确认。
+         */
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            onClick={restart}
+            onClick={onClose}
             className={`btn-base gap-2 px-5 text-base short:!min-h-11 short:text-sm ${ACCENT_SOLID[accent]}`}
+          >
+            <IconCheck className="size-5 short:size-4" aria-hidden />
+            {t('common.close')}
+          </button>
+          <ConfirmButton
+            onConfirm={restart}
+            confirmText={t('dealRoles.againConfirm')}
+            className="short:!text-sm"
           >
             <IconRepeat className="size-5 short:size-4" aria-hidden />
             {t('dealRoles.again')}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="btn-quiet gap-2 px-5 text-base short:!min-h-11 short:text-sm"
-          >
-            <IconClose className="size-5 short:size-4" aria-hidden />
-            {t('common.close')}
-          </button>
+          </ConfirmButton>
         </div>
       ) : (
         /*

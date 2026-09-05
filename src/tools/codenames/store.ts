@@ -12,6 +12,8 @@ type State = {
   /** 各队自己的回合计数（从 1 起）：角标显示的是「我队第 N 回合」，双方首回合都是 1 */
   turnNo: Record<Team, number>
   turn: Team
+  /** 本回合当前队是否已指过卡：空过（没指就交回合）不消耗回合计数 */
+  acted: boolean
   winner: Team | null
   byAssassin: boolean
   lastActiveAt: number
@@ -31,6 +33,7 @@ const INITIAL: State = {
   marks: [],
   turnNo: { red: 0, blue: 0 },
   turn: 'red',
+  acted: false,
   winner: null,
   byAssassin: false,
   lastActiveAt: Date.now(),
@@ -38,9 +41,11 @@ const INITIAL: State = {
 
 function endTurn(s: State): Partial<State> {
   const next = otherTeam(s.turn)
+  if (!s.acted) return { turn: next, acted: false, lastActiveAt: Date.now() }
   return {
     turn: next,
     turnNo: { ...s.turnNo, [next]: s.turnNo[next] + 1 },
+    acted: false,
     lastActiveAt: Date.now(),
   }
 }
@@ -60,6 +65,7 @@ export const useCodenamesStore = create<State & Actions>()(
           marks: b.words.map(() => null),
           turnNo: { red: 0, blue: 0, [b.starting]: 1 },
           turn: b.starting,
+          acted: false,
           winner: null,
           byAssassin: false,
           lastActiveAt: Date.now(),
@@ -78,7 +84,7 @@ export const useCodenamesStore = create<State & Actions>()(
         const marks = s.marks.length === s.words.length ? s.marks.slice() : s.words.map(() => null)
         marks[i] = { by: s.turn, turn: Math.max(1, s.turnNo[s.turn]) }
         const cell = s.key[i]
-        const base = { revealed, marks, lastActiveAt: Date.now() }
+        const base = { revealed, marks, acted: true, lastActiveAt: Date.now() }
 
         if (cell === 'assassin') {
           set({ ...base, phase: 'over', winner: otherTeam(s.turn), byAssassin: true })
@@ -91,7 +97,7 @@ export const useCodenamesStore = create<State & Actions>()(
           return
         }
         if (cell !== s.turn) {
-          set({ ...base, ...endTurn({ ...s, revealed }) })
+          set({ ...base, ...endTurn({ ...s, revealed, acted: true }) })
           return
         }
         set(base)

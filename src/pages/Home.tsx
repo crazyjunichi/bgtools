@@ -21,22 +21,22 @@ const GAME = tools.filter((tool) => tool.category === 'game')
  * 显式映射而非拼接类名：Tailwind 编译期扫描静态字符串，动态拼接会被漏掉。
  *
  * 身份色只出现在两处：卡片底部那条规则线、quick 卡的字形。卡片既没有描边也没有
- * 底色，所以**这条线是卡片唯一的身份编码**，别降细也别改成半透明 ——
- * 同一区里几张卡会当场糊成一片。
+ * 底色，所以**这条线是卡片唯一的身份编码**，别降细 —— 同一区里几张卡会当场糊成一片。
+ * 不透明度压了一半：满档在深色底上过于抢眼，半透明后仍明显亮于分区的 `bg-line`。
  *
  * 一张表同时喂工具身份色与 quick 身份色，两个 union 合起来共七档 ——
  * 分成两张表只会让同一个 amber 在首页有两种写法。
  */
 const ACCENT: Record<ToolMeta['accent'] | QuickAccent, { under: string; glyph: string }> = {
-  amber: { under: 'border-amber-400', glyph: 'text-amber-300' },
-  emerald: { under: 'border-emerald-400', glyph: 'text-emerald-300' },
-  sky: { under: 'border-sky-400', glyph: 'text-sky-300' },
-  violet: { under: 'border-violet-400', glyph: 'text-violet-300' },
-  rose: { under: 'border-rose-400', glyph: 'text-rose-300' },
-  teal: { under: 'border-teal-400', glyph: 'text-teal-300' },
-  fuchsia: { under: 'border-fuchsia-400', glyph: 'text-fuchsia-300' },
-  indigo: { under: 'border-indigo-400', glyph: 'text-indigo-300' },
-  cyan: { under: 'border-cyan-400', glyph: 'text-cyan-300' },
+  amber: { under: 'border-amber-400/50', glyph: 'text-amber-300' },
+  emerald: { under: 'border-emerald-400/50', glyph: 'text-emerald-300' },
+  sky: { under: 'border-sky-400/50', glyph: 'text-sky-300' },
+  violet: { under: 'border-violet-400/50', glyph: 'text-violet-300' },
+  rose: { under: 'border-rose-400/50', glyph: 'text-rose-300' },
+  teal: { under: 'border-teal-400/50', glyph: 'text-teal-300' },
+  fuchsia: { under: 'border-fuchsia-400/50', glyph: 'text-fuchsia-300' },
+  indigo: { under: 'border-indigo-400/50', glyph: 'text-indigo-300' },
+  cyan: { under: 'border-cyan-400/50', glyph: 'text-cyan-300' },
   neutral: { under: 'border-line', glyph: 'text-text-muted' },
 }
 
@@ -45,27 +45,27 @@ const ACCENT: Record<ToolMeta['accent'] | QuickAccent, { under: string; glyph: s
  * 这一区十几张卡本来全是计分纸的 violet，那条线等于没编码。
  *
  * 与 ACCENT 分成两张表：档数是它的两倍多，而模板卡没有字形，合表得给每档补一个用不到的
- * `glyph`。**一律 -400 档**，跟工具身份色同亮度 —— 混着 -300/-500 会让某几张卡显得更重要。
+ * `glyph`。**一律 -400 档**（含不透明度），跟工具身份色同亮度 —— 混着 -300/-500 会让某几张卡显得更重要。
  */
 const HUE: Record<GameHue, string> = {
-  red: 'border-red-400',
-  orange: 'border-orange-400',
-  amber: 'border-amber-400',
-  yellow: 'border-yellow-400',
-  lime: 'border-lime-400',
-  green: 'border-green-400',
-  emerald: 'border-emerald-400',
-  teal: 'border-teal-400',
-  cyan: 'border-cyan-400',
-  sky: 'border-sky-400',
-  blue: 'border-blue-400',
-  indigo: 'border-indigo-400',
-  violet: 'border-violet-400',
-  purple: 'border-purple-400',
-  fuchsia: 'border-fuchsia-400',
-  pink: 'border-pink-400',
-  stone: 'border-stone-400',
-  brown: 'border-brown-400',
+  red: 'border-red-400/50',
+  orange: 'border-orange-400/50',
+  amber: 'border-amber-400/50',
+  yellow: 'border-yellow-400/50',
+  lime: 'border-lime-400/50',
+  green: 'border-green-400/50',
+  emerald: 'border-emerald-400/50',
+  teal: 'border-teal-400/50',
+  cyan: 'border-cyan-400/50',
+  sky: 'border-sky-400/50',
+  blue: 'border-blue-400/50',
+  indigo: 'border-indigo-400/50',
+  violet: 'border-violet-400/50',
+  purple: 'border-purple-400/50',
+  fuchsia: 'border-fuchsia-400/50',
+  pink: 'border-pink-400/50',
+  stone: 'border-stone-400/50',
+  brown: 'border-brown-400/50',
 }
 
 /**

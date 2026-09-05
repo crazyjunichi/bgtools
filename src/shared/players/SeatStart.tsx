@@ -8,6 +8,11 @@ import { usePlayersStore, type Player } from './store'
 type Props = {
   /** 按名单顺序落座，末尾追加 temps 个临时席位 —— 回传的是玩家对象，工具那边直接 bindSeat */
   onSeat: (picked: Player[], temps: number) => void
+  /**
+   * 工具要求的最少人数：不够时就坐按钮禁用并换文案。
+   * 人数限制落在选人这一步 —— 进了开局页再拦，等于让人白点一次。
+   */
+  minSeats?: number
 }
 
 /**
@@ -19,13 +24,14 @@ type Props = {
  * 临时席是**待入座**占位：点 ＋ 只在这页加一张卡，就坐时才随名单一起落座 ——
  * 立即落座会让空态当场卸载（席位不再是 0），加第二个人就得重开一次面板。
  */
-export function SeatStart({ onSeat }: Props) {
+export function SeatStart({ onSeat, minSeats = 1 }: Props) {
   const { t } = useTranslation()
   const players = usePlayersStore((s) => s.players)
   const [picked, setPicked] = useState<string[]>([])
   /** 待入座的临时席。存 id 而非计数：点哪张删哪张，剩余编号自动顺移 */
   const [temps, setTemps] = useState<string[]>([])
   const total = picked.length + temps.length
+  const enough = total >= minSeats
 
   return (
     <div className="card flex min-h-0 flex-1 flex-col items-center justify-center gap-3 wide:min-w-0">
@@ -81,7 +87,7 @@ export function SeatStart({ onSeat }: Props) {
       <div className="flex w-full max-w-lg flex-col gap-2 wide:max-w-none">
         <button
           type="button"
-          disabled={total === 0}
+          disabled={!enough}
           onClick={() => {
             onSeat(
               // 点击顺序即座位顺序（PlayerSelect 的契约），不再按名单回排
@@ -95,7 +101,7 @@ export function SeatStart({ onSeat }: Props) {
           className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink short:!min-h-11"
         >
           <IconCheck className="size-6 short:size-5" aria-hidden />
-          {t('players.seatStart.start', { n: total })}
+          {enough ? t('players.seatStart.start', { n: total }) : t('players.seatStart.tooFew', { n: minSeats })}
         </button>
       </div>
     </div>

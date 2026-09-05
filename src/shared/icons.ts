@@ -86,6 +86,8 @@ export {
   Download as IconSave,
   Search as IconSearch,
   ChevronRight as IconSelected,
+  /** 推送到外部应用（BGStats）。纸飞机是「发出去」的通行字形，与 IconShare 的系统分享面板区分 */
+  SendHorizontal as IconSend,
   /** 行内展开/收起的指示三角（收起朝右，展开时旋转朝下）。与 IconSelected 同字形不同语义 */
   ChevronRight as IconExpand,
   Settings as IconSettings,
@@ -103,6 +105,10 @@ export {
   LockOpen as IconUnlocked,
   /** PWA 有新版本待接管。云下载而非 IconRepeat 的刷新箭头：要的是「取新东西」不是「再来一次」 */
   CloudDownload as IconUpdate,
+  /** 从本地文件导入（与 IconSave 的存盘箭头方向相对） */
+  Upload as IconUpload,
+  /** 撤销上一笔/上一步。回勾箭头是撤销的通行字形，与 IconReset（整局重置的裸回旋）区分 */
+  Undo2 as IconUndo,
 } from 'lucide-react'
 
 export type { LucideIcon } from 'lucide-react'

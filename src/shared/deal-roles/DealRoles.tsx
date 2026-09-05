@@ -5,6 +5,7 @@ import { countsOf } from './deck'
 import { DealRunner } from './DealRunner'
 import { DealSetup } from './DealSetup'
 import { DealOnline } from './online/DealOnline'
+import type { DealPool } from './online/backend'
 import { useDealRolesStore } from './store'
 import type { RoleSet } from './types'
 
@@ -15,6 +16,11 @@ type Props = {
   set: RoleSet
   /** 宿主工具页的主色，通常直接传它 `meta.accent` 的值 */
   accent: DealAccent
+  /**
+   * 内容型游戏的每身份一句内容（如冒牌艺术家：艺术家 → 词，冒牌货 → 主题）。
+   * 轮传在揭示卡上多一行，扫码进内容池随局写入；没有内容的身份不出这行。
+   */
+  pool?: DealPool
   onClose: () => void
 }
 
@@ -26,7 +32,7 @@ type Props = {
  * 它们的"关掉"等于中断整轮发牌，出口只能是各自角落的二次确认。
  * 接入一款新游戏只要一份 [RoleSet](types.ts) 数据，交互一个字都不用改。
  */
-export function DealRoles({ set, accent, onClose }: Props) {
+export function DealRoles({ set, accent, pool, onClose }: Props) {
   const saved = useDealRolesStore((s) => s.counts[set.id])
   const [mode, setMode] = useState<Mode>('setup')
 
@@ -42,10 +48,10 @@ export function DealRoles({ set, accent, onClose }: Props) {
   const counts = countsOf(set, saved)
 
   if (mode === 'pass') {
-    return <DealRunner set={set} counts={counts} accent={accent} onClose={onClose} />
+    return <DealRunner set={set} counts={counts} accent={accent} pool={pool} onClose={onClose} />
   }
   if (mode === 'online') {
-    return <DealOnline set={set} counts={counts} accent={accent} onClose={onClose} />
+    return <DealOnline set={set} counts={counts} accent={accent} pool={pool} onClose={onClose} />
   }
   return (
     <DealSetup

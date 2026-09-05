@@ -2,6 +2,8 @@ import { avalonMeta } from './avalon/meta'
 import { bombBustersMeta } from './bomb-busters/meta'
 import { diceThroneMeta } from './dice-throne/meta'
 import { codenamesMeta } from './codenames/meta'
+import { fakeArtistMeta } from './fake-artist/meta'
+import { gloomhavenMeta } from './gloomhaven/meta'
 import { scoreSheetMeta } from './score-sheet/meta'
 import { scoreMeta } from './score/meta'
 import { statsMeta } from './stats/meta'
@@ -39,10 +41,16 @@ export const tools: ToolEntry[] = [
   { ...avalonMeta, load: () => import('./avalon/AvalonPage') },
   { ...codenamesMeta, load: () => import('./codenames/CodenamesPage') },
   {
+    ...fakeArtistMeta,
+    load: () => import('./fake-artist/FakeArtistPage'),
+    match: () => import('./fake-artist/match').then((m) => m.matchTool),
+  },
+  {
     ...diceThroneMeta,
     load: () => import('./dice-throne/DiceThronePage'),
     match: () => import('./dice-throne/match').then((m) => m.matchTool),
   },
+  { ...gloomhavenMeta, load: () => import('./gloomhaven/GloomhavenPage') },
 ]
 
 export function findTool(pathname: string): ToolEntry | undefined {

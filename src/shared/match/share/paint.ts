@@ -1,4 +1,4 @@
-import { PLAYER_HEX, type PlayerColor } from '../../players/colors'
+import { playerHexOf, type PlayerColor } from '../../players/colors'
 
 /**
  * 导出图的绘制原语、版面尺度与外观调色板。
@@ -68,8 +68,13 @@ export type SharePalette = {
   /** 领先者 */
   best: string
   /**
-   * 玩家色条统一加的描边。浅底上「白」这类亮色条没有边界就看不见
-   * （同 `PLAYER_HEX.black.ring` 在深底上的作用）。深色外观不需要，留 undefined
+   * 纸面明暗。「墨」玩家色条按它取反（深纸亮、浅纸深）—— 导出图不跟随应用主题，
+   * 纸面是调色板自己的属性。
+   */
+  tone: 'dark' | 'light'
+  /**
+   * 玩家色条统一加的描边。浅底上「黄」这类亮色条没有边界就看不见。
+   * 深色外观不需要，留 undefined
    */
   swatchStroke?: string
 }
@@ -86,6 +91,7 @@ const PRINT: SharePalette = {
   dim: '#71717a',
   neg: '#c2410c',
   best: '#a16207',
+  tone: 'light',
   swatchStroke: '#52525b',
 }
 
@@ -101,6 +107,7 @@ const DARK: SharePalette = {
   dim: '#8f959e',
   neg: '#ff9a4d',
   best: '#ffc400',
+  tone: 'dark',
 }
 
 export const PALETTES = { print: PRINT, dark: DARK }
@@ -243,14 +250,13 @@ export function swatch(
   w: number,
   h: number,
 ) {
-  const hex = PLAYER_HEX[color]
+  const hex = playerHexOf(color, p.tone)
   rrect(ctx, x, y, w, h, Math.min(3, Math.min(w, h) / 2))
   ctx.fillStyle = hex.bg
   ctx.fill()
-  // 与底色贴太近的那两个（深底上的黑、浅底上的白）不描边就成不了形
-  const stroke = hex.ring ?? p.swatchStroke
-  if (stroke) {
-    ctx.strokeStyle = stroke
+  // 与底色贴太近的色条（浅底上的亮色）不描边就成不了形
+  if (p.swatchStroke) {
+    ctx.strokeStyle = p.swatchStroke
     ctx.lineWidth = 1
     ctx.stroke()
   }

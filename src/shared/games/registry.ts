@@ -6,12 +6,14 @@ import type { Game } from './types'
  * 一条 = 桌上真有的那盒游戏。**它不是工具列表**：计分纸一个工具服务这里的大半条，
  * 而骰子、计时器这些不属于任何一盒游戏，压根不在这里。
  *
- * 新增一盒：在此追加一行 + 两个 locale 补 `games.name.<id>`（有别名再补 `games.alias.<id>`）。
+ * 新增一盒：在此追加一行 + 两个 locale 补 `games.name.<id>`（有别名再补 `games.alias.<id>`）
+ * + 查 BGG 条目补 `bggId`（用 .claude/skills/bgg-cover 的脚本校验，别凭记忆填）。
  * 要给它配一张计分表就在 [templates](../../tools/score-sheet/templates.ts) 里加一条指回来。
  */
 export const GAMES: readonly Game[] = [
   {
     id: 'agricola',
+    bggId: 31260,
     nameKey: 'games.name.agricola',
     icon: '🌾',
     cover: 'covers/sheet/agricola.png',
@@ -21,6 +23,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'catan',
+    bggId: 13,
     nameKey: 'games.name.catan',
     icon: '🏝',
     cover: 'covers/sheet/catan.png',
@@ -30,6 +33,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'splendor',
+    bggId: 148228,
     nameKey: 'games.name.splendor',
     icon: '💎',
     cover: 'covers/sheet/splendor.png',
@@ -39,6 +43,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'azul',
+    bggId: 230802,
     nameKey: 'games.name.azul',
     icon: '🎨',
     cover: 'covers/sheet/azul.png',
@@ -48,6 +53,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'ticketToRide',
+    bggId: 9209,
     nameKey: 'games.name.ticketToRide',
     icon: '🚂',
     cover: 'covers/sheet/ticket-to-ride.png',
@@ -57,6 +63,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'carcassonne',
+    bggId: 822,
     nameKey: 'games.name.carcassonne',
     icon: '🧩',
     cover: 'covers/sheet/carcassonne.png',
@@ -66,6 +73,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'wingspan',
+    bggId: 266192,
     nameKey: 'games.name.wingspan',
     icon: '🐦',
     cover: 'covers/sheet/wingspan.png',
@@ -75,6 +83,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'patchwork',
+    bggId: 163412,
     nameKey: 'games.name.patchwork',
     icon: '🧵',
     cover: 'covers/sheet/patchwork.png',
@@ -86,6 +95,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'everdell',
+    bggId: 199792,
     nameKey: 'games.name.everdell',
     icon: '🌳',
     cover: 'covers/sheet/everdell.png',
@@ -95,6 +105,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'sevenWonders',
+    bggId: 68448,
     nameKey: 'games.name.sevenWonders',
     icon: '🏛',
     cover: 'covers/sheet/seven-wonders.png',
@@ -104,6 +115,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'arnak',
+    bggId: 312484,
     nameKey: 'games.name.arnak',
     icon: '🏺',
     cover: 'covers/sheet/arnak.png',
@@ -113,6 +125,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'cascadia',
+    bggId: 295947,
     nameKey: 'games.name.cascadia',
     icon: '🦌',
     cover: 'covers/sheet/cascadia.png',
@@ -122,6 +135,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'terraformingMars',
+    bggId: 167791,
     nameKey: 'games.name.terraformingMars',
     icon: '🚀',
     cover: 'covers/sheet/terraforming-mars.png',
@@ -131,6 +145,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'terraMystica',
+    bggId: 120677,
     nameKey: 'games.name.terraMystica',
     icon: '🧙',
     cover: 'covers/sheet/terra-mystica.png',
@@ -140,6 +155,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'greatWesternTrail',
+    bggId: 193738,
     nameKey: 'games.name.greatWesternTrail',
     icon: '🤠',
     cover: 'covers/sheet/great-western-trail.png',
@@ -149,6 +165,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'castlesOfBurgundy',
+    bggId: 84876,
     nameKey: 'games.name.castlesOfBurgundy',
     icon: '🏰',
     cover: 'covers/sheet/castles-of-burgundy.png',
@@ -158,6 +175,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'clank',
+    bggId: 201808,
     nameKey: 'games.name.clank',
     icon: '💀',
     cover: 'covers/sheet/clank.png',
@@ -168,6 +186,7 @@ export const GAMES: readonly Game[] = [
   {
     // 有专用工具、没有计分表：全员共胜共败，没有分数可排
     id: 'bomb-busters',
+    bggId: 413246,
     nameKey: 'games.name.bombBusters',
     icon: '💣',
     cover: 'covers/bomb-busters.png',
@@ -182,6 +201,8 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'werewolf',
+    // 狼人杀是品类不是单一产品，取最经典的条目；第三方身份玩法都对得上
+    bggId: 25821,
     nameKey: 'games.name.werewolf',
     icon: '🐺',
     hue: 'violet',
@@ -199,6 +220,7 @@ export const GAMES: readonly Game[] = [
   },
   {
     id: 'yahtzee',
+    bggId: 2243,
     nameKey: 'games.name.yahtzee',
     icon: '🎲',
     hue: 'amber',
@@ -208,6 +230,7 @@ export const GAMES: readonly Game[] = [
   {
     // 人数区间来自规则书：1v1 / 2v2 / 3–6 人 FFA
     id: 'dice-throne',
+    bggId: 216734,
     nameKey: 'games.name.diceThrone',
     icon: '👑',
     cover: 'covers/dice-throne.png',
@@ -215,6 +238,29 @@ export const GAMES: readonly Game[] = [
     aliasKey: 'games.alias.diceThrone',
     players: { min: 2, max: 6 },
     resultMode: 'ranked',
+  },
+  {
+    // 胜负靠口头投票、工具不记录，所以是 none：只记「打过一局」与那幅画
+    id: 'fake-artist',
+    bggId: 135779,
+    nameKey: 'games.name.fakeArtist',
+    icon: '🎭',
+    cover: 'covers/fake-artist.png',
+    hue: 'fuchsia',
+    aliasKey: 'games.alias.fakeArtist',
+    resultMode: 'none',
+  },
+  {
+    // 专用工具是个人面板，不归档战局；战役胜负记战役册，不进统计
+    id: 'gloomhaven',
+    bggId: 174430,
+    nameKey: 'games.name.gloomhaven',
+    icon: '🌑',
+    cover: 'covers/gloomhaven.png',
+    hue: 'brown',
+    aliasKey: 'games.alias.gloomhaven',
+    players: { min: 1, max: 4 },
+    resultMode: 'coop',
   },
 ]
 
