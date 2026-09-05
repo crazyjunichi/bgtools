@@ -22,6 +22,17 @@ import type { RoleCounts, RoleSet } from './types'
 /** 少于两张就不是"发身份"了 */
 const MIN_CARDS = 2
 
+// 量名字用的共享画布：只调 measureText，从不上屏。100px 下量出的宽度除以 100 即 em 宽
+let measureCtx: CanvasRenderingContext2D | null | undefined
+function nameEm(text: string): number {
+  if (measureCtx === undefined) {
+    measureCtx = document.createElement('canvas').getContext('2d')
+    if (measureCtx) measureCtx.font = `100px ${getComputedStyle(document.body).fontFamily}`
+  }
+  // 拿不到画布时按全 CJK 估，宁可缩过头不可截断；实量的乘一点安全边距（fallback 字体链有细微差异）
+  return measureCtx ? (measureCtx.measureText(text).width / 100) * 1.05 : text.length
+}
+
 /*
  * 池子的行列模板，按"这局有几种身份"查表：行列都给死，grid 才能把卡双向拉伸填满池区，
  * 卡片尺寸完全跟着容器走（竖屏少列、横屏多列）。类名必须是全字面量，Tailwind 编译期扫不到拼接。
@@ -66,6 +77,9 @@ export function DealSetup({ set, counts, accent, onStart, onStartOnline }: Props
   const total = totalOf(counts)
   // 只出张数 > 0 的身份，按 set.roles 的顺序 —— 池子读的是"这局有谁"
   const shown = set.roles.filter((r) => (counts[r.id] ?? 0) > 0)
+
+  // 本局最长名字的 em 宽：窄卡时名字字号上限按它反推。随渲染直算，量 ≤9 个短串开销可忽略
+  const maxEm = Math.max(1, ...shown.map((r) => nameEm(t(r.nameKey))))
 
   // 当前配比命中的预设。手动加减过就可能谁都不匹配，下拉回落到「自定义」占位
   const matched = set.presets.findIndex((p) => matchesPreset(set, counts, p))
@@ -166,10 +180,10 @@ export function DealSetup({ set, counts, accent, onStart, onStartOnline }: Props
 
         <span className="section-label shrink-0">{t('dealRoles.pick')}</span>
         {/*
-         * 竖屏三列横排（身份种类就那几张，自然高度放得完）；横屏是左栏的竖列表，
-         * 吃掉左栏余量、装不下自己滚。
+         * 竖屏两列横排：三列时按钮内名字会被 truncate（图标 + 箭头占掉一半宽）。
+         * 横屏是左栏的竖列表，吃掉左栏余量、装不下自己滚。
          */}
-        <div className="grid shrink-0 grid-cols-3 gap-2 wide:min-h-0 wide:flex-1 wide:grid-cols-1 wide:content-start wide:overflow-y-auto short:gap-1.5">
+        <div className="grid shrink-0 grid-cols-2 gap-2 wide:min-h-0 wide:flex-1 wide:grid-cols-1 wide:content-start wide:overflow-y-auto short:gap-1.5">
           {set.roles.map((r) => (
             <button
               key={r.id}
@@ -249,7 +263,10 @@ export function DealSetup({ set, counts, accent, onStart, onStartOnline }: Props
                 <span className="text-[26cqh] leading-none" aria-hidden>
                   {r.icon}
                 </span>
-                <span className="max-w-full truncate text-[16cqh] leading-none">
+                <span
+                  className="max-w-full truncate leading-none"
+                  style={{ fontSize: `min(16cqh, calc((100cqw - 24px) / ${maxEm.toFixed(2)}))` }}
+                >
                   {t(r.nameKey)}
                 </span>
                 {/* 张数是池子里唯一要读的数，压过身份名一档 */}
