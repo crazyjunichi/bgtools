@@ -167,8 +167,10 @@ export function MatchShare({ match, exports, onClose }: Props) {
 
   return (
     <div className="safe-b safe-t fixed inset-0 z-30 flex flex-col gap-3 bg-ink/95 p-3 backdrop-blur-sm wide:flex-row">
-      {/* 左/上区：头部 + 预览。预览是全页唯一的弹性块，控制区全刚性 */}
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
+      {/* 左/上区：头部 + 预览。预览是全页唯一的弹性块，控制区全刚性。
+          min-h-0 不可省：竖屏下外层是 flex-col，缺了它长图的固有高度会沿链顶穿，
+          把下方控制区挤出视口且无法滚动 */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
         <header className="flex shrink-0 items-center gap-3 pt-2">
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="text-lg font-bold">{t('match.share.title')}</span>

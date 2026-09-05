@@ -1,6 +1,6 @@
 import i18n from '../i18n'
 import { PLAYER_COLORS, type PlayerColor } from './colors'
-import { findPlayer, type Player } from './store'
+import { findPlayer, usePlayersStore, type Player } from './store'
 
 /**
  * 一个计分工具里的「一列 / 一个人」。
@@ -23,6 +23,13 @@ export type Seat = {
 }
 
 export type SeatView = Seat & { linked: boolean }
+
+/**
+ * 「新一局还算不算同一桌人」的时间窗：与当局开始时间比，隔得太久（隔夜）再开
+ * 多半已经换了一桌人 —— 这时「新一局」连席位一起清，回到选人开局；
+ * 窗口内则还是这桌人，只清分数直接开
+ */
+export const SAME_TABLE_WINDOW_MS = 24 * 60 * 60 * 1000
 
 const newId = () => crypto.randomUUID()
 
@@ -56,6 +63,22 @@ export function makeSeat(seats: Seat[]): Seat {
 export function resolveSeat(seat: Seat, players: Player[]): SeatView {
   const p = seat.playerId ? findPlayer(players, seat.playerId) : undefined
   return p ? { ...seat, name: p.name, color: p.color, linked: true } : { ...seat, linked: false }
+}
+
+/**
+ * 定稿（分享 / 结算 / 归档）那一刻的席位：名单里的人以名单当下的名字与色为准 ——
+ * 屏幕上跟着 resolveSeat 实时变的那些改动，导出与存档必须同一份，否则图与桌面对不上。
+ * 被删的人退回快照。泛型保留工具自己的扩展字段（如骰铸的生命/CP），只覆盖名字与色。
+ *
+ * 注意方向：这是把名单**固化进**那一局，与历史回看相反 —— 已归档的局读出来的是
+ * 当时定稿的快照，名单之后再怎么改都不影响（见 SheetDetail / snapshot）。
+ */
+export function finalizeSeats<T extends Seat>(seats: readonly T[]): T[] {
+  const players = usePlayersStore.getState().players
+  return seats.map((s) => {
+    const v = resolveSeat(s, players)
+    return { ...s, name: v.name, color: v.color }
+  })
 }
 
 /** 绑定/解绑名单玩家。解绑时名字颜色留着当快照，就地变回临时席位 */

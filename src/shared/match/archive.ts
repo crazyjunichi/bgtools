@@ -31,7 +31,8 @@ type ArchiveState = {
   status: 'idle' | 'loading' | 'ready' | 'unavailable'
   /** 幂等惰性加载：只在真要看历史/统计时调，工具页启动不读盘 */
   load: () => Promise<void>
-  archive: (draft: MatchDraft) => Promise<void>
+  /** 落盘成功回记录 id（重复结算靠它覆盖同一条），IDB 写不进回 null */
+  archive: (draft: MatchDraft) => Promise<string | null>
   /** 备注是唯一能事后改的字段，见 [Match.note](types.ts) */
   setNote: (id: string, note: string) => Promise<void>
   remove: (id: string) => Promise<void>
@@ -99,19 +100,23 @@ export const useArchiveStore = create<ArchiveState>()((set, get) => ({
   },
 
   archive: async (draft) => {
-    const match: Match = { ...draft, id: crypto.randomUUID(), at: Date.now() }
+    const match: Match = { ...draft, id: draft.id ?? crypto.randomUUID(), at: Date.now() }
     try {
       await idbPut(STORE, match)
     } catch (e) {
       warn(e)
       set({ status: 'unavailable' })
-      return
+      return null
     }
     /*
      * 只在已经读过盘的情况下并进镜像。status 还是 idle 时不动 matches ——
-     * 否则镜像里只有这一条，之后 load 又会因为 status 变了而跳过读盘，历史就只剩最后一局
+     * 否则镜像里只有这一条，之后 load 又会因为 status 变了而跳过读盘，历史就只剩最后一局。
+     * 先按 id 滤掉旧条目再进列表：draft 带 id 是覆盖写，同一局不许出现两条
      */
-    if (get().status === 'ready') set({ matches: [match, ...get().matches].sort(byNewest) })
+    if (get().status === 'ready') {
+      set({ matches: [match, ...get().matches.filter((m) => m.id !== match.id)].sort(byNewest) })
+    }
+    return match.id
   },
 
   setNote: async (id, note) => {

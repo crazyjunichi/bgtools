@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 import { IconCsv, IconImage } from '../../shared/icons'
 import type { MatchExport, MatchTool } from '../../shared/match/detail'
+import { durationText } from '../../shared/match/format'
 import type { MatchDraft } from '../../shared/match/types'
 import { readSheetPayload } from './payload'
 import { renderMatrix, renderTransposed } from './png/matrix'
@@ -19,7 +20,12 @@ import { buildSnapshot, toCsv } from './snapshot'
 function snapshotOf(m: MatchDraft, t: TFunction) {
   const payload = readSheetPayload(m.payload)
   if (payload === null) throw new Error('sheet payload unreadable')
-  return buildSnapshot(payload, m.endAt, t)
+  // 时长从 Match 上取（玩家可能在结算面板用滑杆报过真实时长），不从 payload 的摊表时刻算
+  const spent = m.endAt - m.startedAt
+  return {
+    ...buildSnapshot(payload, m.endAt, t),
+    durationText: spent > 0 ? durationText(t, spent) : undefined,
+  }
 }
 
 export const sheetExports: readonly MatchExport[] = [

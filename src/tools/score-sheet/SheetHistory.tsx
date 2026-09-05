@@ -14,7 +14,8 @@ import { SheetDetail } from './SheetDetail'
 import { findTemplate, templateIdentity } from './templates'
 
 type Props = {
-  onLoad: (payload: SheetPayload, endAt: number) => void
+  /** 把那条记录的 id 也带回去：读回来的表再结算是覆盖它，不是新记一局 */
+  onLoad: (payload: SheetPayload, endAt: number, id: string) => void
   /** 交给分享面板的是**整条记录**：形态怎么画由面板里的注册项各自反解 */
   onShare: (match: Match) => void
   onClose: () => void
@@ -117,7 +118,7 @@ export function SheetHistory({ onLoad, onShare, onClose }: Props) {
           {/* 读取会覆盖当前局，必须二次确认 */}
           <ConfirmButton
             onConfirm={() => {
-              onLoad(payload, match.endAt)
+              onLoad(payload, match.endAt, match.id)
               onClose()
             }}
             confirmText={t('tools.scoreSheet.history.confirmLoad')}

@@ -45,6 +45,7 @@ export default function ScorePage() {
     undo,
     newGame,
     resetTable,
+    setMatchId,
   } = useScoreStore()
   const players = usePlayersStore((s) => s.players)
 
@@ -125,6 +126,7 @@ export default function ScorePage() {
         <MatchFinish
           draft={finish}
           exports={scoreExports}
+          onArchived={setMatchId}
           onDone={() => {
             newGame()
             setFinish(null)

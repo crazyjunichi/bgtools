@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { PLAYER_SOLID } from '../../shared/players/colors'
+import { PLAYER_LINE } from '../../shared/players/colors'
 import type { Seat } from '../../shared/players/seats'
 import { tone } from '../../shared/tone'
 import { fmtDelta, totalOf, type Round } from './store'
@@ -62,7 +62,7 @@ export function ScoreRounds({ seats, rounds, draft, box = 'min-h-0 flex-1' }: Pr
                       {totalOf(rounds, draft, s.id)}
                     </span>
                     <span
-                      className={`truncate rounded-md px-1 text-sm font-bold ${PLAYER_SOLID[s.color]}`}
+                      className={`truncate rounded-md border-b-2 px-1 text-sm font-bold ${PLAYER_LINE[s.color]}`}
                     >
                       {s.name}
                     </span>

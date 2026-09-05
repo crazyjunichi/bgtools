@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { rankByScore, seatsToPlayers } from '../../shared/match/result'
 import type { MatchDraft } from '../../shared/match/types'
-import { bindSeat, makeSeat, type Seat } from '../../shared/players/seats'
+import { bindSeat, finalizeSeats, makeSeat, SAME_TABLE_WINDOW_MS, type Seat } from '../../shared/players/seats'
 import type { Player } from '../../shared/players/store'
 import { scoreMeta } from './meta'
 
@@ -37,6 +37,14 @@ type ScoreState = {
    * 与这局真正结束差着十几个小时。加列删列不算改动
    */
   lastActiveAt: number
+  /**
+   * 本局已归档记录的 id。结算面板打开即归档，之后重复结算 / 补备注都拿它**覆盖同一条**，
+   * 而不是再记一条。开新局时清掉
+   */
+  matchId: string | null
+
+  /** 结算面板归档成功后回写记录 id */
+  setMatchId: (id: string) => void
 
   /** 席位数不设上限：列多了表格转为横滚、颜色开始复用，但不拦着加 */
   addSeat: () => void
@@ -57,7 +65,10 @@ type ScoreState = {
   setDelta: (seatId: string, delta: number) => void
   nextRound: () => void
   undo: () => void
-  /** 新一局：清分数与历史，席位留着（换个游戏通常还是这桌人） */
+  /**
+   * 新一局：清分数与历史。席位看时间窗 —— 同一桌（[SAME_TABLE_WINDOW_MS]）留着直接开，
+   * 隔得太久多半换了一桌人，连席位一起清回选人
+   */
   newGame: () => void
   /** 换一桌人：席位也一起清，回到开局选人的空桌 */
   resetTable: () => void
@@ -78,6 +89,9 @@ export const useScoreStore = create<ScoreState>()(
       undoStack: [],
       startedAt: Date.now(),
       lastActiveAt: Date.now(),
+      matchId: null,
+
+      setMatchId: (id) => set({ matchId: id }),
 
       addSeat: () => {
         const { seats } = get()
@@ -145,7 +159,17 @@ export const useScoreStore = create<ScoreState>()(
 
       newGame: () => {
         const now = Date.now()
-        set({ rounds: [], draft: {}, undoStack: [], startedAt: now, lastActiveAt: now })
+        // 隔太久的「新一局」多半已经换了一桌人：连席位一起清，回到选人开局
+        const sameTable = now - get().startedAt < SAME_TABLE_WINDOW_MS
+        set({
+          rounds: [],
+          draft: {},
+          undoStack: [],
+          startedAt: now,
+          lastActiveAt: now,
+          matchId: null,
+          ...(sameTable ? {} : { seats: [] }),
+        })
       },
 
       resetTable: () => {
@@ -155,12 +179,13 @@ export const useScoreStore = create<ScoreState>()(
     }),
     {
       name: 'bgtools:score',
-      partialize: ({ seats, rounds, draft, startedAt, lastActiveAt }) => ({
+      partialize: ({ seats, rounds, draft, startedAt, lastActiveAt, matchId }) => ({
         seats,
         rounds,
         draft,
         startedAt,
         lastActiveAt,
+        matchId,
       }),
     },
   ),
@@ -168,24 +193,28 @@ export const useScoreStore = create<ScoreState>()(
 
 /**
  * 这一局的可归档形态。**在打开结算面板那一刻取一次**：`endAt` 是最后一次加分的时刻，
- * 不是按下结算的时刻。名次按总分自动算（并列同名次），谁算赢让用户在面板里改。
+ * 不是按下结算的时刻。名次按总分自动算（并列同名次）。
  */
 export function scoreMatchDraft(): MatchDraft {
   const s = useScoreStore.getState()
-  const scored = seatsToPlayers(s.seats).map((p, i) => ({
+  // 定稿时刻以名单为准刷新席位名/色（finalizeSeats），让导出与屏幕上的表头是同一份
+  const seats = finalizeSeats(s.seats)
+  const scored = seatsToPlayers(seats).map((p, i) => ({
     ...p,
-    score: totalOf(s.rounds, s.draft, s.seats[i].id),
+    score: totalOf(s.rounds, s.draft, seats[i].id),
   }))
   const payload: ScorePayload = {
-    seats: s.seats,
+    seats,
     rounds: s.rounds,
     draft: s.draft,
     startedAt: s.startedAt,
   }
   return {
+    // 带上已归档记录的 id：重复结算覆盖同一条，不在历史里攒出一串分身
+    id: s.matchId ?? undefined,
     startedAt: s.startedAt,
     endAt: s.lastActiveAt,
-    // 通用计分不绑定某盒游戏，用户可以在结算面板里指定
+    // 通用计分不绑定某盒游戏
     gameId: null,
     toolId: scoreMeta.id,
     mode: 'ranked',

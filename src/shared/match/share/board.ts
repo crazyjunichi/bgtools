@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { PlayerColor } from '../../players/colors'
-import { dateTimeText } from '../format'
+import { dateTimeText, durationText } from '../format'
 import { gameLabel } from '../label'
 import type { MatchDraft } from '../types'
 
@@ -15,6 +15,8 @@ export type RankBoard = {
   title: string
   icon: string
   dateText: string
+  /** 格式化好的对局时长；旧存档测不到（时长为 0）就没有，头部不画 */
+  durationText?: string
   /** 那一局的席位**快照**：名字与色都是当时存下来的，不跟着名单后来的改动变 */
   seats: { name: string; color: PlayerColor }[]
   totals: number[]
@@ -36,11 +38,13 @@ export function boardFromMatch(m: MatchDraft, t: TFunction): RankBoard {
   const identity = gameLabel(t, m.gameId)
   const totals = m.players.map((p) => p.score ?? 0)
   const best = Math.max(...totals, 0)
+  const spent = m.endAt - m.startedAt
 
   return {
     title: identity.name,
     icon: identity.icon ?? '',
     dateText: dateTimeText(m.endAt),
+    durationText: spent > 0 ? durationText(t, spent) : undefined,
     seats: m.players.map((p) => ({ name: p.name, color: p.color })),
     totals,
     bestTotal: totals.some((v) => v !== best) && m.players.length > 1 ? best : null,

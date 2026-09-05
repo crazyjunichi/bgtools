@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { rankByScore, seatsToPlayers } from '../../shared/match/result'
 import type { MatchDraft } from '../../shared/match/types'
-import { bindSeat, makeSeat, type Seat } from '../../shared/players/seats'
+import { bindSeat, finalizeSeats, makeSeat, SAME_TABLE_WINDOW_MS, type Seat } from '../../shared/players/seats'
 import type { Player } from '../../shared/players/store'
 import { diceThroneMeta } from './meta'
 
@@ -43,6 +43,14 @@ type ThroneState = {
   startedAt: number
   /** 最后一次改动数值的时刻（结算 endAt 取它）。换人、改名不算 */
   lastActiveAt: number
+  /**
+   * 本局已归档记录的 id。结算面板打开即归档，之后重复结算 / 补备注都拿它**覆盖同一条**，
+   * 而不是再记一条。开新局时清掉
+   */
+  matchId: string | null
+
+  /** 结算面板归档成功后回写记录 id */
+  setMatchId: (id: string) => void
 
   seatPlayers: (picked: Player[], temps?: number) => void
   /** 席位数不设上限，与计分工具一致 */
@@ -58,7 +66,10 @@ type ThroneState = {
   setStartHp: (seatId: string, startHp: number) => void
   /** 0 即移除该状态 */
   setStatus: (seatId: string, statusId: string, count: number) => void
-  /** 新一局：清数值，席位留着（还是这桌人） */
+  /**
+   * 新一局：清数值。席位看时间窗 —— 同一桌（[SAME_TABLE_WINDOW_MS]）留着直接开，
+   * 隔得太久多半换了一桌人，连席位一起清回选人
+   */
   newGame: () => void
   /** 换一桌人：连席位一起清 */
   resetTable: () => void
@@ -77,6 +88,9 @@ export const useThroneStore = create<ThroneState>()(
         seats: [],
         startedAt: Date.now(),
         lastActiveAt: Date.now(),
+        matchId: null,
+
+        setMatchId: (id) => set({ matchId: id }),
 
         seatPlayers: (picked, temps = 0) => {
           const seated = picked.reduce<ThroneSeat[]>(
@@ -117,12 +131,18 @@ export const useThroneStore = create<ThroneState>()(
             return { ...s, statuses }
           }),
 
-        newGame: () =>
+        newGame: () => {
+          // 隔太久的「新一局」多半已经换了一桌人：连席位一起清，回到选人开局
+          const sameTable = Date.now() - get().startedAt < SAME_TABLE_WINDOW_MS
           set({
-            seats: get().seats.map((s) => ({ ...s, hp: s.startHp, cp: 0, statuses: {} })),
+            seats: sameTable
+              ? get().seats.map((s) => ({ ...s, hp: s.startHp, cp: 0, statuses: {} }))
+              : [],
             startedAt: Date.now(),
             lastActiveAt: Date.now(),
-          }),
+            matchId: null,
+          })
+        },
 
         resetTable: () => {
           get().newGame()
@@ -132,7 +152,12 @@ export const useThroneStore = create<ThroneState>()(
     },
     {
       name: 'bgtools:dice-throne',
-      partialize: ({ seats, startedAt, lastActiveAt }) => ({ seats, startedAt, lastActiveAt }),
+      partialize: ({ seats, startedAt, lastActiveAt, matchId }) => ({
+        seats,
+        startedAt,
+        lastActiveAt,
+        matchId,
+      }),
     },
   ),
 )
@@ -160,15 +185,19 @@ export function readThronePayload(payload: unknown): ThronePayload | null {
  */
 export function throneMatchDraft(): MatchDraft {
   const s = useThroneStore.getState()
-  const payload: ThronePayload = { seats: s.seats, startedAt: s.startedAt }
+  // 定稿时刻以名单为准刷新席位名/色（finalizeSeats），让导出与屏幕上的表头是同一份
+  const seats = finalizeSeats(s.seats)
+  const payload: ThronePayload = { seats, startedAt: s.startedAt }
   return {
+    // 带上已归档记录的 id：重复结算覆盖同一条，不在历史里攒出一串分身
+    id: s.matchId ?? undefined,
     startedAt: s.startedAt,
     endAt: s.lastActiveAt,
     gameId: diceThroneMeta.id,
     toolId: diceThroneMeta.id,
     mode: 'ranked',
     players: rankByScore(
-      seatsToPlayers(s.seats).map((p, i) => ({ ...p, score: s.seats[i].hp })),
+      seatsToPlayers(seats).map((p, i) => ({ ...p, score: seats[i].hp })),
       (p) => p.score ?? 0,
     ),
     payload,

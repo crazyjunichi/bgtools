@@ -7,7 +7,7 @@ import { useArchiveStore } from '../../shared/match/archive'
 import { fmtScore } from '../../shared/match/format'
 import { rankByScore, seatsToPlayers } from '../../shared/match/result'
 import type { MatchDraft } from '../../shared/match/types'
-import { bindSeat, makeSeat, type Seat } from '../../shared/players/seats'
+import { bindSeat, finalizeSeats, makeSeat, SAME_TABLE_WINDOW_MS, type Seat } from '../../shared/players/seats'
 import type { Player } from '../../shared/players/store'
 import { scoreSheetMeta } from './meta'
 import type { SheetPayload } from './payload'
@@ -36,10 +36,26 @@ export type Entry = {
 /** 选中的格子 */
 export type Pick = { seatId: string; entryId: string }
 
+/**
+ * 一档局面 = 一个模板各记住各的。按游戏隔离：点进另一盒游戏的计分纸，
+ * 不该沿用上一局的席位与开始时间；切回来原局面还在。
+ *
+ * **只存非激活模板**：激活那档仍住在 store 的扁平字段里，所有 action 与消费方
+ * 都只面对「当前局」这一份，换档（[setTemplate](#)）时才一存一取。
+ */
+type SheetSnapshot = {
+  seats: Seat[]
+  cells: Record<string, number>
+  startedAt: number
+  lastActiveAt: number
+  /** 与扁平字段同一份语义：换档时跟着局面走，切回来重复结算仍覆盖同一条记录 */
+  matchId: string | null
+}
+
 const newId = () => crypto.randomUUID()
 
-/** 通用模板的初始条目数：够看出「这是一张可以自己填的纸」，又不至于一屏全是待办 */
-const CUSTOM_SEED = 5
+/** 通用模板的初始条目数：一条够表明「这是一张可以自己填的纸」，其余让桌上自己加 */
+const CUSTOM_SEED = 1
 
 /**
  * 默认条目名是**存进 localStorage 的快照**，所以在这里用 `i18n.t` 取当下语言的字面量，
@@ -77,6 +93,16 @@ type SheetState = {
   lastActiveAt: number
   /** 选中的格子。不 persist —— 重开该是干净的，同 score 的 undoStack */
   pick: Pick | null
+  /**
+   * 本局已归档记录的 id。结算面板打开即归档，之后重复结算 / 补备注都拿它**覆盖同一条**，
+   * 而不是再记一条。开新局 / 清人 / 读回另一局历史时跟着换
+   */
+  matchId: string | null
+  /** 非激活模板的局面档（见 [SheetSnapshot]）。激活模板**不在**里面 —— 它住在上面的扁平字段 */
+  sheets: Record<string, SheetSnapshot>
+
+  /** 结算面板归档成功后回写记录 id */
+  setMatchId: (id: string) => void
 
   setTemplate: (templateId: string) => void
   /** 列数不设上限：列多了矩阵转横滚、颜色开始复用，但不拦着加 */
@@ -110,7 +136,8 @@ type SheetState = {
   renameEntry: (entryId: string, label: string) => void
   removeEntry: (entryId: string) => void
   /**
-   * 新一局：只清分数，留席位 / 模板 / 自定义条目（换局通常还是这桌人这个游戏）。
+   * 新一局：只清分数，留模板 / 自定义条目。席位看时间窗 —— 同一桌（[SAME_TABLE_WINDOW_MS]）
+   * 留着直接开，隔得太久多半换了一桌人，连席位一起清回选人。
    * **它自己不归档** —— 归档统一走结算面板（[MatchFinish](../../shared/match/MatchFinish.tsx)），
    * 调用方负责先弹面板再落到这里
    */
@@ -118,9 +145,10 @@ type SheetState = {
   /**
    * 把一局历史读回当前局。**先归档当前局**（手滑点到不该丢掉正在打的那局），
    * 再整份覆盖局面。历史里被读的那条**不删** —— 这是「读取」不是「取出」。
-   * `endAt` 是那条记录的结束时刻，读回来当作它的最后活动时间
+   * `endAt` 是那条记录的结束时刻，读回来当作它的最后活动时间；
+   * `id` 记下来：在这张表上再结算是**覆盖那条记录**，不是新记一局
    */
-  loadGame: (payload: SheetPayload, endAt: number) => void
+  loadGame: (payload: SheetPayload, endAt: number, id?: string) => void
 }
 
 export function cellKey(seatId: string, entryId: string): string {
@@ -145,26 +173,31 @@ export function isComplete(seats: Seat[], cells: Record<string, number>): boolea
 
 /**
  * 当前局收成一条待归档记录：分数用现成的 `entriesOf` / `totalOf` 复算，名次交给
- * [rankByScore](../../shared/match/result.ts)，原始局面原样进 `payload`（见 [SheetPayload](payload.ts)）。
+ * [rankByScore](../../shared/match/result.ts)，局面进 `payload`（见 [SheetPayload](payload.ts)）。
+ * 席位名/色先过一道 [finalizeSeats](../../shared/players/seats.ts)：名单里改过的要跟到图里。
  *
  * **在打开结算面板那一刻取一次**，之后面板里的改动都落在这份副本上。
  */
 export function sheetMatchDraft(): MatchDraft {
   const s = useSheetStore.getState()
+  // 定稿时刻以名单为准刷新席位名/色（finalizeSeats），让导出与屏幕上的表头是同一份
+  const seats = finalizeSeats(s.seats)
   const entries = entriesOf(s.templateId, s.customEntries, s.overrides)
-  const scored = seatsToPlayers(s.seats).map((p, i) => ({
+  const scored = seatsToPlayers(seats).map((p, i) => ({
     ...p,
-    score: totalOf(entries, s.cells, s.seats[i].id),
+    score: totalOf(entries, s.cells, seats[i].id),
   }))
   const payload: SheetPayload = {
     templateId: s.templateId,
     customEntries: s.customEntries,
     overrides: s.overrides,
-    seats: s.seats,
+    seats,
     cells: s.cells,
     startedAt: s.startedAt,
   }
   return {
+    // 带上已归档记录的 id：重复结算覆盖同一条，不在历史里攒出一串分身
+    id: s.matchId ?? undefined,
     startedAt: s.startedAt,
     endAt: s.lastActiveAt,
     gameId: findTemplate(s.templateId).gameId,
@@ -198,9 +231,44 @@ export const useSheetStore = create<SheetState>()(
       startedAt: Date.now(),
       lastActiveAt: Date.now(),
       pick: null,
+      matchId: null,
+      sheets: {},
 
-      // 切模板**不清分数**：entryId 是稳定字面量，换走的条目只是暂时不显示，切回来还在
-      setTemplate: (templateId) => set({ templateId, pick: null }),
+      setMatchId: (id) => set({ matchId: id }),
+
+      /*
+       * 换档：换出时把当前局面存进 `sheets`，换入时取回 —— 各模板各记一份，
+       * 从没开过的模板落到空局面（新开始时间、重新选人）。
+       * 空局面（没坐人也没填分）不占档，切走即弃。
+       */
+      setTemplate: (templateId) => {
+        const s = get()
+        if (templateId === s.templateId) {
+          set({ pick: null })
+          return
+        }
+        const sheets = { ...s.sheets }
+        if (s.seats.length > 0 || Object.keys(s.cells).length > 0) {
+          sheets[s.templateId] = {
+            seats: s.seats,
+            cells: s.cells,
+            startedAt: s.startedAt,
+            lastActiveAt: s.lastActiveAt,
+            matchId: s.matchId,
+          }
+        } else {
+          delete sheets[s.templateId]
+        }
+        const next = sheets[templateId]
+        delete sheets[templateId]
+        const now = Date.now()
+        set({
+          templateId,
+          sheets,
+          pick: null,
+          ...(next ?? { seats: [], cells: {}, startedAt: now, lastActiveAt: now, matchId: null }),
+        })
+      },
 
       addSeat: () => {
         const { seats } = get()
@@ -224,7 +292,7 @@ export const useSheetStore = create<SheetState>()(
 
       clearSeats: () => {
         const now = Date.now()
-        set({ seats: [], cells: {}, pick: null, startedAt: now, lastActiveAt: now })
+        set({ seats: [], cells: {}, pick: null, startedAt: now, lastActiveAt: now, matchId: null })
       },
 
       bindPlayer: (seatId, player) =>
@@ -296,11 +364,23 @@ export const useSheetStore = create<SheetState>()(
 
       newGame: () => {
         const now = Date.now()
-        set({ cells: {}, pick: null, startedAt: now, lastActiveAt: now })
+        // 隔太久的「新一局」多半已经换了一桌人：连席位一起清，回到选人开局
+        const sameTable = now - get().startedAt < SAME_TABLE_WINDOW_MS
+        set({
+          cells: {},
+          pick: null,
+          startedAt: now,
+          lastActiveAt: now,
+          matchId: null,
+          ...(sameTable ? {} : { seats: [] }),
+        })
       },
 
-      loadGame: ({ templateId, customEntries, overrides, seats, cells, startedAt }, endAt) => {
+      loadGame: ({ templateId, customEntries, overrides, seats, cells, startedAt }, endAt, id) => {
         archiveCurrent(get())
+        // 载入的模板不许在 sheets 里留旧档：它已成当前局，再切走时会以现在这份重新入档
+        const sheets = { ...get().sheets }
+        delete sheets[templateId]
         set({
           templateId,
           customEntries,
@@ -311,11 +391,16 @@ export const useSheetStore = create<SheetState>()(
           startedAt: startedAt ?? endAt,
           lastActiveAt: endAt,
           pick: null,
+          matchId: id ?? null,
+          sheets,
         })
       },
     }),
     {
       name: 'bgtools:score-sheet',
+      version: 1,
+      // v0 没有 sheets：老数据原样成为当前档，历史档为空
+      migrate: (persisted) => ({ ...(persisted as SheetState), sheets: {} }),
       partialize: ({
         templateId,
         customEntries,
@@ -324,6 +409,8 @@ export const useSheetStore = create<SheetState>()(
         cells,
         startedAt,
         lastActiveAt,
+        matchId,
+        sheets,
       }) => ({
         templateId,
         customEntries,
@@ -332,6 +419,8 @@ export const useSheetStore = create<SheetState>()(
         cells,
         startedAt,
         lastActiveAt,
+        matchId,
+        sheets,
       }),
     },
   ),

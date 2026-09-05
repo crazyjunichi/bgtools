@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { QuickBar } from './quick/QuickBar'
 import { useBackOverride } from './shared/backOverride'
+import { useHeaderTitle } from './shared/headerTitle'
 import { canRotate, useOrientation } from './shared/hooks/useOrientation'
 import { IconBack, IconLogo, IconRotate } from './shared/icons'
 import type { ToolEntry } from './tools/types'
@@ -24,6 +25,8 @@ export function AppHeader({ tool }: Props) {
   const { landscape, toggle } = useOrientation()
   // 工具内子视图注册的返回接管（如狼人真言的主持页）：有它时返回回工具入口而非首页
   const onBack = useBackOverride((s) => s.onBack)
+  // 工具页对标题的临时接管（如计分纸从游戏卡进入时显示那盒游戏），见 shared/headerTitle
+  const titleOverride = useHeaderTitle((s) => s.title)
 
   return (
     <header
@@ -74,7 +77,9 @@ export function AppHeader({ tool }: Props) {
                 '-me-[0.25em] text-base font-bold tracking-[0.25em]'
           }`}
         >
-          {tool ? `${tool.icon} ${t(tool.nameKey)}` : t('app.title')}
+          {tool
+            ? `${titleOverride?.icon ?? tool.icon} ${t(titleOverride?.nameKey ?? tool.nameKey)}`
+            : t('app.title')}
         </h1>
         {/* 小工具入口（首页直达配置类那两个，工具页收进 tile 面板）+ 计时器芯片 */}
         <QuickBar home={!tool} />

@@ -1,352 +1,252 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ConfirmButton } from '../components/ConfirmButton'
 import { FIELD } from '../components/fieldStyle'
 import { Overlay } from '../components/Overlay'
-import { findGame, GAMES } from '../games/registry'
 import { IconCheck, IconCrown, IconRepeat, IconShare } from '../icons'
-import { PLAYER_DOT } from '../players/colors'
+import { PLAYER_LINE } from '../players/colors'
 import { useArchiveStore } from './archive'
 import type { MatchExport } from './detail'
-import { durationText } from './format'
-import { MatchChips } from './MatchChips'
+import { durationText, fmtScore } from './format'
 import { NOTE_MAX } from './MatchNote'
 import { MatchShare } from './MatchShare'
-import { coopResult, teamResult } from './result'
 import type { MatchDraft } from './types'
+
+/**
+ * 时长滑杆的档位（分钟）。密段压在常见桌游时长上，长尾到 5 小时；
+ * 档位是索引不是连续值 —— 拖起来一格一跳，不会停在 77 这种零头上
+ */
+const DURATION_STEPS_MIN = [5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 90, 105, 120, 150, 180, 240, 300]
+
+/** 测得的时长吸附到最近的档位，作为滑杆的初始位置 */
+function nearestStepIdx(ms: number): number {
+  const min = ms / 60_000
+  let best = 0
+  for (let i = 1; i < DURATION_STEPS_MIN.length; i++) {
+    if (Math.abs(DURATION_STEPS_MIN[i] - min) < Math.abs(DURATION_STEPS_MIN[best] - min)) best = i
+  }
+  return best
+}
 
 type Props = {
   /**
    * 工具算好的这一局。**在打开面板那一刻取一次快照**（尤其是 `endAt`，
-   * 它是最后一次实质操作的时刻而不是现在），面板里的改动都只落在这份副本上。
-   * 分数与名次由工具算（只有它知道怎么算），面板只让人调「谁算赢」这类规则外的判断。
+   * 它是最后一次实质操作的时刻而不是现在）。分数与名次由工具算（只有它知道怎么算），
+   * 面板不做任何规则判断 —— 打开即归档，它本身就是「记好了」的完成态
    */
   draft: MatchDraft
   /**
-   * 这个工具自己的明细导出，给「已记录」态那个分享按钮用。
+   * 计分纸这类**玩完才摊开记**的工具测不到真实游戏时长（量到的只是记账耗时），
+   * 传它来给玩家一个报真实时长的滑杆；边玩边记的工具不传，测得的时长就是真的
+   */
+  editableDuration?: boolean
+  /**
+   * 这个工具自己的明细导出，给分享按钮用。
    * **由工具页传进来**：shared 不许去查 tools 的注册表，而工具页知道自己的
    */
   exports?: readonly MatchExport[]
-  /** 记录成功（或用户选了不记录）之后开新局 */
+  /** 归档成功后回传记录 id：工具 store 记下它，同一局再结算才覆盖得中 */
+  onArchived: (id: string) => void
+  /** 开新局（记录已落盘） */
   onDone: () => void
   onClose: () => void
 }
-
-const ROW = 'btn-base w-full justify-between gap-3 border px-3 text-base short:!min-h-11'
-const ROW_OFF = 'border-line bg-surface-2 text-text'
-/** 获胜态：语义色 emerald（完成）+ 皇冠，两重编码 —— 颜色不许是唯一编码 */
-const ROW_WIN = 'border-emerald-500/60 bg-emerald-500/15 text-emerald-300'
 
 /**
  * 一局结束时的结算面板 —— **所有工具共用这一个出口**，历史与统计才只依赖一种记录形态。
  *
  * 它不持有「当前局」：谁参与了这一局只属于打开它的那个工具页，
  * 面板只是把那份状态收成一条 [Match](types.ts) 写进存档（见 [archive](archive.ts)）。
+ * 没有「要不要记」这一步：点「本局结算」就是记，弹出的直接是完成态。
  */
-export function MatchFinish({ draft, exports, onDone, onClose }: Props) {
-  const { t, i18n } = useTranslation()
+export function MatchFinish({ draft, editableDuration = false, exports, onArchived, onDone, onClose }: Props) {
+  const { t } = useTranslation()
   const status = useArchiveStore((s) => s.status)
   const load = useArchiveStore((s) => s.load)
   const archive = useArchiveStore((s) => s.archive)
 
-  const { mode, startedAt, endAt } = draft
-  const [gameId, setGameId] = useState(draft.gameId)
-  const [players, setPlayers] = useState(draft.players)
-  const [coopWin, setCoopWin] = useState(true)
-  const [winnerTeam, setWinnerTeam] = useState<string | null>(null)
-  const [note, setNote] = useState('')
-  /**
-   * 已经写进存档的那一局。**记下来之后不立刻开新局** ——
-   * 刚打完那一下正是最想分享的时刻，而开了新局这一局的 draft 就没处拿了
-   */
-  const [saved, setSaved] = useState<MatchDraft | null>(null)
+  /** 落盘成功的记录 id；null = 还没写完，或这台设备记不下来 */
+  const [savedId, setSavedId] = useState<string | null>(null)
+  const [note, setNote] = useState(draft.note ?? '')
+  /** 滑杆档位索引；null = 没动过，沿用测得的时长 */
+  const [stepIdx, setStepIdx] = useState<number | null>(null)
   const [sharing, setSharing] = useState(false)
+  // StrictMode 与重渲染都不能让归档跑第二遍，否则同一局记两条
+  const once = useRef(false)
 
-  // 读一次盘只为知道 IDB 能不能用：禁用时得当场告诉用户这局记不下来，而不是静默丢掉
   useEffect(() => {
-    void load()
-  }, [load])
+    if (once.current) return
+    once.current = true
+    void (async () => {
+      await load()
+      const id = await archive(draft)
+      if (id !== null) {
+        setSavedId(id)
+        onArchived(id)
+      }
+    })()
+  }, [archive, draft, load, onArchived])
 
-  const game = findGame(gameId)
-  const teams = game?.teams ?? []
+  // IDB 打不开不算崩点：分享照用，只是明确说这局记不下来
+  const unavailable = savedId === null && status === 'unavailable'
 
-  /** 选游戏的列表按当前语言的名字排 —— 中文下是拼音序，比声明序好扫 */
-  const options = useMemo(
-    () =>
-      GAMES.map((g) => ({ id: g.id, icon: g.icon, name: t(g.nameKey) })).sort((a, b) =>
-        a.name.localeCompare(b.name, i18n.language),
-      ),
-    [t, i18n],
-  )
+  const measuredMs = Math.max(0, draft.endAt - draft.startedAt)
+  /** 面板里到处显示的那份时长：没动滑杆就是测得值，动了就是选的那档 */
+  const shownMs = stepIdx === null ? measuredMs : DURATION_STEPS_MIN[stepIdx] * 60_000
 
-  const unavailable = status === 'unavailable'
-
-  const toggleWin = (i: number) =>
-    setPlayers(
-      players.map((p, idx) =>
-        idx === i ? { ...p, outcome: p.outcome === 'win' ? 'loss' : 'win' } : p,
-      ),
-    )
-
-  const setTeam = (i: number, teamId: string) =>
-    setPlayers(players.map((p, idx) => (idx === i ? { ...p, teamId } : p)))
-
-  const save = () => {
-    const final =
-      mode === 'coop'
-        ? coopResult(players, coopWin)
-        : mode === 'team'
-          ? teamResult(players, winnerTeam)
-          : players
-    const trimmed = note.trim()
-    const next: MatchDraft = {
-      ...draft,
-      gameId,
-      players: final,
-      note: trimmed === '' ? undefined : trimmed,
-    }
-    void archive(next)
-    setSaved(next)
-  }
+  /*
+   * 备注与时长是这局面板里唯二能改的东西，共用一条防抖覆盖写回：
+   * 打字和拖滑杆都会连着出一串值，停下来才落盘。改时长是以 endAt 为锚倒推
+   * startedAt 写回 —— Match 没有单独的时长字段，startedAt/endAt 的差就是它
+   */
+  useEffect(() => {
+    if (savedId === null) return
+    if (stepIdx === null && note.trim() === (draft.note ?? '')) return
+    const timer = setTimeout(() => {
+      void archive({
+        ...draft,
+        id: savedId,
+        startedAt: stepIdx === null ? draft.startedAt : draft.endAt - shownMs,
+        note: note.trim() === '' ? undefined : note.trim(),
+      })
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [archive, draft, note, savedId, shownMs, stepIdx])
 
   const header = (
     <span className="flex min-w-0 flex-col">
       <span className="text-lg font-bold">{t('match.title')}</span>
-      <span className="truncate text-xs text-text-dim">
-        {t('match.duration')} · {durationText(t, Math.max(0, endAt - startedAt))}
+      {/* 「已记录」只是状态，收进副标题：emerald 在全场面板里只留给「开新局」这个主操作。
+          可调时长的面板里时长由滑杆行显示，副标题不重复 */}
+      <span className="flex min-w-0 items-center gap-1 text-xs text-text-dim">
+        {!editableDuration && (
+          <span className="shrink-0 tabular-nums">
+            {t('match.duration')} · {durationText(t, shownMs)}
+          </span>
+        )}
+        {!unavailable && (
+          <span className="flex shrink-0 items-center gap-0.5 text-emerald-300">
+            {!editableDuration && '· '}
+            <IconCheck className="size-3.5" aria-hidden />
+            {t('match.saved')}
+          </span>
+        )}
       </span>
     </span>
   )
 
-  /*
-   * 已记录态：这一局已经落盘，所以那些选项不再可改（改了也写不回去），
-   * 只剩「拿走它」和「开下一局」两个去处
-   */
-  if (saved !== null) {
-    return (
-      <Overlay maxWidth="max-w-lg" title={header} onClose={onClose}>
-        <p className="flex items-center gap-2 text-base text-emerald-300">
-          <IconCheck className="size-6 shrink-0 short:size-5" aria-hidden />
-          {t('match.saved')}
-        </p>
-
-        <MatchChips players={saved.players} />
-
-        <button
-          type="button"
-          onClick={() => setSharing(true)}
-          className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
-        >
-          <IconShare className="size-6 short:size-5" aria-hidden />
-          {t('match.share.title')}
-        </button>
-
-        <button
-          type="button"
-          onClick={onDone}
-          className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink short:!min-h-11"
-        >
-          <IconRepeat className="size-6 short:size-5" aria-hidden />
-          {t('match.newGame')}
-        </button>
-
-        {sharing && (
-          <MatchShare match={saved} exports={exports} onClose={() => setSharing(false)} />
-        )}
-      </Overlay>
-    )
-  }
-
   return (
-    <Overlay maxWidth="max-w-lg" title={header} onClose={onClose}>
-      {draft.gameId === null && (
-        <div className="flex flex-col gap-2">
-          <span className="section-label">{t('match.gameLabel')}</span>
-          {/* 约束的是高度，所以是 vh 不是 vmin */}
-          <div className="flex max-h-[26vh] flex-wrap gap-2 overflow-y-auto">
-            <button
-              type="button"
-              onClick={() => setGameId(null)}
-              aria-pressed={gameId === null}
-              className={`btn-base min-w-24 flex-1 border px-3 text-base short:!min-h-11 ${
-                gameId === null ? 'border-sky-500/60 bg-sky-500/15 text-sky-200 light:text-sky-700' : ROW_OFF
-              }`}
-            >
-              {t('match.gameNone')}
-            </button>
-            {options.map((g) => (
-              <button
-                key={g.id}
-                type="button"
-                onClick={() => setGameId(g.id)}
-                aria-pressed={gameId === g.id}
-                className={`btn-base min-w-32 flex-1 gap-2 border px-3 text-base short:!min-h-11 ${
-                  gameId === g.id ? 'border-sky-500/60 bg-sky-500/15 text-sky-200 light:text-sky-700' : ROW_OFF
-                }`}
-              >
-                <span aria-hidden>{g.icon}</span>
-                <span className="truncate">{g.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+    <Overlay maxWidth="max-w-lg wide:max-w-2xl" title={header} onClose={onClose}>
+      {unavailable && (
+        <p className="text-sm leading-relaxed text-amber-300">{t('match.unavailable')}</p>
       )}
 
-      {mode === 'coop' && (
-        <div className="flex flex-col gap-2">
-          <span className="section-label">{t('match.coopQuestion')}</span>
-          <div className="grid grid-cols-2 gap-2">
-            {([true, false] as const).map((win) => (
-              <button
-                key={String(win)}
-                type="button"
-                onClick={() => setCoopWin(win)}
-                aria-pressed={coopWin === win}
-                className={`btn-base gap-2 border px-3 text-base short:!min-h-11 ${
-                  coopWin === win ? ROW_WIN : ROW_OFF
-                }`}
-              >
-                {coopWin === win && <IconCheck className="size-5" aria-hidden />}
-                {t(win ? 'match.coopWin' : 'match.coopLoss')}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {mode === 'team' && teams.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <span className="section-label">{t('match.winnerTeam')}</span>
-          <div className="flex flex-wrap gap-2">
-            {teams.map((team) => (
-              <button
-                key={team.id}
-                type="button"
-                onClick={() => setWinnerTeam(team.id)}
-                aria-pressed={winnerTeam === team.id}
-                className={`btn-base min-w-28 flex-1 gap-2 border px-3 text-base short:!min-h-11 ${
-                  winnerTeam === team.id ? ROW_WIN : ROW_OFF
-                }`}
-              >
-                {winnerTeam === team.id && <IconCheck className="size-5" aria-hidden />}
-                {t(team.nameKey)}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-2">
-        <span className="section-label">{t('match.players')}</span>
-        <div className="flex max-h-[34vh] flex-col gap-2 overflow-y-auto">
-          {players.map((p, i) => {
-            const dot = (
-              <span
-                className={`size-3 shrink-0 rounded-full ${PLAYER_DOT[p.color]}`}
-                aria-hidden
-              />
-            )
-            const name = <span className="truncate">{p.name}</span>
-
-            if (mode === 'ranked') {
+      {/*
+       * 横屏两列（同 MatchShare 的预览/控制分栏）：左列结果榜是唯一的弹性块，
+       * 人多时在框里自滚；右列滑杆/备注/按钮全刚性。竖屏堆叠，结果榜照样给一个
+       * 高度上限自滚 —— 浮层整体（Overlay 的 card）不许滚
+       */}
+      <div className="flex min-h-0 flex-col gap-4 wide:flex-row short:gap-3">
+        {/*
+         * 结果榜是这局面板的主角：名次/胜负在 draft 里已经算好，这里只展示。
+         * 按名次排（draft 里是座位序），分数用大字号 mono —— 全场面板里最大的内容是结果，
+         * 不是按钮。胜者行给 emerald 淡底 + 王冠两重编码（颜色不许是唯一编码）
+         */}
+        <div className="flex max-h-[38vh] min-h-0 flex-col gap-1 overflow-y-auto rounded-xl bg-surface-2 p-2 wide:max-h-[60vh] wide:flex-1">
+          {[...draft.players]
+            .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+            .map((p, i) => {
               const win = p.outcome === 'win'
               return (
-                <button
+                <span
                   key={i}
-                  type="button"
-                  onClick={() => toggleWin(i)}
-                  aria-pressed={win}
-                  aria-label={t('match.markWin', { name: p.name })}
-                  className={`${ROW} shrink-0 ${win ? ROW_WIN : ROW_OFF}`}
+                  className={`flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-2 ${
+                    win ? 'bg-emerald-500/10' : ''
+                  }`}
                 >
-                  <span className="flex min-w-0 items-center gap-3">
-                    {dot}
-                    {name}
+                  {win ? (
+                    <IconCrown className="size-5 shrink-0 text-amber-300" aria-hidden />
+                  ) : (
+                    /* 占位对齐：有无王冠的行，名字要对在同一条竖线上 */
+                    <span className="size-5 shrink-0" aria-hidden />
+                  )}
+                  <span
+                    className={`min-w-0 truncate rounded-md border-b-2 px-2 py-0.5 text-base font-bold ${PLAYER_LINE[p.color]}`}
+                  >
+                    {p.name}
                   </span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    {/* 名次由分数算出、这里不给改：改了就和这局的分数自相矛盾 */}
-                    <span className="text-xs tabular-nums text-text-dim">
-                      {t('match.rank', { n: p.rank ?? 1 })}
+                  {p.score !== undefined && (
+                    <span className="ml-auto font-mono text-xl font-bold tabular-nums">
+                      {fmtScore(p.score)}
                     </span>
-                    <span className="font-mono tabular-nums">{p.score ?? 0}</span>
-                    {win && <IconCrown className="size-5" aria-hidden />}
-                  </span>
-                </button>
-              )
-            }
-
-            if (mode === 'team' && teams.length > 0) {
-              return (
-                <div
-                  key={i}
-                  className={`flex shrink-0 flex-col gap-2 rounded-xl border p-3 ${ROW_OFF}`}
-                >
-                  <span className="flex min-w-0 items-center gap-3 text-base">
-                    {dot}
-                    {name}
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {teams.map((team) => (
-                      <button
-                        key={team.id}
-                        type="button"
-                        onClick={() => setTeam(i, team.id)}
-                        aria-pressed={p.teamId === team.id}
-                        aria-label={`${p.name} · ${t(team.nameKey)}`}
-                        className={`btn-base min-w-24 flex-1 gap-2 border px-3 text-sm short:!min-h-11 ${
-                          p.teamId === team.id
-                            ? 'border-sky-500/60 bg-sky-500/15 text-sky-200 light:text-sky-700'
-                            : ROW_OFF
-                        }`}
-                      >
-                        {p.teamId === team.id && <IconCheck className="size-4" aria-hidden />}
-                        {t(team.nameKey)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )
-            }
-
-            return (
-              <div key={i} className={`${ROW} shrink-0 ${ROW_OFF}`}>
-                <span className="flex min-w-0 items-center gap-3">
-                  {dot}
-                  {name}
+                  )}
                 </span>
-              </div>
-            )
-          })}
+              )
+            })}
+        </div>
+
+        <div className="flex shrink-0 flex-col gap-4 wide:w-72 short:gap-3">
+          {editableDuration && (
+            <div className="flex flex-col">
+              <span className="flex items-baseline justify-between gap-2">
+                <span className="section-label">{t('match.playTime')}</span>
+                <span className="font-mono text-base font-bold tabular-nums">
+                  {durationText(t, shownMs)}
+                </span>
+              </span>
+              <input
+                type="range"
+                min={0}
+                max={DURATION_STEPS_MIN.length - 1}
+                step={1}
+                value={stepIdx ?? nearestStepIdx(measuredMs)}
+                onChange={(e) => setStepIdx(Number(e.target.value))}
+                aria-label={t('match.playTime')}
+                aria-valuetext={durationText(t, shownMs)}
+                className="slider-lg"
+              />
+            </div>
+          )}
+
+          {/* 备注没有小标签：placeholder 说的就是同一件事，aria-label 留给读屏 */}
+          <input
+            value={note}
+            onChange={(e) => setNote(e.target.value.slice(0, NOTE_MAX))}
+            placeholder={t('match.notePlaceholder')}
+            aria-label={t('match.note')}
+            className={FIELD}
+          />
+
+          <button
+            type="button"
+            onClick={() => setSharing(true)}
+            className="btn-base gap-2 border border-line bg-surface-2 text-base short:!min-h-11"
+          >
+            <IconShare className="size-6 short:size-5" aria-hidden />
+            {t('match.share.title')}
+          </button>
+
+          <button
+            type="button"
+            onClick={onDone}
+            className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink short:!min-h-11"
+          >
+            <IconRepeat className="size-6 short:size-5" aria-hidden />
+            {t('match.newGame')}
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="section-label">{t('match.note')}</span>
-        <input
-          value={note}
-          onChange={(e) => setNote(e.target.value.slice(0, NOTE_MAX))}
-          placeholder={t('match.notePlaceholder')}
-          aria-label={t('match.note')}
-          className={FIELD}
+      {sharing && (
+        <MatchShare
+          match={{
+            ...draft,
+            startedAt: draft.endAt - shownMs,
+            note: note.trim() === '' ? undefined : note.trim(),
+          }}
+          exports={exports}
+          onClose={() => setSharing(false)}
         />
-      </div>
-
-      {unavailable ? (
-        <p className="text-sm leading-relaxed text-amber-300">{t('match.unavailable')}</p>
-      ) : (
-        <button
-          type="button"
-          onClick={save}
-          className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink short:!min-h-11"
-        >
-          <IconCheck className="size-6 short:size-5" aria-hidden />
-          {t('match.save')}
-        </button>
       )}
-
-      <ConfirmButton onConfirm={onDone} confirmText={t('match.confirmDiscard')}>
-        {t('match.discard')}
-      </ConfirmButton>
     </Overlay>
   )
 }

@@ -109,7 +109,7 @@ export function QuickPick() {
         {/* 受约束的只有高度，所以是 vh 而不是 vmin */}
         <div className="flex max-h-[min(18rem,42vh)] flex-wrap content-start gap-2 overflow-y-auto">
           {views.map((v) => (
-            <PlayerChip key={v.id} player={v} variant={v.id === litId ? 'solid' : 'soft'} />
+            <PlayerChip key={v.id} player={v} variant={v.id === litId ? 'line' : 'soft'} />
           ))}
         </div>
       </div>

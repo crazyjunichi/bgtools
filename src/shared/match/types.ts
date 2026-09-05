@@ -66,5 +66,9 @@ export type Match = {
   legacy?: boolean
 }
 
-/** 一局的内容，不含主键与写入时刻 —— `archive` 的入参 */
-export type MatchDraft = Omit<Match, 'id' | 'at' | 'legacy'>
+/**
+ * 一局的内容，不含写入时刻 —— `archive` 的入参。
+ * 带上 `id` 就是**覆盖那条已有记录**（同一局重复结算、结算面板里补备注），
+ * 不带就是新记一条。工具 store 持久化本局的记录 id 来串起这条线
+ */
+export type MatchDraft = Omit<Match, 'id' | 'at' | 'legacy'> & { id?: string }

@@ -36,8 +36,8 @@ export type QuickTool = {
   descKey: I18nKey
   /**
    * 是否在首页的「快捷工具」区露出。**刻意必填**：新增小工具时要自己做这个判断。
-   * 判据是「开局中会不会随手用一下」—— 名单与设置是开局前配一次的东西，
-   * 首页给它们一张同等大小的卡会把真正常用的三个挤下去；顶栏入口照旧全量。
+   * 判据是「开局前还是开局中用」—— 扫码/出示/设置是开局前配一次的东西，
+   * 首页不给卡、只留顶栏直达；宫格里的点开即弹 dialog。
    */
   onHome: boolean
   /** 顶栏是功能入口而非内容，所以走 shared/icons 而不是 emoji */
@@ -102,12 +102,12 @@ export const quickTools: QuickTool[] = [
     wide: true,
     needsMatch: true,
   },
-  // 名单不是"临时用一下"，但入口性质相同：任何工具页里都要能随手改，且不占版面
+  // 名单在首页宫格有一张卡；工具页里照旧走 tile 面板，随时能改
   {
     id: 'players',
     nameKey: 'quick.players.name',
     descKey: 'quick.players.desc',
-    onHome: false,
+    onHome: true,
     icon: IconPlayers,
     accent: 'teal',
     Component: QuickPlayers,

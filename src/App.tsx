@@ -23,6 +23,12 @@ const PAD_X =
  */
 const PAD_X_HOME = 'ps-[env(safe-area-inset-left)] pe-[env(safe-area-inset-right)]'
 
+/**
+ * 工具页内容区的整套内距（含刘海避让）。铺满 main 的整页浮层（发身份配比页）靠它原样补回 ——
+ * absolute 锚在 main 的 padding box 上，main 自己的内距对盖上来的层不生效。
+ */
+export const MAIN_PAD_TOOL = `${PAD_B} ${PAD_X} pt-2 wide:pt-[calc(0.5rem_+_env(safe-area-inset-top))]`
+
 export default function App() {
   const { pathname } = useLocation()
   const tool = findTool(pathname)
@@ -48,12 +54,11 @@ export default function App() {
       <AppHeader tool={tool} />
 
       {/* 顶部刘海只在工具页横屏由内容区自己让 —— 那时顶栏在左侧，顶边整条归内容。
-          竖屏与首页的通栏顶栏已经把它吃掉了，这里再让一次就白空一条 */}
+          竖屏与首页的通栏顶栏已经把它吃掉了，这里再让一次就白空一条。
+          relative 是铺满内容区的整页浮层（发身份配比页）的定位锚点，锚在外壳上会把顶栏也盖住 */}
       <main
-        className={`min-h-0 w-full min-w-0 flex-1 overflow-hidden ${PAD_B} ${
-          tool
-            ? `${PAD_X} pt-2 wide:pt-[calc(0.5rem_+_env(safe-area-inset-top))]`
-            : `${PAD_X_HOME} pt-2`
+        className={`relative min-h-0 w-full min-w-0 flex-1 overflow-hidden ${
+          tool ? MAIN_PAD_TOOL : `${PAD_B} ${PAD_X_HOME} pt-2`
         }`}
       >
         <Outlet />

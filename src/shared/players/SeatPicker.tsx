@@ -5,7 +5,7 @@ import { ConfirmButton } from '../components/ConfirmButton'
 import { Overlay } from '../components/Overlay'
 import { buzz } from '../haptics'
 import { IconCheck, IconDelete, IconEdit, IconPlayers } from '../icons'
-import { PLAYER_SOLID } from './colors'
+import { PLAYER_LINE } from './colors'
 import type { SeatView } from './seats'
 import { MAX_NAME_LEN, usePlayersStore, type Player } from './store'
 
@@ -86,13 +86,13 @@ export function SeatPicker({
             <span className="sr-only">{removeText}</span>
           </ConfirmButton>
           {/*
-           * 名字整块铺实心玩家色：这一屏底下满是人名按钮，得先说清"正在改的是哪一列"。
+           * 名字条带底部玩家色粗边：这一屏底下满是人名按钮，得先说清"正在改的是哪一列"。
            * 它本身就是输入框 —— 要改的正是这个名字，指到它比另起一行「重命名」更直接；
            * 左对齐 + 尾部笔形图标是唯一的"可编辑"暗示，居中会看着像个标题。
            */}
           <label
-            className={`flex min-h-12 min-w-0 flex-1 items-center gap-2 rounded-xl px-3 short:min-h-11 ${
-              PLAYER_SOLID[seat.color]
+            className={`flex min-h-12 min-w-0 flex-1 items-center gap-2 rounded-xl border-b-4 px-3 short:min-h-11 ${
+              PLAYER_LINE[seat.color]
             }`}
           >
             <input
@@ -153,10 +153,10 @@ export function SeatPicker({
                       ? t('players.seat.seated', { name: p.name })
                       : p.name
                 }
-                className={`btn-base min-w-0 gap-1 px-2 text-base short:!min-h-11 short:text-sm ${
-                  PLAYER_SOLID[p.color]
+                className={`btn-base min-w-0 gap-1 border-b-4 px-2 text-base short:!min-h-11 short:text-sm ${
+                  PLAYER_LINE[p.color]
                 } ${seated ? 'line-through' : ''} ${
-                  // 当前这一列的人：描边 + ✓ 两重编码（实心色已被"是谁"占用，颜色说不了"选中"）
+                  // 当前这一列的人：描边 + ✓ 两重编码（底线色已被"是谁"占用，颜色说不了"选中"）
                   current ? 'outline-2 outline-offset-2 outline-white' : ''
                 }`}
               >

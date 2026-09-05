@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useQuickUI } from '../../quick/store'
 import { buzz } from '../haptics'
 import { IconClose, IconPlayers } from '../icons'
-import { PLAYER_SOLID } from './colors'
+import { PLAYER_LINE } from './colors'
 import { usePlayersStore, type Player } from './store'
 
 type Props = {
@@ -26,7 +26,7 @@ const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-2'
  * 工具页"调出玩家名单"的通用入口件：**参与区 + 待选区**两栏。点待选卡加入（坐到末尾），
  * 点参与卡放回。名单的增删改一律回到顶栏「玩家名单」面板，不在工具里重复实现一套编辑 UI。
  *
- * 两栏都走实心玩家色（圆点形态已禁用）；参与卡是主角，多一个 ✕ 移除码。
+ * 两栏都走底线玩家色；参与卡是主角，多一个 ✕ 移除码。
  * 横屏下两栏并排各占一半、各自框内滚，竖屏堆叠成一栏。
  */
 export function PlayerSelect({ value, onChange, label, trailing }: Props) {
@@ -62,7 +62,7 @@ export function PlayerSelect({ value, onChange, label, trailing }: Props) {
                 type="button"
                 onClick={() => leave(p.id)}
                 aria-label={t('players.select.leave', { name: p.name })}
-                className={`btn-base gap-2 px-3 text-base short:!min-h-11 short:text-sm ${PLAYER_SOLID[p.color]}`}
+                className={`btn-base gap-2 border-b-4 px-3 text-base short:!min-h-11 short:text-sm ${PLAYER_LINE[p.color]}`}
               >
                 <span className="truncate">{p.name}</span>
                 <IconClose className="size-4 shrink-0" aria-hidden />
@@ -99,7 +99,7 @@ export function PlayerSelect({ value, onChange, label, trailing }: Props) {
                     type="button"
                     onClick={() => join(p.id)}
                     aria-label={t('players.select.join', { name: p.name })}
-                    className={`btn-base gap-2 px-3 text-base short:!min-h-11 short:text-sm ${PLAYER_SOLID[p.color]}`}
+                    className={`btn-base gap-2 border-b-4 px-3 text-base short:!min-h-11 short:text-sm ${PLAYER_LINE[p.color]}`}
                   >
                     <span className="truncate">{p.name}</span>
                   </button>

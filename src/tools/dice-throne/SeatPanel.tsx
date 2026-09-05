@@ -3,7 +3,7 @@ import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Overlay } from '../../shared/components/Overlay'
 import { buzz } from '../../shared/haptics'
 import { IconDelete, IconMinus, IconPlus } from '../../shared/icons'
-import { PLAYER_SOLID } from '../../shared/players/colors'
+import { PLAYER_LINE } from '../../shared/players/colors'
 import {
   CP_MAX,
   START_HP_MAX,
@@ -108,13 +108,13 @@ export function SeatPanel({ seat, onEditSeat, onRemove, onClose }: Props) {
             <IconDelete className="size-5" aria-hidden />
             <span className="sr-only">{t('tools.diceThrone.remove')}</span>
           </ConfirmButton>
-          {/* 整块实心玩家色就是换人入口 —— 要换的正是这个名字，指到它本身比另起图标直接 */}
+          {/* 玩家色粗边的名字条就是换人入口 —— 要换的正是这个名字，指到它本身比另起图标直接 */}
           <button
             type="button"
             onClick={onEditSeat}
             aria-label={t('tools.diceThrone.editSeat', { name: seat.name })}
-            className={`flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-xl px-3 text-lg font-bold short:min-h-11 ${
-              PLAYER_SOLID[seat.color]
+            className={`flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-xl border-b-4 px-3 text-lg font-bold short:min-h-11 ${
+              PLAYER_LINE[seat.color]
             }`}
           >
             <span className="truncate">{seat.name}</span>

@@ -1,8 +1,8 @@
-import { useCallback } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconCrown, IconEdit, IconPlus } from '../../shared/icons'
 import { fmtScore } from '../../shared/match/format'
-import { PLAYER_SOLID } from '../../shared/players/colors'
+import { PLAYER_LINE } from '../../shared/players/colors'
 import type { SeatView } from '../../shared/players/seats'
 import { tone } from '../../shared/tone'
 import {
@@ -27,11 +27,7 @@ type Props = {
    * 走这个 —— 是近距阅读不是桌上操作，下面那批回调在只读时一个都不需要
    */
   readOnly?: boolean
-  /**
-   * 左上角那格的游戏名与开局时刻。**只有当前局给** ——
-   * 历史回看的浮层标题上已经写着同样两条，表里再写一遍纯属重复
-   */
-  title?: string
+  /** 开局时刻，左上角那格显示已进行时长。**只有当前局给** —— 历史回看不需要它 */
   startedAt?: number
   pick?: Pick | null
   /** 通用空白模板：表尾多一行「添加条目」（行首点开的面板所有模板都有） */
@@ -42,25 +38,29 @@ type Props = {
   onAddEntry?: () => void
 }
 
-/** 行首列：条目名要放得下「未使用空地」这种五字词，横屏再宽一点 */
-const LEAD = 'w-28 wide:w-32'
+/**
+ * 行首列收缩到内容宽（1px 指定宽 + nowrap 的经典收缩列写法，table-auto 下成立），
+ * 余量全让给计分列；长条目名由 max-w 兜住走 truncate
+ */
+const LEAD = 'w-px max-w-36 whitespace-nowrap wide:max-w-44'
 
-/** 每人一列，宽度按「三位数还留得下一位余量」定，容量校核见 docs/DESIGN.md §3 */
-const COL = 'w-24'
+/** 计分列只保下限（容量校核见 docs/DESIGN.md §3），剩余宽度各列均分 */
+const COL = 'min-w-24'
 
 /** 列头胶囊（可编辑态）：整格是改名/换人按钮 */
 const SEAT_CHIP =
-  'flex min-h-12 w-full items-center justify-center rounded-lg px-1 text-sm font-bold short:min-h-11'
+  'flex min-h-12 w-full items-center justify-center rounded-lg border-b-4 px-1 text-sm font-bold transition-transform duration-75 active:scale-95 short:min-h-11'
 
-/** 格子（可编辑态）：整格是填分按钮 */
-const CELL = 'flex min-h-14 w-full flex-col items-center justify-center rounded-lg short:!min-h-11'
+/** 格子（可编辑态）：整格是填分按钮。无底无边 —— 纸面靠行线分格，按钮感只留给选中环 */
+const CELL =
+  'flex min-h-14 w-full flex-col items-center justify-center rounded-lg transition-transform duration-75 active:scale-95 short:!min-h-11'
 
 /*
  * 只读回看是近距阅读（统计页 / 历史浮层），不是桌上操作：
  * 没有触控目标，不画矩形底，行高交给文字与分隔线
  */
 const SEAT_CHIP_RO =
-  'flex min-h-8 w-full items-center justify-center rounded-md px-2 text-sm font-bold'
+  'flex min-h-8 w-full items-center justify-center rounded-md border-b-2 px-2 text-sm font-bold'
 const CELL_RO = 'flex w-full flex-col items-center justify-center gap-0.5 py-1'
 
 /**
@@ -75,7 +75,6 @@ export function SheetGrid({
   entries,
   cells,
   readOnly = false,
-  title,
   startedAt,
   pick = null,
   editable = false,
@@ -84,7 +83,7 @@ export function SheetGrid({
   onEditEntry,
   onAddEntry,
 }: Props) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   /**
    * 选中格滚进可见区。挂在 ref 而不是 effect 上：identity 稳定（useCallback），
@@ -100,51 +99,45 @@ export function SheetGrid({
   // 全场同分不戴王冠：人人有等于没有，只会让合计行更花
   const hasLeader = totals.some((v) => v !== best) && seats.length > 1
 
+  // 没有外框与纸面底色：表格直接铺在页面上，分隔只靠行线（sticky 行列头的底因此要与页面同色）
   return (
-    <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-line wide:min-w-0">
-      {/* min-w-max 让列宽跌到 COL 以下时改为横滚，而不是继续压窄到读不出数字 */}
-      <table className="w-full min-w-max table-fixed border-collapse">
+    <div className="min-h-0 flex-1 overflow-auto wide:min-w-0">
+      {/* min-w-max 让内容超出容器时改为横滚，而不是继续压窄到读不出数字 */}
+      <table className="w-full min-w-max table-auto border-collapse">
         <thead>
           <tr>
-            <th className={`sticky left-0 top-0 z-20 bg-surface p-1 ${LEAD}`}>
+            <th className={`sticky left-0 top-0 z-20 bg-canvas p-1 ${LEAD}`}>
               {/*
                * sr-only 的列头留着不动：读屏念每一行时要靠它知道首列是什么。
-               * 游戏名那块是纯视觉补充（aria-hidden），桌上一眼确认「这张纸是哪个游戏、什么时候开的」
+               * 经过时间是纯视觉角标（aria-hidden）；游戏名已上顶栏，这里不再重复
                */}
               <span className="sr-only">{t('tools.scoreSheet.entryCol')}</span>
-              {title && (
-                <span
-                  className="flex min-h-12 flex-col justify-center px-1 short:min-h-11"
-                  aria-hidden
-                >
-                  <span className="truncate text-sm font-bold leading-tight">{title}</span>
-                  {startedAt !== undefined && (
-                    <span className="truncate text-xs tabular-nums text-text-dim">
-                      {fmtStarted(startedAt, i18n.language)}
-                    </span>
-                  )}
+              {startedAt !== undefined && (
+                <span className="flex min-h-12 items-center px-1 short:min-h-11" aria-hidden>
+                  <Elapsed since={startedAt} />
                 </span>
               )}
             </th>
             {seats.map((s) => (
-              <th key={s.id} scope="col" className={`sticky top-0 z-10 bg-surface p-1 ${COL}`}>
+              <th key={s.id} scope="col" className={`sticky top-0 z-10 bg-canvas p-1 ${COL}`}>
                 {/*
                  * 列头整块是按钮：要改的正是这个名字，指到它本身比另起一个笔图标更直接。
                  * 改名/换人/移除都收在它打开的浮层里（[SeatPicker](../../shared/players/SeatPicker.tsx)）：
                  * 列宽摆不下这些按钮，桌上手一抖也点不准
                  */}
                 {readOnly ? (
-                  <span className={`${SEAT_CHIP_RO} ${PLAYER_SOLID[s.color]}`}>
-                    <span className="truncate">{s.name}</span>
+                  <span className={`${SEAT_CHIP_RO} ${PLAYER_LINE[s.color]}`}>
+                    {/* max-w 把列宽上限钉在内容侧：table-auto 下不约束的话，长名字会把整列撑爆 */}
+                    <span className="max-w-32 truncate">{s.name}</span>
                   </span>
                 ) : (
                   <button
                     type="button"
                     onClick={() => onEditSeat?.(s.id)}
                     aria-label={t('tools.scoreSheet.editSeat', { name: s.name })}
-                    className={`${SEAT_CHIP} ${PLAYER_SOLID[s.color]}`}
+                    className={`${SEAT_CHIP} ${PLAYER_LINE[s.color]}`}
                   >
-                    <span className="truncate">{s.name}</span>
+                    <span className="max-w-32 truncate">{s.name}</span>
                   </button>
                 )}
               </th>
@@ -157,7 +150,7 @@ export function SheetGrid({
             const name = entryLabel(e, t)
             return (
               <tr key={e.id} className="border-t border-line">
-                <td className={`sticky left-0 z-10 bg-surface p-1 ${LEAD}`}>
+                <td className={`sticky left-0 z-10 bg-canvas p-1 ${LEAD}`}>
                   {/*
                    * 可点的行首打开条目面板：换算表的**唯一去处**（放键盘会把键区顶得上下漂），
                    * 也能改这条按数量还是按总分算。改名/删除仍只对自定义条目开放。
@@ -168,7 +161,7 @@ export function SheetGrid({
                       type="button"
                       onClick={() => onEditEntry?.(e.id)}
                       aria-label={t('tools.scoreSheet.editEntry', { name })}
-                      className="btn-quiet !min-h-12 w-full gap-1.5 !justify-start px-2 text-left short:!min-h-11"
+                      className="btn-base !min-h-12 w-full gap-1.5 !justify-start px-2 text-left short:!min-h-11"
                     >
                       <IconEdit className="size-4 shrink-0 text-text-dim" aria-hidden />
                       <EntryName name={name} scoring={e.scoring} />
@@ -232,7 +225,7 @@ export function SheetGrid({
                             { name: s.name, entry: name, n: raw, score: fmtScore(score) },
                           )}
                           className={`${CELL} ${
-                            selected ? 'bg-violet-500/15 ring-2 ring-violet-400' : 'bg-surface-2'
+                            selected ? 'bg-violet-500/15 ring-2 ring-violet-400' : ''
                           }`}
                         >
                           {inner}
@@ -251,7 +244,7 @@ export function SheetGrid({
                 <button
                   type="button"
                   onClick={onAddEntry}
-                  className="btn-quiet !min-h-12 w-full gap-2 text-sm short:!min-h-11"
+                  className="btn-base !min-h-12 w-full gap-2 text-sm text-text-muted short:!min-h-11"
                 >
                   <IconPlus className="size-5" aria-hidden />
                   {t('tools.scoreSheet.addEntry')}
@@ -262,16 +255,23 @@ export function SheetGrid({
         </tbody>
 
         <tfoot>
-          <tr className="border-t-2 border-line">
+          {/*
+           * 总分行是这张纸的最后一行，不是贴上来的横幅：分界靠行上方的双线（记分簿惯例），
+           * 数字同墨色、靠字号与王冠说话。
+           * sticky 吸底遮住数据行时单靠双线不够：底色抬到 bg-surface（比页面高半档），
+           * 整行成一条连续亮带。**别用 box-shadow** —— border-collapse 下写在 td 上不渲染，
+           * 落在逐格内层块上又会被单元格内距切成一段一段
+           */}
+          <tr className="border-t-4 border-double border-text-dim">
             <td
-              className={`sticky bottom-0 left-0 z-20 bg-surface-2 px-2 py-1 ${LEAD}`}
+              className={`sticky bottom-0 left-0 z-20 bg-surface px-2 py-1 ${LEAD}`}
             >
               <span className="section-label">{t('tools.scoreSheet.total')}</span>
             </td>
             {seats.map((s, i) => (
               <td
                 key={s.id}
-                className={`sticky bottom-0 z-10 bg-surface-2 p-1 text-center ${COL}`}
+                className={`sticky bottom-0 z-10 bg-surface p-1 text-center ${COL}`}
               >
                 <span className="flex items-center justify-center gap-1">
                   {hasLeader && totals[i] === best && (
@@ -291,16 +291,21 @@ export function SheetGrid({
 }
 
 /**
- * 开局时刻。**掐掉年与秒**：行首列窄，完整的 `toLocaleString` 一定被截断，
- * 而桌上要认的只是「是不是刚开的那局」。跨天回看落在历史浮层，那里给的是全量时间。
+ * 开局至今的读秒（HH:MM:SS）。snapshot 取秒序号 —— 一秒内值稳定，不会反复重渲染。
+ * 时长是纯数字格式，与语言无关，不走 i18n
  */
-function fmtStarted(at: number, lang: string): string {
-  return new Date(at).toLocaleString(lang, {
-    month: 'numeric',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+function Elapsed({ since }: { since: number }) {
+  const secondsNow = useSyncExternalStore(
+    (cb) => {
+      const id = setInterval(cb, 1000)
+      return () => clearInterval(id)
+    },
+    () => Math.floor(Date.now() / 1000),
+  )
+  const total = Math.max(0, secondsNow - Math.floor(since / 1000))
+  const pad = (v: number) => String(v).padStart(2, '0')
+  const text = `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`
+  return <span className="truncate text-xs tabular-nums text-text-dim">{text}</span>
 }
 
 /** 数量模式的条目要在行首就标出「格子里填的是数量」，否则点进键盘才发现语义变了 */

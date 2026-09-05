@@ -48,7 +48,7 @@ export function colorLabelKey(color: PlayerColor): I18nKey | undefined {
 /** `--color-ink`。canvas 那张表要字面量，抄两遍不如提一个常量 */
 const INK = '#0a0a0a'
 
-/** 实心态：选中的玩家、需要一眼认人的胶囊 */
+/** 实心态：颜色自身的展示面（选色板、touch-pick 的分组圆环）。用户卡片一律用 PLAYER_LINE，不用这张 */
 export const PLAYER_SOLID: Record<PlayerColor, string> = {
   red: 'bg-red-400 text-ink',
   orange: 'bg-orange-400 text-ink',
@@ -67,6 +67,33 @@ export const PLAYER_SOLID: Record<PlayerColor, string> = {
   gray: 'bg-zinc-400 text-ink',
   // text-text 在浅色下是深字，近黑底上要换回白字
   black: 'bg-zinc-950 text-text ring-2 ring-zinc-400 light:text-white',
+}
+
+/**
+ * 底线态：用户卡片的标准形态 —— 卡面无底色，身份色由底部一条粗边承载，文字保持默认色。
+ * 只给颜色，线宽由调用点按尺寸档自己补 `border-b-*`。
+ * 每条都带 `rounded-b-none`：底角必须方，否则粗边会顺着圆角向上卷起（调用点的
+ * btn-base / rounded-* 只管得到顶角）。
+ * 中性色例外与 PLAYER_SOLID 同一个理由：「白」线在浅主题白卡上隐形、「黑」线在近黑底上隐形，
+ * 两者互换深度。名字始终在场（颜色不许是唯一编码），所以底线在 eink 上洗成灰不必兜底。
+ */
+export const PLAYER_LINE: Record<PlayerColor, string> = {
+  red: 'rounded-b-none border-b-red-400',
+  orange: 'rounded-b-none border-b-orange-400',
+  yellow: 'rounded-b-none border-b-yellow-400',
+  lime: 'rounded-b-none border-b-lime-400',
+  green: 'rounded-b-none border-b-green-400',
+  teal: 'rounded-b-none border-b-teal-400',
+  cyan: 'rounded-b-none border-b-cyan-400',
+  blue: 'rounded-b-none border-b-blue-400',
+  indigo: 'rounded-b-none border-b-indigo-400',
+  violet: 'rounded-b-none border-b-violet-400',
+  fuchsia: 'rounded-b-none border-b-fuchsia-400',
+  pink: 'rounded-b-none border-b-pink-400',
+  brown: 'rounded-b-none border-b-brown-400',
+  white: 'rounded-b-none border-b-zinc-100 light:border-b-zinc-400',
+  gray: 'rounded-b-none border-b-zinc-400',
+  black: 'rounded-b-none border-b-zinc-400 light:border-b-zinc-950',
 }
 
 /** 淡底态：未选中但要带身份色的行/卡。eink 收白：灰阶屏上 15% 灰只是装饰，身份由文字/色名承载 */

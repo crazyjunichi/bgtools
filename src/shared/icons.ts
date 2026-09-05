@@ -19,6 +19,9 @@
  */
 export {
   AlarmClock as IconAlarm,
+  /** 发身份「加入此局」的方向指示，两个成对用：朝向跟着布局轴走（横屏池子在右 →，竖屏池子在下 ↓） */
+  ArrowDown as IconArrowDown,
+  ArrowRight as IconArrowRight,
   ArrowLeft as IconBack,
   /** 数字键盘的退格。lucide 的 `Delete` 画的正是键帽上那个 ⌫，与 IconDelete（垃圾桶）不同 */
   Delete as IconBackspace,
@@ -53,6 +56,8 @@ export {
   Ellipsis as IconMore,
   ChevronDown as IconMoveDown,
   ChevronUp as IconMoveUp,
+  /** 下拉框的展开指示。与 IconMoveDown 同字形不同语义 —— 那个翻的是列表项位置 */
+  ChevronDown as IconDropdown,
   Bomb as IconNewGame,
   /**
    * 在一组候选里前后翻（导出图的外观切换）。**必须成对出现**，

@@ -1,15 +1,43 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { MAIN_PAD_TOOL } from '../../App'
 import { ConfirmButton } from '../components/ConfirmButton'
-import { Overlay } from '../components/Overlay'
+import { FIELD } from '../components/fieldStyle'
 import { buzz } from '../haptics'
-import { IconDeal, IconEraser, IconMinus, IconQr } from '../icons'
-import { ACCENT_SOFT, ACCENT_SOLID, ACCENT_TEXT, type DealAccent } from './accent'
+import {
+  IconArrowDown,
+  IconArrowRight,
+  IconCheck,
+  IconDeal,
+  IconDropdown,
+  IconEraser,
+  IconMinus,
+  IconQr,
+} from '../icons'
+import { ACCENT_SOLID, ACCENT_TEXT, type DealAccent } from './accent'
 import { matchesPreset, totalOf } from './deck'
 import { useDealRolesStore } from './store'
 import type { RoleCounts, RoleSet } from './types'
 
 /** 少于两张就不是"发身份"了 */
 const MIN_CARDS = 2
+
+/*
+ * 池子的行列模板，按"这局有几种身份"查表：行列都给死，grid 才能把卡双向拉伸填满池区，
+ * 卡片尺寸完全跟着容器走（竖屏少列、横屏多列）。类名必须是全字面量，Tailwind 编译期扫不到拼接。
+ * 超过 9 种的落到 9 那档，多出来的行按内容高自己滚 —— 现有身份集最多 9 种，够用。
+ */
+const POOL_GRID: Record<number, string> = {
+  1: 'grid-cols-1 grid-rows-1 wide:grid-cols-1 wide:grid-rows-1',
+  2: 'grid-cols-2 grid-rows-1 wide:grid-cols-2 wide:grid-rows-1',
+  3: 'grid-cols-2 grid-rows-2 wide:grid-cols-3 wide:grid-rows-1',
+  4: 'grid-cols-2 grid-rows-2 wide:grid-cols-4 wide:grid-rows-1',
+  5: 'grid-cols-3 grid-rows-2 wide:grid-cols-4 wide:grid-rows-2',
+  6: 'grid-cols-3 grid-rows-2 wide:grid-cols-4 wide:grid-rows-2',
+  7: 'grid-cols-3 grid-rows-3 wide:grid-cols-4 wide:grid-rows-2',
+  8: 'grid-cols-3 grid-rows-3 wide:grid-cols-4 wide:grid-rows-2',
+  9: 'grid-cols-3 grid-rows-3 wide:grid-cols-4 wide:grid-rows-3',
+}
 
 type Props = {
   set: RoleSet
@@ -19,26 +47,45 @@ type Props = {
   onStart: () => void
   /** 扫码发牌：各人用自己手机扫码领牌 */
   onStartOnline: () => void
-  onClose: () => void
 }
 
 /**
- * 发身份前的配比面板。
+ * 发身份前的配比面板：一侧选（预设下拉 + 可选身份），另一侧看这局有谁（页面主体）。
  *
  * 配比不用一排 ± 步进器，而是**左边点着加、右边点着减**：这里真正要确认的东西是
  * "这一局到底几个人、都有谁"，一堆数字读不出这件事。
  *
- * 排布分两种，判据是**文本长度有没有封顶**，不是块的角色：
- * - 左边两列（常见板子 / 可选身份）走**竖列表**。引擎是给各款游戏复用的，板子名将来会是
- *   整句（"屠边板 12 人"这类），档数也由各游戏的数据决定 —— 网格必然截断或撑破，
- *   所以宁可让它在自己的框里滚
- * - 右列（身份池）走**网格**。每格只有"身份名 ×N"，长度封顶、格数不超过身份种数，
- *   横着排省下来的高度正好留给左边那两个列表
+ * - 预设是一整组配比的替换（不是逐项开关），选中即整组套用，所以收到一个下拉里
+ * - 可选身份卡不显示已加数量，只用箭头指「加进去的方向」—— 朝向跟着布局轴走：
+ *   横屏池子在右箭头向右，竖屏池子在下箭头向下
+ * - 「这局的身份」是页面主体，吃掉全部余量；人数与清空都收在它的标题行
  */
-export function DealSetup({ set, counts, accent, onStart, onStartOnline, onClose }: Props) {
+export function DealSetup({ set, counts, accent, onStart, onStartOnline }: Props) {
   const { t } = useTranslation()
   const { setCount, applyPreset, clear } = useDealRolesStore()
   const total = totalOf(counts)
+  // 只出张数 > 0 的身份，按 set.roles 的顺序 —— 池子读的是"这局有谁"
+  const shown = set.roles.filter((r) => (counts[r.id] ?? 0) > 0)
+
+  // 当前配比命中的预设。手动加减过就可能谁都不匹配，下拉回落到「自定义」占位
+  const matched = set.presets.findIndex((p) => matchesPreset(set, counts, p))
+  const [open, setOpen] = useState(false)
+
+  // 展开期间 Esc 收起，与遮罩点击同一条出口
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open])
+
+  const apply = (i: number) => {
+    applyPreset(set.id, { ...set.presets[i].counts })
+    setOpen(false)
+    buzz(20)
+  }
 
   const add = (roleId: string) => {
     setCount(set.id, roleId, (counts[roleId] ?? 0) + 1)
@@ -50,195 +97,206 @@ export function DealSetup({ set, counts, accent, onStart, onStartOnline, onClose
     buzz()
   }
 
+  // 铺满内容区的整页而非弹窗：信息量本来就是整页级的。退出走顶栏返回（DealRoles 注册的接管）
   return (
-    <Overlay
-      maxWidth="max-w-4xl"
-      onClose={onClose}
-      title={
-        <span className="flex items-center gap-2 text-lg font-bold">
-          <IconDeal className="size-5 shrink-0" aria-hidden />
-          {t('dealRoles.title')}
-        </span>
-      }
+    <div
+      className={`absolute inset-0 z-10 flex flex-col gap-3 bg-canvas wide:flex-row short:gap-2 ${MAIN_PAD_TOOL}`}
     >
-      {/*
-       * 高度显式给：Overlay 的面板高度由内容决定，内层 flex-1 没有锚点会塌缩。
-       * 只受高度约束，所以用 vh 而非 vmin（换 vmin 竖屏会取宽度、把面板压矮）。
-       */}
-      <div className="flex h-[min(48rem,76vh)] flex-col gap-3 wide:flex-row short:h-[min(48rem,72vh)] short:gap-2">
-        {/*
-         * 这两列**不分横竖屏都并排**：都是竖列表，并排后高度取较高者而不是相加，
-         * 条目再多也不用滚；竖屏 820 宽也塞得下两个窄列。
-         * 横屏下宽度是主轴，整组固定住才不会被右边的网格挤扁。
-         */}
-        <div className="flex min-h-0 flex-1 gap-3 wide:w-[26rem] wide:flex-none short:gap-2">
-          <section className="flex min-h-0 flex-1 flex-col gap-1.5">
-            <span className="section-label shrink-0">{t('dealRoles.preset')}</span>
-            <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
-              {set.presets.map((p) => {
-                const on = matchesPreset(set, counts, p)
-                return (
-                  <button
-                    key={p.n}
-                    type="button"
-                    onClick={() => {
-                      applyPreset(set.id, { ...p.counts })
-                      buzz(20)
-                    }}
-                    aria-pressed={on}
-                    className={`btn-base !min-h-12 shrink-0 justify-start truncate px-3 text-base short:!min-h-11 short:text-sm ${
-                      on ? ACCENT_SOLID[accent] : 'bg-surface-2 text-text-muted'
-                    }`}
-                  >
-                    {t('dealRoles.presetN', { n: p.n })}
-                  </button>
-                )
-              })}
-            </div>
-          </section>
-
-          <section className="flex min-h-0 flex-1 flex-col gap-1.5">
-            <span className="section-label shrink-0">{t('dealRoles.pick')}</span>
-            <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
-              {set.roles.map((r) => {
-                const n = counts[r.id] ?? 0
-                return (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => add(r.id)}
-                    aria-label={t('dealRoles.addRole', { name: t(r.nameKey) })}
-                    className={`btn-base !min-h-12 shrink-0 justify-start gap-2 border px-3 text-base short:!min-h-11 short:text-sm ${
-                      n > 0 ? ACCENT_SOFT[accent] : 'border-line bg-surface-2 text-text-muted'
-                    }`}
-                  >
-                    <span className="shrink-0 text-xl leading-none short:text-base" aria-hidden>
-                      {r.icon}
-                    </span>
-                    {/* min-w-0 是 truncate 的前提：flex 子项默认不收缩到内容以下 */}
-                    <span className="min-w-0 truncate">{t(r.nameKey)}</span>
-                    {/* 数字是这里唯一的状态编码，淡底色只是陪衬 */}
-                    {n > 0 && (
-                      <span
-                        className={`ml-auto shrink-0 font-mono text-sm tabular-nums ${ACCENT_TEXT[accent]}`}
-                      >
-                        ×{n}
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          </section>
-        </div>
-
-        {/*
-         * 竖屏下这一列**先按内容取高、不参与分配**（横屏才 flex-1 填满）：池子是这个面板的
-         * 结论，要优先整块看完；余量归左边那两个列表，它们本来就带滚动。
-         */}
-        <div className="flex min-h-0 flex-none flex-col gap-1.5 wide:flex-1">
-          {/* 三列的标题行都只放纯文字：这里塞进一个按钮就会把它撑高，右列的框跟左两列对不齐 */}
-          <span className="section-label shrink-0 truncate">
-            {t('dealRoles.pool')}{' '}
-            {/* leading-none 是为了在放大字号的同时不撑高这一行 —— 撑了右列的框就跟左两列错位 */}
-            <span
-              className={`font-mono text-xl font-bold leading-none tabular-nums ${ACCENT_TEXT[accent]}`}
-            >
-              {t('dealRoles.total', { n: total })}
-            </span>
-          </span>
-
+      {/* 控制区：竖屏在上、横屏成左栏。横屏下宽度是主轴，定宽才不会被右边的池子挤变形 */}
+      <div className="flex shrink-0 flex-col gap-2 wide:min-h-0 wide:w-72">
+        <div className="flex shrink-0 flex-col gap-1.5">
+          <span className="section-label">{t('dealRoles.preset')}</span>
           {/*
-           * auto-rows-min：行高交给内容，不然格子会被拉去填满整个滚动区。
-           * 竖屏靠内容撑高（身份种类多到超过上限才在自己框里滚），横屏则铺满这一列。
+           * 自绘下拉而非原生 select：深色主题下原生展开层是系统渲染的白底浅字，不可控。
+           * 遮罩关闭走 onClick（自消失元素不许用 onPointerDown，抬手补发的 click 会穿透）。
            */}
-          <div className="grid min-h-0 max-h-[40vh] auto-rows-min grid-cols-2 gap-2 overflow-y-auto rounded-2xl border border-line bg-surface-2 p-3 wide:max-h-none wide:flex-1 short:gap-1.5 short:p-2">
-            {total === 0 ? (
-              <span className="col-span-full text-sm leading-relaxed text-text-muted">
-                {t('dealRoles.emptyPool')}
+          <div className="relative">
+            <button
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded={open}
+              aria-label={t('dealRoles.preset')}
+              onClick={() => {
+                setOpen((v) => !v)
+                buzz()
+              }}
+              className={`${FIELD} flex items-center justify-between gap-2 pr-2`}
+            >
+              <span className={matched < 0 ? 'text-text-dim' : undefined}>
+                {matched < 0
+                  ? t('dealRoles.custom')
+                  : t('dealRoles.presetN', { n: set.presets[matched].n })}
               </span>
-            ) : (
-              // 只出张数 > 0 的身份，按 set.roles 的顺序 —— 池子读的是"这局有谁"
-              set.roles
-                .filter((r) => (counts[r.id] ?? 0) > 0)
-                .map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => drop(r.id)}
-                    aria-label={t('dealRoles.removeRole', { name: t(r.nameKey) })}
-                    className="btn-base !min-h-12 justify-start gap-2 bg-surface-3 px-3 text-sm text-text short:!min-h-11"
-                  >
-                    <span className="shrink-0 text-base leading-none" aria-hidden>
-                      {r.icon}
-                    </span>
-                    {/* 名字吃掉弹性宽度，张数才会在所有格子里对齐成一列 */}
-                    <span className="min-w-0 flex-1 truncate text-left">{t(r.nameKey)}</span>
-                    {/* 张数是池子里唯一要读的数，压过身份名一档 */}
-                    <span
-                      className={`shrink-0 font-mono text-xl font-bold tabular-nums ${ACCENT_TEXT[accent]} short:text-lg`}
-                    >
-                      ×{counts[r.id]}
-                    </span>
-                    {/* 减号而非 ✕：✕ 会被读成"把这个身份整种去掉" */}
-                    <IconMinus className="size-4 shrink-0 text-text-dim" aria-hidden />
-                  </button>
-                ))
-            )}
-
-            {/*
-             * 清空跟在池子末尾，但**独占一整行**：与"减一张"的格子只差一格距离，
-             * 而两者量级差着一个数量级 —— 靠形状分开，别让它长成第 N 个身份格。
-             * 只加边框不换底色：ConfirmButton 武装后要靠自己的红底示警，
-             * 这里覆盖 bg 会把那层示警一起盖掉。
-             */}
-            {total > 0 && (
-              <ConfirmButton
-                onConfirm={() => clear(set.id)}
-                className="col-span-full !min-h-12 border border-line !text-sm short:!min-h-11"
-              >
-                <IconEraser className="size-4" aria-hidden />
-                {t('common.clear')}
-              </ConfirmButton>
+              <IconDropdown
+                className={`size-5 shrink-0 text-text-dim transition-transform duration-75 ${open ? 'rotate-180' : ''}`}
+                aria-hidden
+              />
+            </button>
+            {open && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} aria-hidden />
+                <ul
+                  role="listbox"
+                  aria-label={t('dealRoles.preset')}
+                  className="absolute inset-x-0 top-full z-30 mt-1 max-h-[22rem] overflow-y-auto rounded-xl border border-line bg-surface-2 py-1"
+                >
+                  {set.presets.map((p, i) => {
+                    const on = i === matched
+                    return (
+                      <li key={p.n} role="option" aria-selected={on}>
+                        {/* 选中态不只靠颜色：另有一枚 ✓（多态控件至少两种编码） */}
+                        <button
+                          type="button"
+                          onClick={() => apply(i)}
+                          className={`flex min-h-12 w-full items-center justify-between gap-2 px-3 text-base short:min-h-11 short:text-sm ${
+                            on ? ACCENT_TEXT[accent] : 'text-text'
+                          }`}
+                        >
+                          {t('dealRoles.presetN', { n: p.n })}
+                          {on && <IconCheck className="size-5 shrink-0" aria-hidden />}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </>
             )}
           </div>
+        </div>
 
-          {/*
-           * 开始跟在池子下方而不是通栏：终结动作紧接着"这局有谁"这个结论最顺，
-           * 也把整条通栏的高度让给左边那两个列表。
-           * 张数不够时不另起一行提示，直接把原因写进禁用态的按钮文案。
-           */}
-          <button
-            type="button"
-            disabled={total < MIN_CARDS}
-            onClick={() => {
-              onStart()
-              buzz(20)
-            }}
-            className={`btn-base min-h-16 shrink-0 gap-2 text-xl font-bold short:!min-h-12 short:text-base ${ACCENT_SOLID[accent]}`}
-          >
-            <IconDeal className="size-6 short:size-5" aria-hidden />
-            {total < MIN_CARDS ? t('dealRoles.tooFew') : t('dealRoles.start', { n: total })}
-          </button>
-
-          {/*
-           * 扫码另起一行、且明显次一档：轮传零配置、不用网络，仍是默认那条路。
-           * 两个按钮横排会让主按钮被挤短，而它的文案带张数，压不得。
-           */}
-          <button
-            type="button"
-            disabled={total < MIN_CARDS}
-            onClick={() => {
-              onStartOnline()
-              buzz(20)
-            }}
-            className="btn-quiet shrink-0 gap-2 !text-base short:!min-h-11 short:!text-sm"
-          >
-            <IconQr className="size-5 short:size-4" aria-hidden />
-            {t('dealRoles.online.start')}
-          </button>
+        <span className="section-label shrink-0">{t('dealRoles.pick')}</span>
+        {/*
+         * 竖屏三列横排（身份种类就那几张，自然高度放得完）；横屏是左栏的竖列表，
+         * 吃掉左栏余量、装不下自己滚。
+         */}
+        <div className="grid shrink-0 grid-cols-3 gap-2 wide:min-h-0 wide:flex-1 wide:grid-cols-1 wide:content-start wide:overflow-y-auto short:gap-1.5">
+          {set.roles.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => add(r.id)}
+              aria-label={t('dealRoles.addRole', { name: t(r.nameKey) })}
+              className="btn-base !min-h-12 justify-start gap-2 border border-line bg-surface-2 px-3 text-base text-text-muted short:!min-h-11 short:text-sm"
+            >
+              <span className="shrink-0 text-xl leading-none short:text-base" aria-hidden>
+                {r.icon}
+              </span>
+              {/* min-w-0 是 truncate 的前提：flex 子项默认不收缩到内容以下 */}
+              <span className="min-w-0 truncate">{t(r.nameKey)}</span>
+              {/* 箭头只指方向不带数量：已加几张去右边的池子看 */}
+              <IconArrowDown
+                className={`ml-auto size-5 shrink-0 wide:hidden ${ACCENT_TEXT[accent]}`}
+                aria-hidden
+              />
+              <IconArrowRight
+                className={`ml-auto hidden size-5 shrink-0 wide:block ${ACCENT_TEXT[accent]}`}
+                aria-hidden
+              />
+            </button>
+          ))}
         </div>
       </div>
-    </Overlay>
+
+      {/* 这局的身份：页面主体，吃掉全部余量 */}
+      <div className="flex min-h-0 flex-1 flex-col gap-2 wide:min-w-0">
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="section-label">{t('dealRoles.pool')}</span>
+          {/* leading-none 是为了在放大字号的同时不撑高这一行 */}
+          <span
+            className={`font-mono text-xl font-bold leading-none tabular-nums ${ACCENT_TEXT[accent]}`}
+          >
+            {t('dealRoles.total', { n: total })}
+          </span>
+          {/*
+           * 清空收在标题行：池子是主体，底部不再为它单列一行。
+           * 只加边框不换底色：ConfirmButton 武装后要靠自己的红底示警，覆盖 bg 会把示警盖掉。
+           */}
+          {total > 0 && (
+            <ConfirmButton
+              onConfirm={() => clear(set.id)}
+              className="ml-auto !min-h-11 border border-line !px-3 !text-sm"
+            >
+              <IconEraser className="size-4" aria-hidden />
+              {t('common.clear')}
+            </ConfirmButton>
+          )}
+        </div>
+
+        {/* 卡双向拉伸填满池区：不设定卡片自身的宽高，尺寸全由 POOL_GRID 的行列模板给 */}
+        <div
+          className={`grid min-h-0 flex-1 gap-3 overflow-y-auto short:gap-2 ${POOL_GRID[Math.max(1, Math.min(shown.length, 9))]}`}
+        >
+          {total === 0 ? (
+            <span className="col-span-full text-center text-sm leading-relaxed text-text-muted">
+              {t('dealRoles.emptyPool')}
+            </span>
+          ) : (
+            // 只出张数 > 0 的身份，按 set.roles 的顺序 —— 池子读的是"这局有谁"
+            shown.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => drop(r.id)}
+                aria-label={t('dealRoles.removeRole', { name: t(r.nameKey) })}
+                className="btn-base relative w-full flex-col gap-3 rounded-2xl bg-surface-3 p-3 text-text [container-type:size] short:gap-1.5 short:p-2"
+              >
+                {/* 减号压右上角（徽标位），而非 ✕：✕ 会被读成"把这个身份整种去掉" */}
+                <IconMinus className="absolute top-2 right-2 size-5 text-text-dim" aria-hidden />
+                {/*
+                 * 三行内容的字号全部跟卡高走（cqh，容器查询单位）：卡高由行列模板定、
+                 * 横屏矮卡里视口单位会把名字挤没，truncate 的 overflow:hidden 会让它缩成一条缝。
+                 */}
+                <span className="text-[26cqh] leading-none" aria-hidden>
+                  {r.icon}
+                </span>
+                <span className="max-w-full truncate text-[16cqh] leading-none">
+                  {t(r.nameKey)}
+                </span>
+                {/* 张数是池子里唯一要读的数，压过身份名一档 */}
+                <span
+                  className={`font-mono text-[22cqh] leading-none font-bold tabular-nums ${ACCENT_TEXT[accent]}`}
+                >
+                  ×{counts[r.id]}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+
+        {/*
+         * 开始跟在池子下方而不是通栏：终结动作紧接着"这局有谁"这个结论最顺。
+         * 张数不够时不另起一行提示，直接把原因写进禁用态的按钮文案。
+         */}
+        <button
+          type="button"
+          disabled={total < MIN_CARDS}
+          onClick={() => {
+            onStart()
+            buzz(20)
+          }}
+          className={`btn-base min-h-16 shrink-0 gap-2 text-xl font-bold short:!min-h-12 short:text-base ${ACCENT_SOLID[accent]}`}
+        >
+          <IconDeal className="size-6 short:size-5" aria-hidden />
+          {total < MIN_CARDS ? t('dealRoles.tooFew') : t('dealRoles.start', { n: total })}
+        </button>
+
+        {/*
+         * 扫码另起一行、且明显次一档：轮传零配置、不用网络，仍是默认那条路。
+         * 两个按钮横排会让主按钮被挤短，而它的文案带张数，压不得。
+         */}
+        <button
+          type="button"
+          disabled={total < MIN_CARDS}
+          onClick={() => {
+            onStartOnline()
+            buzz(20)
+          }}
+          className="btn-quiet shrink-0 gap-2 !text-base short:!min-h-11 short:!text-sm"
+        >
+          <IconQr className="size-5 short:size-4" aria-hidden />
+          {t('dealRoles.online.start')}
+        </button>
+      </div>
+    </div>
   )
 }

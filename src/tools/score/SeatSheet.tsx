@@ -4,7 +4,7 @@ import { ConfirmButton } from '../../shared/components/ConfirmButton'
 import { Overlay } from '../../shared/components/Overlay'
 import { buzz } from '../../shared/haptics'
 import { IconDelete } from '../../shared/icons'
-import { PLAYER_SOLID } from '../../shared/players/colors'
+import { PLAYER_LINE } from '../../shared/players/colors'
 import type { SeatView } from '../../shared/players/seats'
 
 type Props = {
@@ -88,15 +88,15 @@ export function SeatSheet({
             <span className="sr-only">{t('tools.score.sheet.remove')}</span>
           </ConfirmButton>
           {/*
-           * 改谁的分是这里最关键的防错点，所以名字用整块实心玩家色铺满剩余宽度，不缩成小色点。
+           * 改谁的分是这里最关键的防错点，所以名字带底部玩家色粗边、铺满剩余宽度，不缩成小色点。
            * 它同时就是换人入口 —— 要换的正是这个名字，指到它本身比另起一个笔图标更直接。
            */}
           <button
             type="button"
             onClick={onEditSeat}
             aria-label={t('tools.score.sheet.editSeat', { name: seat.name })}
-            className={`flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-xl px-3 text-lg font-bold short:min-h-11 ${
-              PLAYER_SOLID[seat.color]
+            className={`flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-xl border-b-4 px-3 text-lg font-bold short:min-h-11 ${
+              PLAYER_LINE[seat.color]
             }`}
           >
             <span className="truncate">{seat.name}</span>

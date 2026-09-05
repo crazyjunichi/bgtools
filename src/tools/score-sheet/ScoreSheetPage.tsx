@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { buzz } from '../../shared/haptics'
+import { useHeaderTitle } from '../../shared/headerTitle'
 import { useWakeLock } from '../../shared/hooks/useWakeLock'
 import { useActiveMatch } from '../../shared/match/active'
 import { MatchFinish } from '../../shared/match/MatchFinish'
@@ -28,7 +29,7 @@ import {
   sheetMatchDraft,
   useSheetStore,
 } from './store'
-import { findTemplate, templateNameKey } from './templates'
+import { BLANK_ID, findTemplate, templateIdentity } from './templates'
 
 /** 同一时刻只开一个浮层：席位（改名 / 换人 / 移除）、条目编辑、模板、更多操作、历史 */
 type Panel =
@@ -67,13 +68,14 @@ export default function ScoreSheetPage() {
     removeEntry,
     newGame,
     loadGame,
+    setMatchId,
   } = useSheetStore()
   const players = usePlayersStore((s) => s.players)
 
   /*
    * 首页的模板入口把目标模板带在 URL 上（见 [Home](../../pages/Home.tsx)）。
    * **落地即把参数消费掉**：留着它，页面内换过模板之后刷新会被打回 URL 里那个。
-   * setTemplate 不清分数，所以带参进来不会毁掉桌上正在填的表；
+   * setTemplate 是换档（各模板各记一份局面），带参进来不会毁掉桌上正在填的表；
    * 模板 id 失效由 findTemplate 兜回通用空白。
    */
   const [params, setParams] = useSearchParams()
@@ -83,6 +85,29 @@ export default function ScoreSheetPage() {
     setTemplate(wanted)
     setParams({}, { replace: true })
   }, [wanted, setTemplate, setParams])
+
+  /*
+   * 「从某盒游戏点进来」只在落地首帧可判 —— tpl 参数随即被上面的 effect 消费掉。
+   * 锁定的表没有换模板这一步：模板按钮收起（见 SheetKeypad），顶栏标题换成那盒游戏。
+   */
+  const [lockedTpl] = useState(() => wanted)
+  const locked = lockedTpl !== null && findTemplate(lockedTpl).gameId !== null
+  useEffect(() => {
+    if (!locked || lockedTpl === null) return
+    const identity = templateIdentity(findTemplate(lockedTpl))
+    useHeaderTitle.getState().set({ icon: identity.icon, nameKey: identity.nameKey })
+    return () => useHeaderTitle.getState().clear()
+  }, [locked, lockedTpl])
+
+  /*
+   * 反过来，从首页通用卡进来（没带 tpl）而表里还停在某盒游戏上：退回通用空白那一档。
+   * 游戏那一档留在 store 的 sheets 里 —— 再点那张游戏卡，原局面还在。
+   * 只在落地时判一次：进来之后用模板钮手动切到游戏模板是合法操作，不拦。
+   */
+  useEffect(() => {
+    if (lockedTpl !== null) return
+    if (findTemplate(useSheetStore.getState().templateId).gameId !== null) setTemplate(BLANK_ID)
+  }, [lockedTpl, setTemplate])
 
   /*
    * 顶栏的 quick 小工具看不见工具页内部的席位，靠这层镜像拿到「这一局谁在打」
@@ -111,8 +136,8 @@ export default function ScoreSheetPage() {
    */
   const [share, setShare] = useState<MatchDraft | null>(null)
   /**
-   * 每次点格子都递增，只为参与键盘的 `key`：**再点一次同一个格子也要把输入缓冲清掉**
-   * （报错了想重打一遍，最顺手的动作就是再点它一下）。光靠 pick 做 key 认不出这种重复选中。
+   * 每次选中格子都递增，只为参与键盘的 `key`：竖屏收起键盘只是 CSS 藏掉、组件不卸载，
+   * 输入缓冲留着 —— 再展开同一格时靠它把缓冲清掉。光靠 pick 做 key 认不出这种重复选中。
    */
   const [seq, setSeq] = useState(0)
 
@@ -139,8 +164,15 @@ export default function ScoreSheetPage() {
   /**
    * 打字机顺序：先填完一个人的所有条目，再跳到下一列的第一条。
    * 桌上结算就是一人一人过，而且永远往前走 —— 到最后一格停住，不绕回开头。
+   *
+   * 再点一次已选中的格子 = 取消选中：竖屏下键盘随之收起（矩阵回到一屏全览），
+   * 横屏只是取消高亮，键盘常驻右栏不动。
    */
   const pickCell = (seatId: string, entryId: string) => {
+    if (pick?.seatId === seatId && pick?.entryId === entryId) {
+      setPick(null)
+      return
+    }
     setPick({ seatId, entryId })
     setSeq((n) => n + 1)
   }
@@ -173,7 +205,6 @@ export default function ScoreSheetPage() {
           seats={views}
           entries={entries}
           cells={cells}
-          title={t(templateNameKey(templateId))}
           startedAt={startedAt}
           pick={pick}
           editable={editable}
@@ -191,11 +222,13 @@ export default function ScoreSheetPage() {
         key={pickKey}
         seat={pickedSeat}
         entry={pickedEntry}
+        collapsed={!pick}
         raw={pick ? rawOf(cells, pick.seatId, pick.entryId) : undefined}
         onInput={(raw) => {
           if (pick) setCell(pick.seatId, pick.entryId, raw)
         }}
         onNext={next}
+        showTemplate={!locked}
         onOpenTemplate={() => setPanel({ kind: 'template' })}
         onOpenMore={() => setPanel({ kind: 'more' })}
       />
@@ -229,7 +262,10 @@ export default function ScoreSheetPage() {
       {finish && (
         <MatchFinish
           draft={finish}
+          // 计分纸是玩完才摊开记，测到的只是记账耗时，时长交给玩家用滑杆报
+          editableDuration
           exports={sheetExports}
+          onArchived={setMatchId}
           onDone={() => {
             newGame()
             setFinish(null)

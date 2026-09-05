@@ -273,3 +273,39 @@
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
+
+/* 大拇指导航的滑杆：原生 range 的拇指块只有十几 px，桌上点不住，整行抬到触控目标高度 */
+@utility slider-lg {
+  appearance: none;
+  width: 100%;
+  height: 3.5rem;
+  background: transparent;
+  cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--color-surface-3);
+  }
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    /* 把拇指块中心压回轨道中线 */
+    margin-top: -11px;
+    border-radius: 9999px;
+    background: var(--color-emerald-400);
+  }
+  &::-moz-range-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--color-surface-3);
+  }
+  &::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 9999px;
+    background: var(--color-emerald-400);
+  }
+}

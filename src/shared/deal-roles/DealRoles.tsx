@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useBackOverride } from '../backOverride'
 import type { DealAccent } from './accent'
 import { countsOf } from './deck'
 import { DealRunner } from './DealRunner'
@@ -7,7 +8,7 @@ import { DealOnline } from './online/DealOnline'
 import { useDealRolesStore } from './store'
 import type { RoleSet } from './types'
 
-/** 配比面板 → 两种发牌方式之一。三者互斥，浮层不叠 */
+/** 配比面板 → 两种发牌方式之一。三者互斥 */
 type Mode = 'setup' | 'pass' | 'online'
 
 type Props = {
@@ -21,12 +22,21 @@ type Props = {
  * 发身份的唯一对外入口：宿主游戏页只写一行
  * `{dealing && <DealRoles set={XXX_ROLES} accent="violet" onClose={…} />}`。
  *
- * 配比面板与两种发牌现场在这里互斥切换 —— 接入一款新游戏
- * 只要一份 [RoleSet](types.ts) 数据，交互一个字都不用改。
+ * 配比面板铺满内容区、由顶栏返回退出；两种发牌现场仍是盖过顶栏的全屏层 ——
+ * 它们的"关掉"等于中断整轮发牌，出口只能是各自角落的二次确认。
+ * 接入一款新游戏只要一份 [RoleSet](types.ts) 数据，交互一个字都不用改。
  */
 export function DealRoles({ set, accent, onClose }: Props) {
   const saved = useDealRolesStore((s) => s.counts[set.id])
   const [mode, setMode] = useState<Mode>('setup')
+
+  // 配比页期间接管顶栏返回（等价旧弹窗的 ✕）。进入现场后顶栏被现场层整个盖住，
+  // 这枚回调够不着 —— 现场的中途退出仍只有角落那个二次确认
+  useEffect(() => {
+    const { set: setBack, clear } = useBackOverride.getState()
+    setBack(onClose)
+    return clear
+  }, [onClose])
 
   // 不 memo：逐项过一遍七八个身份，而 saved 每次可能是新对象，memo 的 deps 稳不下来
   const counts = countsOf(set, saved)
@@ -44,7 +54,6 @@ export function DealRoles({ set, accent, onClose }: Props) {
       accent={accent}
       onStart={() => setMode('pass')}
       onStartOnline={() => setMode('online')}
-      onClose={onClose}
     />
   )
 }

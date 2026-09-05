@@ -29,6 +29,12 @@ export type SheetSnapshot = {
   at: number
   /** 已按界面语言格式化好的日期时间 */
   dateText: string
+  /**
+   * 格式化好的对局时长。**不由 buildSnapshot 填**：payload 里的 startedAt 是摊表时刻，
+   * 真实时长以 [Match](../../shared/match/types.ts) 上的为准（结算面板的滑杆改的就是它），
+   * 由导出入口处从 Match 算好补进来
+   */
+  durationText?: string
   /** 行首列的表头文案（「条目」） */
   entryCol: string
   /** 合计行的行首文案 */

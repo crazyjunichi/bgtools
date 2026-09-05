@@ -225,30 +225,24 @@ export const zh = {
   /** 一局游戏的结算与存档（[shared/match](../../match/types.ts)），各工具共用同一套措辞 */
   match: {
     title: '本局结算',
-    gameLabel: '这是哪盒游戏',
     gameNone: '不指定',
     players: '参与者',
     /** 名次角标，`n` 是第几名 */
     rank: '第 {{n}}',
-    /** 点一下切换「这人算赢」，读屏要念到是谁 */
-    markWin: '{{name}} 算获胜',
-    coopQuestion: '这局赢了吗',
     coopWin: '通关',
     coopLoss: '失败',
-    winnerTeam: '获胜阵营',
     duration: '时长',
+    /** 结算面板的时长滑杆：玩完才记的工具测不到真实时长，让玩家报一个 */
+    playTime: '实际玩了多久',
     durationHm: '{{h}} 小时 {{m}} 分',
     durationM: '{{m}} 分钟',
     /** 不足一分钟不给数字，见 [format.ts](../../match/format.ts) */
     durationShort: '不到 1 分钟',
     note: '备注',
     notePlaceholder: '随便记一句（可留空）',
-    save: '记录这一局',
-    discard: '不记录，直接开新局',
-    confirmDiscard: '确认丢弃本局',
     unavailable: '这台设备禁用了本地数据库，本局记不下来，但可以直接开新局',
-    /** 记下来之后那一步：先给分享的机会，开新局要再按一下 */
-    saved: '这一局已经记下来了',
+    /** 结算面板副标题里的落盘状态：跟「时长 · X」同行，必须短 */
+    saved: '已记录',
     newGame: '开新局',
     /** 历史列表一行的读屏文案（[MatchRow](../../match/MatchRow.tsx)），整块是按钮 */
     open: '{{date}} · {{name}}，点击查看这一局',
@@ -428,12 +422,13 @@ export const zh = {
   dealRoles: {
     /** 宿主游戏页上的入口按钮，各游戏共用这一句 */
     open: '发身份',
-    title: '发身份',
-    preset: '常见板子',
+    preset: '预设',
     presetN: '{{n}} 人',
+    /** 预设下拉的占位：当前配比被手动加减过、不匹配任何预设时显示 */
+    custom: '自定义',
     pick: '可选身份 · 点一下加一张',
-    pool: '这局的身份 · 点一下减一张',
-    total: '共 {{n}} 张',
+    pool: '这局的身份',
+    total: '{{n}} 人',
     emptyPool: '还没放身份。',
     addRole: '加入 {{name}}',
     removeRole: '移除一张 {{name}}',
@@ -834,7 +829,7 @@ export const zh = {
       desc: '固定条目逐项结算 · 游戏模板 · 自动合计',
       /** 矩阵首列的列头，视觉上是空的（下面每行自己写着条目名） */
       entryCol: '计分条目',
-      total: '合计',
+      total: '总分',
       /** 自定义条目的默认名。已存进 localStorage 的旧条目不会跟着语言变 */
       defaultEntry: '条目{{n}}',
       /** 「每个 N 分」的条目：格子里填数量，行首用这条标出来 */

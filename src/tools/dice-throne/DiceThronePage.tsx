@@ -34,7 +34,7 @@ export default function DiceThronePage() {
   useWakeLock()
   const { t } = useTranslation()
 
-  const { seats, seatPlayers, addSeat, removeSeat, bindPlayer, renameSeat, newGame } =
+  const { seats, seatPlayers, addSeat, removeSeat, bindPlayer, renameSeat, newGame, setMatchId } =
     useThroneStore()
   const players = usePlayersStore((s) => s.players)
 
@@ -140,6 +140,7 @@ export default function DiceThronePage() {
       {finish && (
         <MatchFinish
           draft={finish}
+          onArchived={setMatchId}
           onDone={() => {
             newGame()
             setFinish(null)

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { PLAYER_SOLID } from '../../shared/players/colors'
+import { PLAYER_LINE } from '../../shared/players/colors'
 import { STATUSES } from './statuses'
 import { maxHp, type ThroneSeatView } from './store'
 
@@ -77,9 +77,9 @@ export function ThroneCard({ seat, onOpen }: Props) {
       aria-label={t('tools.diceThrone.cardAria', { name: seat.name, hp: seat.hp, cp: seat.cp })}
       className={`card flex min-h-0 flex-col overflow-hidden border-2 !p-0 transition-colors ${CARD[level]} ${dead ? 'opacity-60' : ''}`}
     >
-      {/* 找"谁"用的是实心色带而不是小圆点：色带铺满卡顶，扫桌第一眼落点 */}
+      {/* 找"谁"靠名字下的玩家色粗边：它顺带充当名字区与数值区的分隔线 */}
       <span
-        className={`shrink-0 truncate px-3 py-1.5 text-center text-lg font-bold ${PLAYER_SOLID[seat.color]}`}
+        className={`shrink-0 truncate border-b-4 px-3 py-1.5 text-center text-lg font-bold ${PLAYER_LINE[seat.color]}`}
       >
         {seat.name}
       </span>

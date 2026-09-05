@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { IconCrown } from '../../shared/icons'
-import { PLAYER_SOLID } from '../../shared/players/colors'
+import { PLAYER_LINE } from '../../shared/players/colors'
 import type { SeatView } from '../../shared/players/seats'
 import { tone } from '../../shared/tone'
 import { signed, totalOf, type Round } from './store'
@@ -122,8 +122,8 @@ export function ScoreGrid({ seats, rounds, draft, onOpenSeat }: Props) {
             </span>
 
             <span
-              className={`shrink-0 truncate rounded-lg px-2 py-1 text-lg font-bold short:text-base ${
-                PLAYER_SOLID[s.color]
+              className={`shrink-0 truncate rounded-lg border-b-4 px-2 py-1 text-lg font-bold short:text-base ${
+                PLAYER_LINE[s.color]
               }`}
             >
               {s.name}

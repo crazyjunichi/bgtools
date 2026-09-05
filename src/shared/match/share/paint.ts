@@ -283,15 +283,16 @@ export function bigNum(
 export const HEADER_H = lineH(TYPE.title) + lineH(TYPE.meta) + U
 
 /**
- * 标题块：模板名 + 日期，下方压一条规则线。所有内容形式共用同一个头部 ——
+ * 标题块：模板名 + 日期与时长，下方压一条规则线。所有内容形式共用同一个头部 ——
  * 回看一堆导出图时，这两行就是唯一的身份。
  *
  * `icon` 只有战绩榜给：它常被单独转发，需要一眼认出是哪盒游戏。
+ * `durationText` 只在测得到/玩家报过真实时长时才有（旧存档没有），缺了不画
  */
 export function shareHeader(
   ctx: CanvasRenderingContext2D,
   p: SharePalette,
-  s: { title: string; dateText: string },
+  s: { title: string; dateText: string; durationText?: string },
   w: number,
   icon?: string,
 ) {
@@ -312,7 +313,11 @@ export function shareHeader(
 
   ctx.font = sans(TYPE.meta)
   ctx.fillStyle = p.dim
-  ctx.fillText(s.dateText, PAD, PAD + lineH(TYPE.title) + lineH(TYPE.meta) / 2)
+  ctx.fillText(
+    s.durationText ? `${s.dateText} · ${s.durationText}` : s.dateText,
+    PAD,
+    PAD + lineH(TYPE.title) + lineH(TYPE.meta) / 2,
+  )
 
   rule(ctx, p, PAD, w - PAD, PAD + HEADER_H, 2.5)
 }
