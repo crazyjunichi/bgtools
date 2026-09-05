@@ -33,8 +33,6 @@ export const zh = {
     back: '返回首页',
     /** 顶栏返回被工具内子视图接管时（回工具入口而非首页），读屏不能说成「返回首页」 */
     backInTool: '返回',
-    toPortrait: '切换到竖屏',
-    toLandscape: '切换到横屏',
   },
 
   /** 首页三个分区 */
@@ -386,6 +384,9 @@ export const zh = {
       einkAuto: '自动',
       einkOn: '开',
       einkOff: '关',
+      orientation: '屏幕朝向',
+      orientPortrait: '竖屏',
+      orientLandscape: '横屏',
     },
   },
 

@@ -35,7 +35,7 @@ export default defineConfig({
         // 所以 safe-area 避让（safe-t / safe-b / safe-x）不能拆
         display: 'fullscreen',
         // 不锁朝向：横竖屏都是一等场景（竖屏更常见），跟随设备即可。
-        // 要固定某个朝向由用户点顶栏的朝向键（见 shared/hooks/useOrientation.ts）
+        // 要固定某个朝向由用户在设置面板里选（见 shared/hooks/useOrientation.ts）
         orientation: 'any',
         // base 为相对路径，start_url/scope 也必须相对
         start_url: '.',

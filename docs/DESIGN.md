@@ -283,15 +283,15 @@ python .claude/skills/bgg-cover/scripts/cover_hue.py public/covers/sheet
 - 高度锁在 `html` / `body` / `#root` 上（`height: 100%; overflow: hidden`，[index.css](../src/index.css)），[App.tsx](../src/App.tsx) 外壳跟着 `h-full overflow-hidden`。**这是有意的硬约束**：内容超一屏必须让布局自己收缩，而不是悄悄变成可滚页面
   - **不要用 `h-dvh` 当外壳**：PWA standalone 下 `100dvh` 在部分平台包含状态栏那一条，`#root` 比真正可视区高出 24–48px，而 `body` 没有 `overflow` 兜底 → 整页多出一条滚动条。`height: 100%` 取 ICB，不受这类实现差异影响；百分比高度要求父链每级高度确定，所以 `#root` 也必须给
   - 配套：manifest `display: 'fullscreen'`（[vite.config.ts](../vite.config.ts)）让 Android 直接隐藏状态栏。**iOS 忽略此值仍是 standalone**，所以 `safe-t` / `safe-b` / `safe-x` 避让一个都不能拆
-- **顶栏（返回 + 朝向切换 + quick 入口）由 [AppHeader](../src/AppHeader.tsx) 统一提供，工具里不要自己画。** 工具页里的形态**按朝向分两种**，因为横屏最贵的是高度、竖屏最贵的是宽度：
+- **顶栏（返回 + quick 入口）由 [AppHeader](../src/AppHeader.tsx) 统一提供，工具里不要自己画。** 工具页里的形态**按朝向分两种**，因为横屏最贵的是高度、竖屏最贵的是宽度：
   - **横屏**：左侧常驻 **64px 竖条**。顶部整条留给内容；标题放不下，`sr-only` 只留给读屏
   - **竖屏**：通栏常显。竖屏是更常见的朝向，返回键必须一直够得着
   - 两种形态都**正常参与 flex 布局占位**，没有任何收放动作 —— 代价是竖屏内容区少约 57px，换来返回键随时可点
-  - 朝向差异全部走 `wide:` 覆盖，**不引入 JS 判朝向**（顶栏里唯一读朝向的 JS 是朝向键的 `aria-label`，用的仍是同一条 media query）
-  - **朝向键（`IconRotate`）是两态切换**：点一下就锁到另一个朝向，没有「回到跟随系统」那一态 —— 桌上一按到位比状态完整更重要。全屏不再是独立按钮：`screen.orientation.lock()` 只在全屏或已安装 PWA 下生效，所以它降级成朝向键内部的前提步骤（未全屏就先 `requestFullscreen`）。桌面浏览器与 iOS 的 lock 一律 reject，**静默失败**，不弹「请旋转设备」挡住内容
-  - 配套：manifest 的 `orientation` 是 `'any'`（[vite.config.ts](../vite.config.ts)），装成 PWA 后跟随设备，固定朝向的决定权交给用户手上那个键
+  - 朝向差异全部走 `wide:` 覆盖，**不引入 JS 判朝向**
+  - **朝向切换收在设置面板里**（点按频率低，不占顶栏）：竖屏 / 横屏两态直选，没有「回到跟随系统」那一态 —— 一按到位比状态完整更重要。全屏不再是独立按钮：`screen.orientation.lock()` 只在全屏或已安装 PWA 下生效，所以它降级成朝向切换内部的前提步骤（未全屏就先 `requestFullscreen`）。桌面浏览器与 iOS 的 lock 一律 reject，**静默失败**，不弹「请旋转设备」挡住内容；两条路都没有的设备整行选项不显示（`canRotate`）
+  - 配套：manifest 的 `orientation` 是 `'any'`（[vite.config.ts](../vite.config.ts)），装成 PWA 后跟随设备，固定朝向的决定权交给设置面板里那个选项
 - **通用小工具（骰子 / 计时器 / 随机指针 / 玩家名单 / 设置）的入口也在顶栏**（图标来自 [shared/icons.ts](../src/shared/icons.ts)，注册表里存的是组件不是字符串），点开是居中 dialog，不占工具页版面。浮层不能挂在 `<header>` 内（`translate` + `backdrop-blur` 会成为 `fixed` 的包含块），由 App 层的 [QuickLayer](../src/quick/QuickLayer.tsx) 渲染，机械流程见 [CLAUDE.md](../CLAUDE.md)
-  - 顶栏入口的形态**按页面分两种**：**工具页**是一个 tile 面板开关（[QuickMenu](../src/quick/QuickMenu.tsx)）收纳全部五个 —— 横屏侧栏只有 64px，平铺放不下，也会跟工具自己的控件抢注意力；**首页**不放抽屉，直接给名单与设置两个按钮（右侧顺序：名单 · 设置 · 朝向）。理由是骰子 / 计时器 / 指针在首页宫格里已有大卡，抽屉在首页只是多一层点击。两处的取舍同源于一个 `onHome` 字段，见 [CLAUDE.md](../CLAUDE.md)
+  - 顶栏入口的形态**按页面分两种**：**工具页**是一个 tile 面板开关（[QuickMenu](../src/quick/QuickMenu.tsx)）收纳全部五个 —— 横屏侧栏只有 64px，平铺放不下，也会跟工具自己的控件抢注意力；**首页**不放抽屉，直接给配置类的直达按钮（扫码 · 出示 · 设置，扫码在无摄像头的设备上不显示）。理由是骰子 / 计时器 / 指针在首页宫格里已有大卡，抽屉在首页只是多一层点击。两处的取舍同源于一个 `onHome` 字段，见 [CLAUDE.md](../CLAUDE.md)
   - 两种形态都带 `TimerChip`：关掉 dialog 后只剩它能看到还剩多久。顶栏改常显之后工具页也一直看得到（旧的自动收起会把芯片一起带走）
 - quick 面板的 `wide` prop 只决定**宽度上限**（`max-w-2xl` / `max-w-md`），不是朝向判据。内部要分横竖屏的面板（[QuickPlayers](../src/quick/players/QuickPlayers.tsx)：横屏左名单 + 右编辑，竖屏上下堆叠）自己写 `wide:` variant，并**显式给一个 `h-[min(…rem,…vh)]` 高度** —— 面板高度由内容决定，内层写 `h-full` 没有锚点会塌缩，列表也就撑不满
 - `fixed` 浮层的层级约定，**新增浮层按这三档挑，不要自造数字**：

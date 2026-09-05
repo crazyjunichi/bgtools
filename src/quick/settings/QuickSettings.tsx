@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { canRotate, useOrientation, type Orientation } from '../../shared/hooks/useOrientation'
 import { SUPPORTED } from '../../shared/i18n'
 import { IconCheck } from '../../shared/icons'
 import {
@@ -9,9 +10,9 @@ import {
 import type { I18nKey } from '../../shared/i18n/types'
 
 /**
- * 全局设置。语言 / 主题 / 墨水屏，将来是震动 / 唤醒锁 / 清空数据这类全局开关的落点。
+ * 全局设置。语言 / 主题 / 墨水屏 / 朝向，将来是震动 / 唤醒锁 / 清空数据这类全局开关的落点。
  *
- * **刻意不设显式高度、也没有弹性块**：三行「标签 + 一排按钮」，加上 dialog 的固定
+ * **刻意不设显式高度、也没有弹性块**：几行「标签 + 一排按钮」，加上 dialog 的固定
  * 开销仍远低于任何目标屏的可用高，横竖屏都没有余量要分配 —— CLAUDE.md 里「每个 quick
  * 至少一块弹性块」那条红线是为**放不下**的内容设的，硬塞一块只会撑出空白。
  * 预算算法见 CLAUDE.md 的 quick 横竖屏布局一节。
@@ -69,12 +70,18 @@ const EINK_OPTIONS = [
   { value: 'off', labelKey: 'quick.settings.einkOff' },
 ] as const satisfies readonly { value: EinkChoice; labelKey: I18nKey }[]
 
+const ORIENTATION_OPTIONS = [
+  { value: 'portrait', labelKey: 'quick.settings.orientPortrait' },
+  { value: 'landscape', labelKey: 'quick.settings.orientLandscape' },
+] as const satisfies readonly { value: Orientation; labelKey: I18nKey }[]
+
 export function QuickSettings() {
   const { t, i18n } = useTranslation()
   const theme = useThemeStore((s) => s.theme)
   const eink = useThemeStore((s) => s.eink)
   const setTheme = useThemeStore((s) => s.setTheme)
   const setEink = useThemeStore((s) => s.setEink)
+  const { landscape, set: setOrientation } = useOrientation()
 
   return (
     <div className="flex flex-col gap-4">
@@ -112,6 +119,18 @@ export function QuickSettings() {
         <span className="section-label">{t('quick.settings.eink')}</span>
         <OptionRow options={EINK_OPTIONS} value={eink} onChange={setEink} />
       </div>
+
+      {/* 锁朝向需要全屏或 PWA，桌面浏览器 / iOS 上两条路都没有时整行不显示 */}
+      {canRotate && (
+        <div className="flex flex-col gap-2">
+          <span className="section-label">{t('quick.settings.orientation')}</span>
+          <OptionRow
+            options={ORIENTATION_OPTIONS}
+            value={landscape ? 'landscape' : 'portrait'}
+            onChange={setOrientation}
+          />
+        </div>
+      )}
     </div>
   )
 }

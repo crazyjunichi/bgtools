@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom'
 import { QuickBar } from './quick/QuickBar'
 import { useBackOverride } from './shared/backOverride'
 import { useHeaderTitle } from './shared/headerTitle'
-import { canRotate, useOrientation } from './shared/hooks/useOrientation'
-import { IconBack, IconLogo, IconRotate } from './shared/icons'
+import { IconBack, IconLogo } from './shared/icons'
 import type { ToolEntry } from './tools/types'
 
 type Props = { tool?: ToolEntry }
 
 /**
- * 全站顶栏。返回/朝向切换是通用能力，不下放给各工具自己实现。
+ * 全站顶栏。返回是通用能力，不下放给各工具自己实现。
  * 工具页里的形态按朝向分两种，因为横屏最贵的是高度、竖屏最贵的是宽度：
  *
  * - **横屏**：左侧常驻窄竖条。顶部整条留给内容；标题放不下，`sr-only` 只留给读屏
@@ -22,7 +21,6 @@ type Props = { tool?: ToolEntry }
  */
 export function AppHeader({ tool }: Props) {
   const { t } = useTranslation()
-  const { landscape, toggle } = useOrientation()
   // 工具内子视图注册的返回接管（如狼人真言的主持页）：有它时返回回工具入口而非首页
   const onBack = useBackOverride((s) => s.onBack)
   // 工具页对标题的临时接管（如计分纸从游戏卡进入时显示那盒游戏），见 shared/headerTitle
@@ -83,16 +81,6 @@ export function AppHeader({ tool }: Props) {
         </h1>
         {/* 小工具入口（首页直达配置类那两个，工具页收进 tile 面板）+ 计时器芯片 */}
         <QuickBar home={!tool} />
-        {canRotate && (
-          <button
-            type="button"
-            onClick={toggle}
-            className="flex size-12 items-center justify-center rounded-xl text-text-muted active:scale-95"
-            aria-label={t(landscape ? 'header.toPortrait' : 'header.toLandscape')}
-          >
-            <IconRotate className="size-6" aria-hidden />
-          </button>
-        )}
       </div>
     </header>
   )

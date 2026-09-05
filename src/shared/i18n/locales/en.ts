@@ -29,8 +29,6 @@ export const en: Resources = {
   header: {
     back: 'Back to home',
     backInTool: 'Back',
-    toPortrait: 'Switch to portrait',
-    toLandscape: 'Switch to landscape',
   },
 
   home: {
@@ -327,6 +325,9 @@ export const en: Resources = {
       einkAuto: 'Auto',
       einkOn: 'On',
       einkOff: 'Off',
+      orientation: 'Orientation',
+      orientPortrait: 'Portrait',
+      orientLandscape: 'Landscape',
     },
   },
 

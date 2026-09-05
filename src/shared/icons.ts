@@ -80,8 +80,6 @@ export {
   LayoutGrid as IconQuickMenu,
   RefreshCw as IconRepeat,
   RotateCcw as IconReset,
-  /** 切换屏幕朝向。方框里的旋转箭头才读得出「转的是屏幕」，与 IconReset 的裸箭头分开 */
-  RotateCcwSquare as IconRotate,
   /** 存到本地文件 */
   Download as IconSave,
   Search as IconSearch,
