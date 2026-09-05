@@ -53,6 +53,8 @@ export type QuickTool = {
    * 首页两处入口因此都不显示它（首页没有当前局）。
    */
   needsMatch?: boolean
+  /** 只在设备有摄像头时露出（扫码）。无摄像头的桌面给了入口也只会走进死胡同 */
+  needsCamera?: boolean
 }
 
 /**
@@ -122,6 +124,7 @@ export const quickTools: QuickTool[] = [
     icon: IconScan,
     accent: 'indigo',
     Component: QuickScan,
+    needsCamera: true,
   },
   // 与 scan 相对：出示当前页面（含路由）的二维码让别的设备打开，也是开局前拉人进站的动作
   {

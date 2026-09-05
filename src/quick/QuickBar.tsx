@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { useHasCamera } from '../shared/hooks/useHasCamera'
 import { IconQuickMenu } from '../shared/icons'
 import { quickTools } from './registry'
 import { QUICK_MENU, useQuickUI } from './store'
@@ -10,6 +11,7 @@ import { TimerChip } from './timer/TimerChip'
  *
  * `needsMatch` 的再排除掉：首页不存在"当前这一局"，那些工具在这儿没有候选。
  * 可以在模块顶层算完，因为首页永远不会有席位。
+ * `needsCamera` 是运行时状态，留到渲染期再过滤。
  */
 const DIRECT = quickTools.filter((tool) => !tool.onHome && !tool.needsMatch)
 
@@ -32,12 +34,14 @@ export function QuickBar({ home = false }: { home?: boolean }) {
   const openTool = useQuickUI((s) => s.openTool)
   const toggleMenu = useQuickUI((s) => s.toggleMenu)
   const menuOpen = open === QUICK_MENU
+  const hasCamera = useHasCamera()
+  const direct = hasCamera ? DIRECT : DIRECT.filter((tool) => !tool.needsCamera)
 
   return (
     <>
       {/* 入口位置固定不动（肌肉记忆），芯片动态跟在后面 */}
       {home ? (
-        DIRECT.map((tool) => (
+        direct.map((tool) => (
           <button
             key={tool.id}
             type="button"

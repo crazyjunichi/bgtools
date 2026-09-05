@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useHasCamera } from '../shared/hooks/useHasCamera'
 import { useActiveMatch } from '../shared/match/active'
 import { type QuickAccent, quickTools } from './registry'
 import { useQuickUI } from './store'
@@ -37,9 +38,13 @@ export function QuickMenu({ sidebar }: Props) {
   const { t } = useTranslation()
   const openTool = useQuickUI((s) => s.openTool)
   const close = useQuickUI((s) => s.close)
-  // 这一局没人在打时，`needsMatch` 的工具没有候选，入口也就不该在
+  // 这一局没人在打时 `needsMatch` 的工具没有候选，设备没摄像头时 `needsCamera` 的
+  // 只会走进死胡同 —— 入口都不该在
   const hasSeats = useActiveMatch((s) => (s.active?.seats.length ?? 0) > 0)
-  const tools = hasSeats ? quickTools : quickTools.filter((tool) => !tool.needsMatch)
+  const hasCamera = useHasCamera()
+  const tools = quickTools.filter(
+    (tool) => (hasSeats || !tool.needsMatch) && (hasCamera || !tool.needsCamera),
+  )
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
