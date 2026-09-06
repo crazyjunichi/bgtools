@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { QuickBar } from './quick/QuickBar'
 import { useBackOverride } from './shared/backOverride'
 import { useHeaderTitle } from './shared/headerTitle'
-import { IconBack, IconLogo } from './shared/icons'
+import { IconBack } from './shared/icons'
+import { Logo } from './Logo'
 import type { ToolEntry } from './tools/types'
 
 type Props = { tool?: ToolEntry }
@@ -64,7 +65,7 @@ export function AppHeader({ tool }: Props) {
             </Link>
           )
         ) : (
-          <IconLogo className="ml-2 size-6 text-text" aria-hidden />
+          <Logo className="ml-2 size-6 text-text" />
         )}
         {/* 横屏侧栏只有 64px，塞不下标题；用 sr-only 而非 hidden，读屏仍报得出当前工具 */}
         <h1

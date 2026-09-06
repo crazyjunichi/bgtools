@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- maskable:不留圆角(遮罩自己裁),图形缩进 80% 安全区内 -->
   <style>
     .badge { fill: #0b0f17 }
     .arc { stroke: #fbbf24 }
@@ -19,8 +20,8 @@
       <stop class="die-b" offset="1" />
     </linearGradient>
   </defs>
-  <rect class="badge" width="512" height="512" rx="96" />
-  <g transform="translate(-5 -2)">
+  <rect class="badge" width="512" height="512" />
+  <g transform="translate(51 51) scale(0.8) translate(-5 -2)">
     <g class="arc" fill="none" stroke-linecap="round" stroke-width="14">
       <path d="M150 168a140 140 0 0 0 0 176" opacity="0.35" />
       <path d="M102 200a100 100 0 0 0 0 112" opacity="0.2" />
