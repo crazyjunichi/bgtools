@@ -20,6 +20,7 @@ import type { I18nKey } from '../../shared/i18n/types'
 const DIFFICULTY_LABEL: Record<Difficulty, I18nKey> = {
   easy: 'tools.werewords.difficulty.easy',
   standard: 'tools.werewords.difficulty.standard',
+  hard: 'tools.werewords.difficulty.hard',
 }
 
 /**

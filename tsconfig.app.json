@@ -7,6 +7,7 @@
     // vite-plugin-pwa/react 提供 virtual:pwa-register/react 的声明（见 src/UpdatePrompt.tsx）
     "types": ["vite/client", "vite-plugin-pwa/react"],
     "allowArbitraryExtensions": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
 
     /* Bundler mode */

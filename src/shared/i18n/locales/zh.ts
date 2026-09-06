@@ -600,6 +600,7 @@ export const zh = {
         label: '词语难度',
         easy: '简单',
         standard: '标准',
+        hard: '困难',
       },
       param: {
         daySec: '提问时长',

@@ -523,6 +523,7 @@ export const en: Resources = {
         label: 'Word difficulty',
         easy: 'Easy',
         standard: 'Standard',
+        hard: 'Hard',
       },
       param: {
         daySec: 'Question time',
