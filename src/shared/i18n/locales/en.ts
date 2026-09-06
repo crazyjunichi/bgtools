@@ -289,7 +289,7 @@ export const en: Resources = {
     },
     players: {
       name: 'Players',
-      desc: 'Who is at the table',
+      desc: 'Edit the regular roster',
       roster: 'Players',
       emptyList: 'Roster is empty.',
       // 与「已添加玩家」标签同排，左栏窄的时候放不进 "Add player"
@@ -318,7 +318,7 @@ export const en: Resources = {
     },
     settings: {
       name: 'Settings',
-      desc: 'Interface language',
+      desc: 'Language · theme · orientation',
       language: 'Language',
       theme: 'Theme',
       themeSystem: 'System',
@@ -426,7 +426,7 @@ export const en: Resources = {
   tools: {
     codenames: {
       name: 'Codenames',
-      desc: 'Word duel · spymasters peek the answer key',
+      desc: 'Word grid & spymaster key',
       start: 'Start',
       startHint:
         'Two teams hide among 25 words. Only spymasters know the key and may hint with one word plus a number; teammates tap words to reveal. Revealing the assassin loses the game on the spot.',
@@ -453,7 +453,7 @@ export const en: Resources = {
     },
     werewolf: {
       name: 'Werewolf Host',
-      desc: 'Voice-hosted night · deal roles',
+      desc: 'Voice host all night · role deal',
       flow: 'Standard night',
       home: {
         dealDesc: 'Pass around or scan — everyone peeks privately',
@@ -512,7 +512,7 @@ export const en: Resources = {
 
     werewords: {
       name: 'Werewords',
-      desc: 'On-screen word · voice host · role deal',
+      desc: 'Private word reveal · voice host · role deal',
       flow: 'Standard flow',
       home: {
         dealDesc: 'Pass around or scan — everyone peeks privately',
@@ -563,7 +563,7 @@ export const en: Resources = {
 
     fakeArtist: {
       name: 'Fake Artist',
-      desc: 'Deal the word · one stroke each',
+      desc: 'Word & role deal · shared canvas',
       setup: {
         seats: 'Who draws',
         shuffle: 'Shuffle',
@@ -609,7 +609,7 @@ export const en: Resources = {
 
     undercover: {
       name: 'Undercover',
-      desc: 'Similar words · describe and vote',
+      desc: 'Similar word deal · blank & blind variants',
       intro:
         'Everyone gets a word: civilians share one, the undercover gets a near-twin. Describe yours, then vote out the odd one. The blank gets no word and bluffs.',
       pairs: '{{n}} word pairs',
@@ -951,7 +951,7 @@ export const en: Resources = {
 
     scoreSheet: {
       name: 'Score Pad',
-      desc: 'Categories · templates · totals',
+      desc: 'Game templates · auto totals',
       entryCol: 'Category',
       total: 'Total',
       defaultEntry: 'Item {{n}}',
@@ -1201,7 +1201,7 @@ export const en: Resources = {
     },
     touchPick: {
       name: 'Finger Pick',
-      desc: 'Pick one · order · teams',
+      desc: 'Multi-touch · pick / order / teams',
       // 窄条只有 80px，模式名一律一个词
       mode: {
         one: 'Pick 1',
@@ -1228,7 +1228,7 @@ export const en: Resources = {
 
     dealCustom: {
       name: 'Custom Roles',
-      desc: 'Your texts & counts, dealt by passing or QR',
+      desc: 'Custom counts · pass or QR deal',
       list: 'Cards · count 0 sits this round out',
       total: '{{n}} cards this round',
       empty: 'No cards yet. Type a text and tap Add.',

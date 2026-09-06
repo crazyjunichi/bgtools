@@ -348,7 +348,7 @@ export const zh = {
     },
     players: {
       name: '玩家名单',
-      desc: '桌上是谁 · 名字与颜色',
+      desc: '常用玩家编辑',
       roster: '已添加玩家',
       emptyList: '名单是空的。',
       add: '添加玩家',
@@ -378,7 +378,7 @@ export const zh = {
     },
     settings: {
       name: '设置',
-      desc: '界面语言',
+      desc: '语言 · 主题 · 屏幕朝向',
       language: '语言',
       theme: '主题',
       themeSystem: '跟随系统',
@@ -503,7 +503,7 @@ export const zh = {
   tools: {
     codenames: {
       name: '行动代号',
-      desc: '红蓝猜词对抗 · 队长偷看答案',
+      desc: '词板与队长答案',
       start: '开局',
       startHint:
         '25 个词里藏着两队的目标。只有队长知道答案，只能给「一个词 + 一个数字」的线索；队员讨论后点词翻开，翻到刺客当场判负。',
@@ -530,7 +530,7 @@ export const zh = {
     },
     werewolf: {
       name: '狼人杀主持',
-      desc: '语音主持一整夜 · 顺手发身份',
+      desc: '语音主持整夜 · 发身份',
       flow: '标准夜晚流程',
       home: {
         dealDesc: '轮传或扫码，各看各的身份',
@@ -589,7 +589,7 @@ export const zh = {
 
     werewords: {
       name: '狼人真言',
-      desc: '屏幕显词 · 语音主持 · 发身份',
+      desc: '私下亮词 · 语音主持 · 发身份',
       flow: '标准流程',
       home: {
         dealDesc: '轮传或扫码，各看各的身份',
@@ -644,7 +644,7 @@ export const zh = {
 
     fakeArtist: {
       name: '冒牌艺术家',
-      desc: '发词看身份 · 一人一笔共画一幅',
+      desc: '发词发身份 · 共享画板',
       setup: {
         seats: '这局谁画',
         /** 预览区重洗走笔顺序的按钮 */
@@ -691,7 +691,7 @@ export const zh = {
 
     undercover: {
       name: '谁是卧底',
-      desc: '发相近词 · 描述投票抓卧底',
+      desc: '发相近词 · 白板与盲发变体',
       /** 启动台的规则说明 */
       intro:
         '每人拿到一个词：平民的相同，卧底的相近。轮流描述自己的词，投票找出卧底。白板没有词，全靠现编。',
@@ -1066,7 +1066,7 @@ export const zh = {
 
     scoreSheet: {
       name: '计分纸',
-      desc: '固定条目逐项结算 · 游戏模板 · 自动合计',
+      desc: '游戏模板 · 自动合计',
       /** 矩阵首列的列头，视觉上是空的（下面每行自己写着条目名） */
       entryCol: '计分条目',
       total: '总分',
@@ -1374,7 +1374,7 @@ export const zh = {
     },
     touchPick: {
       name: '手指抽选',
-      desc: '多指按屏 · 选一人 · 排序 · 分组',
+      desc: '多指同按 · 选人 / 排序 / 分组',
       /** 窄条按钮只放得下三个字 */
       mode: {
         one: '选一个',
@@ -1408,7 +1408,7 @@ export const zh = {
     /** 自定义发身份（[tools/deal-custom](../../../tools/deal-custom/DealCustomPage.tsx)），发牌现场文案复用 dealRoles.* */
     dealCustom: {
       name: '自定义发身份',
-      desc: '自填文本与张数 · 轮传或扫码发牌',
+      desc: '张数自定 · 轮传或扫码发',
       list: '身份列表 · 张数为 0 的这局不发',
       total: '这局共 {{n}} 张',
       empty: '还没有身份。先填一条文本，点添加。',
