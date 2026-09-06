@@ -2,8 +2,10 @@ import { avalonMeta } from './avalon/meta'
 import { bombBustersMeta } from './bomb-busters/meta'
 import { diceThroneMeta } from './dice-throne/meta'
 import { codenamesMeta } from './codenames/meta'
+import { dealCustomMeta } from './deal-custom/meta'
 import { fakeArtistMeta } from './fake-artist/meta'
 import { gloomhavenMeta } from './gloomhaven/meta'
+import { randomWordsMeta } from './random-words/meta'
 import { scoreSheetMeta } from './score-sheet/meta'
 import { scoreMeta } from './score/meta'
 import { statsMeta } from './stats/meta'
@@ -34,6 +36,8 @@ export const tools: ToolEntry[] = [
   },
   { ...bombBustersMeta, load: () => import('./bomb-busters/BombBustersPage') },
   { ...touchPickMeta, load: () => import('./touch-pick/TouchPickPage') },
+  { ...dealCustomMeta, load: () => import('./deal-custom/DealCustomPage') },
+  { ...randomWordsMeta, load: () => import('./random-words/RandomWordsPage') },
   { ...statsMeta, load: () => import('./stats/StatsPage') },
   { ...yahtzeeMeta, load: () => import('./yahtzee/YahtzeePage') },
   { ...werewolfMeta, load: () => import('./werewolf/WerewolfPage') },

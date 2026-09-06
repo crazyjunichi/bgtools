@@ -24,6 +24,24 @@ export const ACCENT_SOFT: Record<DealAccent, string> = {
   rose: 'border-rose-500/60 bg-rose-500/15 eink:bg-white',
 }
 
+/** 牌面内框线：只给揭示态的身份牌用。eink 收黑 —— 灰阶上彩色细边只是装饰 */
+export const ACCENT_FRAME: Record<DealAccent, string> = {
+  amber: 'border-amber-500/60 eink:border-ink',
+  emerald: 'border-emerald-500/60 eink:border-ink',
+  sky: 'border-sky-500/60 eink:border-ink',
+  violet: 'border-violet-500/60 eink:border-ink',
+  rose: 'border-rose-500/60 eink:border-ink',
+}
+
+/** 牌面上下两条色条，卡牌装帧元素 */
+export const ACCENT_BAR: Record<DealAccent, string> = {
+  amber: 'bg-amber-400 eink:bg-ink',
+  emerald: 'bg-emerald-400 eink:bg-ink',
+  sky: 'bg-sky-400 eink:bg-ink',
+  violet: 'bg-violet-400 eink:bg-ink',
+  rose: 'bg-rose-400 eink:bg-ink',
+}
+
 /** 文字档：淡底上的强调文字 */
 export const ACCENT_TEXT: Record<DealAccent, string> = {
   amber: 'text-amber-300',

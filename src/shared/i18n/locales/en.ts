@@ -1202,6 +1202,35 @@ export const en: Resources = {
       },
     },
 
+    dealCustom: {
+      name: 'Custom Roles',
+      desc: 'Your texts & counts, dealt by passing or QR',
+      list: 'Cards · count 0 sits this round out',
+      total: '{{n}} cards this round',
+      empty: 'No cards yet. Type a text and tap Add.',
+      add: 'Add',
+      addPlaceholder: 'Card text, e.g. Werewolf',
+      textLabel: 'Card {{n}} text',
+      textPlaceholder: 'Card text',
+      fillText: 'Some cards have no text',
+      remove: 'Remove {{name}}',
+    },
+
+    randomWords: {
+      name: 'Random Words',
+      desc: 'Big word cards · tap for next',
+      batchSize: 'Per batch',
+      labeling: 'Numbering',
+      label: {
+        none: 'None',
+        number: '123',
+        letter: 'ABC',
+      },
+      start: 'Start',
+      hint: 'Tap anywhere for the next batch',
+      nextAria: 'Next batch',
+    },
+
     stats: {
       name: 'Stats',
       desc: 'Past matches by player or game',

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { ACCENT_SOFT, ACCENT_TEXT, type DealAccent } from '../accent'
-import type { Role } from '../types'
+import { ACCENT_BAR, ACCENT_FRAME, ACCENT_TEXT, type DealAccent } from '../accent'
+import { roleNameOf, type Role } from '../types'
 
 type Props = {
   role: Role
@@ -17,20 +17,37 @@ export function RoleCard({ role, content, accent }: Props) {
   const { t } = useTranslation()
 
   return (
-    <div
-      className={`flex w-[min(26rem,68vmin)] min-h-[min(30rem,72vmin)] shrink-0 flex-col items-center justify-center gap-3 rounded-3xl border-2 p-6 text-center short:gap-2 short:p-4 ${ACCENT_SOFT[accent]}`}
-    >
-      <span className="text-6xl leading-none short:text-4xl" aria-hidden>
-        {role.icon}
-      </span>
-      <span className="text-data-md font-bold leading-none text-text">{t(role.nameKey)}</span>
-      {/* 阵营用文字给，不靠颜色：颜色不许是唯一识别编码 */}
-      <span className={`text-base font-semibold ${ACCENT_TEXT[accent]}`}>{t(role.teamKey)}</span>
-      {/* 关键词类游戏里这句才是真正要记住的东西，跟身份名同一档 */}
-      {content && <span className="text-data-sm font-bold leading-tight text-text">{content}</span>}
-      <span className="mt-2 text-sm leading-relaxed text-text-muted short:mt-0">
-        {t('dealRoles.online.keepSecret')}
-      </span>
+    <div className="flex w-[min(26rem,68vmin)] min-h-[min(30rem,72vmin)] shrink-0 flex-col rounded-lg border border-line bg-surface-2 p-2 short:p-1.5">
+      <div
+        className={`relative flex w-full flex-1 flex-col items-center justify-center gap-3 rounded border px-4 py-6 text-center short:gap-2 short:py-4 ${ACCENT_FRAME[accent]}`}
+      >
+        <span
+          className={`absolute inset-x-3 top-2 h-0.5 rounded-full ${ACCENT_BAR[accent]}`}
+          aria-hidden
+        />
+        <span
+          className={`absolute inset-x-3 bottom-2 h-0.5 rounded-full ${ACCENT_BAR[accent]}`}
+          aria-hidden
+        />
+        {/* 字面量身份（自定义发身份）没有图标与阵营：名字即主体 */}
+        {role.icon && (
+          <span className="text-6xl leading-none short:text-4xl" aria-hidden>
+            {role.icon}
+          </span>
+        )}
+        <span className="text-data-md font-bold leading-none text-text">{roleNameOf(role, t)}</span>
+        {/* 阵营用文字给，不靠颜色：颜色不许是唯一识别编码 */}
+        {role.teamKey && (
+          <span className={`text-base font-semibold ${ACCENT_TEXT[accent]}`}>
+            {t(role.teamKey)}
+          </span>
+        )}
+        {/* 关键词类游戏里这句才是真正要记住的东西，跟身份名同一档 */}
+        {content && <span className="text-data-sm font-bold leading-tight text-text">{content}</span>}
+        <span className="mt-2 text-sm leading-relaxed text-text-muted short:mt-0">
+          {t('dealRoles.online.keepSecret')}
+        </span>
+      </div>
     </div>
   )
 }

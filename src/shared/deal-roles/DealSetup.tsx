@@ -18,6 +18,7 @@ import { ACCENT_SOLID, ACCENT_TEXT, type DealAccent } from './accent'
 import { matchesPreset, totalOf } from './deck'
 import { useDealRolesStore } from './store'
 import type { RoleCounts, RoleSet } from './types'
+import { roleNameOf } from './types'
 
 /** 少于两张就不是"发身份"了 */
 const MIN_CARDS = 2
@@ -79,7 +80,7 @@ export function DealSetup({ set, counts, accent, onStart, onStartOnline }: Props
   const shown = set.roles.filter((r) => (counts[r.id] ?? 0) > 0)
 
   // 本局最长名字的 em 宽：窄卡时名字字号上限按它反推。随渲染直算，量 ≤9 个短串开销可忽略
-  const maxEm = Math.max(1, ...shown.map((r) => nameEm(t(r.nameKey))))
+  const maxEm = Math.max(1, ...shown.map((r) => nameEm(roleNameOf(r, t))))
 
   // 当前配比命中的预设。手动加减过就可能谁都不匹配，下拉回落到「自定义」占位
   const matched = set.presets.findIndex((p) => matchesPreset(set, counts, p))
@@ -189,14 +190,14 @@ export function DealSetup({ set, counts, accent, onStart, onStartOnline }: Props
               key={r.id}
               type="button"
               onClick={() => add(r.id)}
-              aria-label={t('dealRoles.addRole', { name: t(r.nameKey) })}
+              aria-label={t('dealRoles.addRole', { name: roleNameOf(r, t) })}
               className="btn-base !min-h-12 justify-start gap-2 border border-line bg-surface-2 px-3 text-base text-text-muted short:!min-h-11 short:text-sm"
             >
               <span className="shrink-0 text-xl leading-none short:text-base" aria-hidden>
                 {r.icon}
               </span>
               {/* min-w-0 是 truncate 的前提：flex 子项默认不收缩到内容以下 */}
-              <span className="min-w-0 truncate">{t(r.nameKey)}</span>
+              <span className="min-w-0 truncate">{roleNameOf(r, t)}</span>
               {/* 箭头只指方向不带数量：已加几张去右边的池子看 */}
               <IconArrowDown
                 className={`ml-auto size-5 shrink-0 wide:hidden ${ACCENT_TEXT[accent]}`}
@@ -251,7 +252,7 @@ export function DealSetup({ set, counts, accent, onStart, onStartOnline }: Props
                 key={r.id}
                 type="button"
                 onClick={() => drop(r.id)}
-                aria-label={t('dealRoles.removeRole', { name: t(r.nameKey) })}
+                aria-label={t('dealRoles.removeRole', { name: roleNameOf(r, t) })}
                 className="btn-base relative w-full flex-col gap-3 rounded-2xl bg-surface-3 p-3 text-text [container-type:size] short:gap-1.5 short:p-2"
               >
                 {/* 减号压右上角（徽标位），而非 ✕：✕ 会被读成"把这个身份整种去掉" */}
@@ -267,7 +268,7 @@ export function DealSetup({ set, counts, accent, onStart, onStartOnline }: Props
                   className="max-w-full truncate leading-none"
                   style={{ fontSize: `min(16cqh, calc((100cqw - 24px) / ${maxEm.toFixed(2)}))` }}
                 >
-                  {t(r.nameKey)}
+                  {roleNameOf(r, t)}
                 </span>
                 {/* 张数是池子里唯一要读的数，压过身份名一档 */}
                 <span

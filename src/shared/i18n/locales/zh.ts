@@ -1376,6 +1376,37 @@ export const zh = {
       },
     },
 
+    /** 自定义发身份（[tools/deal-custom](../../../tools/deal-custom/DealCustomPage.tsx)），发牌现场文案复用 dealRoles.* */
+    dealCustom: {
+      name: '自定义发身份',
+      desc: '自填文本与张数 · 轮传或扫码发牌',
+      list: '身份列表 · 张数为 0 的这局不发',
+      total: '这局共 {{n}} 张',
+      empty: '还没有身份。先填一条文本，点添加。',
+      add: '添加',
+      addPlaceholder: '身份文本，如：狼人',
+      textLabel: '第 {{n}} 条身份文本',
+      textPlaceholder: '填身份文本',
+      /** 发牌按钮的禁用原因：有张数大于 0 的条目还是空文本 */
+      fillText: '有身份还没填文本',
+      remove: '删除 {{name}}',
+    },
+
+    randomWords: {
+      name: '随机词语',
+      desc: '大屏翻词 · 点一下换一批',
+      batchSize: '每批数量',
+      labeling: '编号',
+      label: {
+        none: '无',
+        number: '123',
+        letter: 'ABC',
+      },
+      start: '开始',
+      hint: '点击任意处换下一批',
+      nextAria: '换下一批',
+    },
+
     /** 战绩统计（[tools/stats](../../../tools/stats/StatsPage.tsx)），只读 match 存档 */
     stats: {
       name: '战绩统计',

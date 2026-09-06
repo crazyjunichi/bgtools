@@ -4,10 +4,11 @@ import { ConfirmButton } from '../components/ConfirmButton'
 import { buzz } from '../haptics'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { IconCheck, IconClose, IconRepeat } from '../icons'
-import { ACCENT_SOFT, ACCENT_SOLID, ACCENT_TEXT, type DealAccent } from './accent'
+import { ACCENT_BAR, ACCENT_FRAME, ACCENT_SOLID, ACCENT_TEXT, type DealAccent } from './accent'
 import { buildDeck } from './deck'
 import type { DealPool } from './online/backend'
 import type { RoleCounts, RoleSet } from './types'
+import { roleNameOf } from './types'
 
 /**
  * 翻开后这段时间内的点击一律不算。桌上传过来接过去时很容易连点两下，
@@ -93,14 +94,33 @@ export function DealRunner({ set, counts, accent, pool, onClose }: Props) {
        * 卡是唯一热区。两个方向都受视口约束，所以尺寸只能用 vmin ——
        * 竖屏下 vh 取的是长边，卡会直接撑出屏幕。
        */}
+      {/*
+       * 牌面装帧：素外框 + accent 内框 + 上下色条，刻意不用大圆角和整块淡底 ——
+       * 那两样是按钮的读法。色条只在揭示/发完时出现，未翻牌与过场是牌背。
+       */}
       <button
         type="button"
         onClick={handleCard}
         disabled={done || phase === 'handoff'}
-        className={`flex w-[min(26rem,68vmin)] min-h-[min(30rem,72vmin)] shrink-0 flex-col items-center justify-center gap-3 rounded-3xl border-2 p-6 text-center transition-transform duration-75 active:scale-95 disabled:active:scale-100 short:gap-2 short:p-4 ${
-          phase === 'reveal' || done ? ACCENT_SOFT[accent] : 'border-line bg-surface-2'
-        }`}
+        className="flex w-[min(26rem,68vmin)] min-h-[min(30rem,72vmin)] shrink-0 flex-col rounded-lg border border-line bg-surface-2 p-2 transition-transform duration-75 active:scale-95 disabled:active:scale-100 short:p-1.5"
       >
+        <div
+          className={`relative flex w-full flex-1 flex-col items-center justify-center gap-3 rounded border px-4 py-6 text-center short:gap-2 short:py-4 ${
+            phase === 'reveal' || done ? ACCENT_FRAME[accent] : 'border-line'
+          }`}
+        >
+          {(phase === 'reveal' || done) && (
+            <>
+              <span
+                className={`absolute inset-x-3 top-2 h-0.5 rounded-full ${ACCENT_BAR[accent]}`}
+                aria-hidden
+              />
+              <span
+                className={`absolute inset-x-3 bottom-2 h-0.5 rounded-full ${ACCENT_BAR[accent]}`}
+                aria-hidden
+              />
+            </>
+          )}
         {done ? (
           <>
             <IconCheck className={`size-16 short:size-10 ${ACCENT_TEXT[accent]}`} aria-hidden />
@@ -108,14 +128,21 @@ export function DealRunner({ set, counts, accent, pool, onClose }: Props) {
           </>
         ) : phase === 'reveal' && role ? (
           <>
-            <span className="text-6xl leading-none short:text-4xl" aria-hidden>
-              {role.icon}
+            {/* 字面量身份没有图标：名字即主体，用户可自行在文本里带 emoji */}
+            {role.icon && (
+              <span className="text-6xl leading-none short:text-4xl" aria-hidden>
+                {role.icon}
+              </span>
+            )}
+            <span className="text-data-md font-bold leading-none text-text">
+              {roleNameOf(role, t)}
             </span>
-            <span className="text-data-md font-bold leading-none text-text">{t(role.nameKey)}</span>
             {/* 阵营用文字给，不靠颜色：颜色不许是唯一识别编码 */}
-            <span className={`text-base font-semibold ${ACCENT_TEXT[accent]}`}>
-              {t(role.teamKey)}
-            </span>
+            {role.teamKey && (
+              <span className={`text-base font-semibold ${ACCENT_TEXT[accent]}`}>
+                {t(role.teamKey)}
+              </span>
+            )}
             {/* 内容型游戏里这行才是真正要记住的东西（词/主题），与身份名同一档；形制同 RoleCard */}
             {content && (
               <span className="text-data-sm font-bold leading-tight text-text">{content}</span>
@@ -141,6 +168,7 @@ export function DealRunner({ set, counts, accent, pool, onClose }: Props) {
             </span>
           </>
         )}
+        </div>
       </button>
 
       {/* 出口都在卡外：与卡是兄弟节点，点它们不会顺手把牌翻了 */}

@@ -2,6 +2,7 @@ import { AVALON_ROLES } from '../../tools/avalon/roles'
 import { FAKE_ARTIST_ROLES } from '../../tools/fake-artist/roles'
 import { WEREWOLF_ROLES } from '../../tools/werewolf/roles'
 import { WEREWORDS_ROLES } from '../../tools/werewords/roles'
+import { CUSTOM_ROLES } from './custom'
 import type { RoleSet } from './types'
 
 /**
@@ -13,7 +14,13 @@ import type { RoleSet } from './types'
  *
  * 新增一款用发身份的游戏：在这里补一行。漏了的话组织者能发牌，玩家扫码却认不出身份集。
  */
-const SETS: readonly RoleSet[] = [WEREWOLF_ROLES, WEREWORDS_ROLES, AVALON_ROLES, FAKE_ARTIST_ROLES]
+const SETS: readonly RoleSet[] = [
+  WEREWOLF_ROLES,
+  WEREWORDS_ROLES,
+  AVALON_ROLES,
+  FAKE_ARTIST_ROLES,
+  CUSTOM_ROLES,
+]
 
 export function roleSetOf(setId: string): RoleSet | undefined {
   return SETS.find((s) => s.id === setId)
