@@ -162,6 +162,7 @@ export function DealOnline({ set, counts, accent, pool, onClose }: Props) {
           setId: set.id,
           counts,
           seed: game.seed,
+          blind: set.blind,
         })
       : ''
 
@@ -201,7 +202,7 @@ export function DealOnline({ set, counts, accent, pool, onClose }: Props) {
         </div>
       ) : stage.k === 'mine' ? (
         <>
-          <RoleCard role={stage.card.role} content={stage.card.content} accent={accent} />
+          <RoleCard role={stage.card.role} content={stage.card.content} accent={accent} blind={set.blind} />
           <button
             type="button"
             onClick={() => setStage({ k: 'qr' })}

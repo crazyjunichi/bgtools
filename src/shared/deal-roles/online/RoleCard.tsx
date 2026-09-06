@@ -7,13 +7,15 @@ type Props = {
   /** 内容型游戏那一句（关键词之类），来自数据库的内容池；没有就不出这一行 */
   content?: string
   accent: DealAccent
+  /** 盲发局（[RoleSet.blind](../types.ts)）：身份三行不渲染，牌面只剩内容 */
+  blind?: boolean
 }
 
 /**
  * 揭示态的那张牌。形制沿用 [DealRunner](../DealRunner.tsx)（emoji + 身份名 + 阵营文字），
  * 但**不是按钮**：扫码这条路上牌只揭示一次，没有"点一下盖上"这个动作。
  */
-export function RoleCard({ role, content, accent }: Props) {
+export function RoleCard({ role, content, accent, blind }: Props) {
   const { t } = useTranslation()
 
   return (
@@ -30,14 +32,16 @@ export function RoleCard({ role, content, accent }: Props) {
           aria-hidden
         />
         {/* 字面量身份（自定义发身份）没有图标与阵营：名字即主体 */}
-        {role.icon && (
+        {!blind && role.icon && (
           <span className="text-6xl leading-none short:text-4xl" aria-hidden>
             {role.icon}
           </span>
         )}
-        <span className="text-data-md font-bold leading-none text-text">{roleNameOf(role, t)}</span>
+        {!blind && (
+          <span className="text-data-md font-bold leading-none text-text">{roleNameOf(role, t)}</span>
+        )}
         {/* 阵营用文字给，不靠颜色：颜色不许是唯一识别编码 */}
-        {role.teamKey && (
+        {!blind && role.teamKey && (
           <span className={`text-base font-semibold ${ACCENT_TEXT[accent]}`}>
             {t(role.teamKey)}
           </span>

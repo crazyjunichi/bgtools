@@ -21,7 +21,7 @@ const ACCENT: DealAccent = 'violet'
 
 type View =
   | { k: 'loading' }
-  | { k: 'card'; card: PickedCard }
+  | { k: 'card'; card: PickedCard; blind?: boolean }
   | { k: 'soldOut' }
   | { k: 'unknownSet' }
   | { k: 'error'; code: DealErrorCode }
@@ -67,7 +67,7 @@ export default function Join() {
         }
         const res = await claimCard(backendFor(p.target), p.gameId)
         const card = pickCard(set, p.counts, p.seed, res.rank, res.pool)
-        settle(card ? { k: 'card', card } : { k: 'soldOut' })
+        settle(card ? { k: 'card', card, blind: p.blind } : { k: 'soldOut' })
       } catch (e) {
         settle({ k: 'error', code: faultCodeOf(e) })
       }
@@ -81,7 +81,7 @@ export default function Join() {
   return (
     <div className="safe-x safe-t safe-b flex h-full flex-col items-center justify-center gap-4 p-4 short:gap-2 short:p-2">
       {view.k === 'card' ? (
-        <RoleCard role={view.card.role} content={view.card.content} accent={ACCENT} />
+        <RoleCard role={view.card.role} content={view.card.content} accent={ACCENT} blind={view.blind} />
       ) : view.k === 'loading' ? (
         <span className="text-data-sm font-bold text-text">{t('dealRoles.online.joining')}</span>
       ) : view.k === 'soldOut' ? (

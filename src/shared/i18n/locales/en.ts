@@ -607,6 +607,30 @@ export const en: Resources = {
       },
     },
 
+    undercover: {
+      name: 'Undercover',
+      desc: 'Similar words · describe and vote',
+      intro:
+        'Everyone gets a word: civilians share one, the undercover gets a near-twin. Describe yours, then vote out the odd one. The blank gets no word and bluffs.',
+      pairs: '{{n}} word pairs',
+      blankHint: 'No word for you — play along and blend in',
+      blindLabel: 'Variant',
+      blind: 'Blind undercover',
+      blindHint: 'Cards show only the word, no roles — blank cards stay empty',
+      roles: {
+        set: 'Undercover',
+        role: {
+          civilian: 'Civilian',
+          undercover: 'Undercover',
+          blank: 'Blank',
+        },
+        team: {
+          civilians: 'Civilians',
+          undercover: 'Undercover',
+        },
+      },
+    },
+
     avalon: {
       name: 'Avalon',
       desc: 'Role deal · voice-hosted opening night',

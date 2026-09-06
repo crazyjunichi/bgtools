@@ -11,6 +11,7 @@ import { scoreMeta } from './score/meta'
 import { statsMeta } from './stats/meta'
 import { touchPickMeta } from './touch-pick/meta'
 import type { ToolEntry } from './types'
+import { undercoverMeta } from './undercover/meta'
 import { werewolfMeta } from './werewolf/meta'
 import { werewordsMeta } from './werewords/meta'
 import { yahtzeeMeta } from './yahtzee/meta'
@@ -55,6 +56,7 @@ export const tools: ToolEntry[] = [
     match: () => import('./dice-throne/match').then((m) => m.matchTool),
   },
   { ...gloomhavenMeta, load: () => import('./gloomhaven/GloomhavenPage') },
+  { ...undercoverMeta, load: () => import('./undercover/UndercoverPage') },
 ]
 
 export function findTool(pathname: string): ToolEntry | undefined {

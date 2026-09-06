@@ -15,13 +15,16 @@ export type DealPayload = {
   setId: string
   counts: RoleCounts
   seed: string
+  /** 盲发局（见 [RoleSet.blind](../types.ts)）。玩家的牌面渲染必须跟组织者一致，所以进码 */
+  blind?: boolean
 }
 
 /**
  * 协议版本。**任何影响解码或牌堆推算的改动都要 +1** ——
  * 两台设备版本不一致会算出不同的牌堆（可能两人拿到同一张），宁可提示双方更新。
+ * v2：加 `h`（盲发）。它不改牌堆，但旧端不认它会亮出身份、直接拆穿这个变体。
  */
-export const PAYLOAD_VERSION = 1
+export const PAYLOAD_VERSION = 2
 
 const KIND_ABBR: Record<DealBackendKind, string> = {
   firebase: 'f',
@@ -53,8 +56,10 @@ export function encodePayload(base: string, p: DealPayload): string {
     `s=${p.setId}`,
     `c=${counts}`,
     `k=${p.seed}`,
-  ].join('&')
-  return `${base}#/join?${q}`
+  ]
+  // 只在盲发局带上：常规局少一个参数，二维码密度能低一点是一点
+  if (p.blind) q.push('h=1')
+  return `${base}#/join?${q.join('&')}`
 }
 
 /** 解不出来一律抛 `DealFault`，界面上只出一句人话 */
@@ -76,7 +81,7 @@ export function decodePayload(query: string): DealPayload {
   if (!isRegion(region)) throw new DealFault('badLink')
 
   const counts = countsFromParam(q.get('c') ?? '')
-  return { target: { kind, instance, region }, gameId, setId, counts, seed }
+  return { target: { kind, instance, region }, gameId, setId, counts, seed, blind: q.get('h') === '1' }
 }
 
 /** 跳过 0 张的身份，并按 roleId 字典序输出 —— 同一个配比每次都得到同一串，便于人工核对 */

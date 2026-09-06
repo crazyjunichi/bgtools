@@ -1,5 +1,6 @@
 import { AVALON_ROLES } from '../../tools/avalon/roles'
 import { FAKE_ARTIST_ROLES } from '../../tools/fake-artist/roles'
+import { UNDERCOVER_ROLES } from '../../tools/undercover/roles'
 import { WEREWOLF_ROLES } from '../../tools/werewolf/roles'
 import { WEREWORDS_ROLES } from '../../tools/werewords/roles'
 import { CUSTOM_ROLES } from './custom'
@@ -19,6 +20,7 @@ const SETS: readonly RoleSet[] = [
   WEREWORDS_ROLES,
   AVALON_ROLES,
   FAKE_ARTIST_ROLES,
+  UNDERCOVER_ROLES,
   CUSTOM_ROLES,
 ]
 

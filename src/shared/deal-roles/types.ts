@@ -51,6 +51,12 @@ export type RoleSet = {
    * 只存在开局写入的内容池里）。玩家侧取牌见 [pick.ts](online/pick.ts)。
    */
   namesFromPool?: boolean
+  /**
+   * 盲发：牌面只出内容、不出身份（图标/名字/阵营全不渲染），谁是卧底的
+   * 「卧底不知情」变体用它。这是**运行时开关**，由工具页按用户配置拼进 set，
+   * 不是集数据的一部分；扫码链路靠 payload 的 `h` 参数带给玩家侧。
+   */
+  blind?: boolean
 }
 
 /** roleId -> 张数 */

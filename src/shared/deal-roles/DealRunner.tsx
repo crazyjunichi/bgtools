@@ -128,17 +128,20 @@ export function DealRunner({ set, counts, accent, pool, onClose }: Props) {
           </>
         ) : phase === 'reveal' && role ? (
           <>
-            {/* 字面量身份没有图标：名字即主体，用户可自行在文本里带 emoji */}
-            {role.icon && (
+            {/* 字面量身份没有图标：名字即主体，用户可自行在文本里带 emoji。
+                盲发局身份三行（图标/名字/阵营）全不渲染，牌面只剩内容 —— 白板连内容都没有，就是一张空牌 */}
+            {!set.blind && role.icon && (
               <span className="text-6xl leading-none short:text-4xl" aria-hidden>
                 {role.icon}
               </span>
             )}
-            <span className="text-data-md font-bold leading-none text-text">
-              {roleNameOf(role, t)}
-            </span>
+            {!set.blind && (
+              <span className="text-data-md font-bold leading-none text-text">
+                {roleNameOf(role, t)}
+              </span>
+            )}
             {/* 阵营用文字给，不靠颜色：颜色不许是唯一识别编码 */}
-            {role.teamKey && (
+            {!set.blind && role.teamKey && (
               <span className={`text-base font-semibold ${ACCENT_TEXT[accent]}`}>
                 {t(role.teamKey)}
               </span>
