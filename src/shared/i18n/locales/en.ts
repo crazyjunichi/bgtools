@@ -314,6 +314,7 @@ export const en: Resources = {
       copyLink: 'Copy link',
       copied: 'Copied',
       shareBtn: 'Share…',
+      builtAt: 'Built {{time}}',
     },
     settings: {
       name: 'Settings',

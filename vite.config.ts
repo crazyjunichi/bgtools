@@ -6,6 +6,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   // 相对路径产物：丢到任意静态托管的任意子目录都能直接跑
   base: './',
+  define: {
+    // 构建时刻：分享页用它核对两台设备上的是不是同一次构建
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   server: {
     port: 9004,
     // 端口被占用时直接报错退出，而不是静默递增到下一个可用端口 —— 否则"固定端口"没意义

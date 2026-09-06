@@ -374,6 +374,7 @@ export const zh = {
       copyLink: '复制链接',
       copied: '已复制',
       shareBtn: '分享',
+      builtAt: '构建于 {{time}}',
     },
     settings: {
       name: '设置',

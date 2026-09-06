@@ -37,6 +37,9 @@ export function QuickShare() {
       {/* 二维码近正方形、宽高同时受限，视口单位按规则取 vmin */}
       <Qr value={url} label={url} className="size-[min(20rem,50vmin)] rounded-xl" />
       <p className="w-full truncate text-center text-xs text-text-muted">{url}</p>
+      <p className="text-xs text-text-dim">
+        {t('quick.share.builtAt', { time: new Date(__BUILD_TIME__).toLocaleString() })}
+      </p>
       <div className="flex w-full gap-2">
         {canCopyText() && (
           <button type="button" onClick={() => void copy()} className="btn-base flex-1 gap-2 bg-surface-2">
