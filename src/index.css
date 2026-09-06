@@ -193,7 +193,21 @@
  * 所以收白用 per-spot 的 eink:bg-white，集中在 colors.ts / dice/types.ts 这类
  * 映射表里。选中态小色块的 15% 灰**保留**：eink 下选中/未选中边框同为黑色，
  * 那层灰是唯一的底色区分。
+ *
+ * per-spot 的两个固定尾巴收在这里做缩写。变量级重映射做不到这两件事：
+ * -400 同时服务「功能实心底」与「展示颜色本身」（选色板/卡牌），-500/15 同时服务
+ * 「装饰面板」与「选中态灰」，语义只有调用点知道。不用 @utility + eink: 变体 ——
+ * 属性选择器 + 类的优先级稳压同元素上的 bg-X-400 / border-X-500/60，
+ * 不依赖 Tailwind 的工具类生成顺序。
  */
+[data-theme='eink'] .eink-solid {
+  background-color: #000;
+  color: #fff;
+}
+[data-theme='eink'] .eink-wash {
+  background-color: #fff;
+  border-color: #000;
+}
 
 @layer base {
   /*
@@ -307,5 +321,21 @@
     border: none;
     border-radius: 9999px;
     background: var(--color-emerald-400);
+  }
+
+  /* eink：轨道随 surface-3 收白会隐形，补描边；拇指收黑、白边免得和轨道糊成一条 */
+  [data-theme='eink'] &::-webkit-slider-runnable-track {
+    outline: 1px solid #000;
+  }
+  [data-theme='eink'] &::-webkit-slider-thumb {
+    background: #000;
+    border: 2px solid #fff;
+  }
+  [data-theme='eink'] &::-moz-range-track {
+    outline: 1px solid #000;
+  }
+  [data-theme='eink'] &::-moz-range-thumb {
+    background: #000;
+    border: 2px solid #fff;
   }
 }

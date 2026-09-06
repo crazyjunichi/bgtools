@@ -54,19 +54,12 @@ type SheetSnapshot = {
 
 const newId = () => crypto.randomUUID()
 
-/** 通用模板的初始条目数：一条够表明「这是一张可以自己填的纸」，其余让桌上自己加 */
-const CUSTOM_SEED = 1
-
 /**
- * 默认条目名是**存进 localStorage 的快照**，所以在这里用 `i18n.t` 取当下语言的字面量，
- * 之后切语言不跟着变 —— 和 [players/store](../../shared/players/store.ts) 的 defaultName 同一套理由。
+ * 「直接填总分」模式下合成条目的固定 id。通用模板一条自定义条目都没有时，
+ * [entriesOf](#entriesOf) 返回这一条顶替，总分行本身就是它名下的格子 ——
+ * cells 键、归档、快照、历史复算因此全都不用为它分叉
  */
-function seedCustomEntries(): CustomEntry[] {
-  return Array.from({ length: CUSTOM_SEED }, (_, i) => ({
-    id: newId(),
-    label: i18n.t('tools.scoreSheet.defaultEntry', { n: i + 1 }),
-  }))
-}
+export const TOTAL_ENTRY_ID = 'custom.total'
 
 type SheetState = {
   templateId: string
@@ -172,6 +165,23 @@ export function isComplete(seats: Seat[], cells: Record<string, number>): boolea
 }
 
 /**
+ * 操作栏「结算」直达钮的出现判据，比 [isComplete] 严、仍故意不到「填满」：
+ * 找最靠下的非空行（有人填过的最后一行），要求每席都填了它。
+ * 全员到尾 ≈ 逐列过完了；末行是常空行时判据自动落到实际被填的最靠后那条。
+ * 漏报一种：非空末行只有部分人该填（没人买发展卡的卡坦局）—— 数据上区分不了
+ * 「漏填」与「0 分跳过」，这种局走「更多」里结算。
+ */
+export function isFilledUp(entries: Entry[], seats: Seat[], cells: Record<string, number>): boolean {
+  if (!isComplete(seats, cells) || entries.length === 0) return false
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const id = entries[i].id
+    if (!seats.some((s) => rawOf(cells, s.id, id) !== undefined)) continue
+    return seats.every((s) => rawOf(cells, s.id, id) !== undefined)
+  }
+  return false
+}
+
+/**
  * 当前局收成一条待归档记录：分数用现成的 `entriesOf` / `totalOf` 复算，名次交给
  * [rankByScore](../../shared/match/result.ts)，局面进 `payload`（见 [SheetPayload](payload.ts)）。
  * 席位名/色先过一道 [finalizeSeats](../../shared/players/seats.ts)：名单里改过的要跟到图里。
@@ -224,7 +234,7 @@ export const useSheetStore = create<SheetState>()(
   persist(
     (set, get) => ({
       templateId: BLANK_ID,
-      customEntries: seedCustomEntries(),
+      customEntries: [],
       overrides: {},
       seats: [],
       cells: {},
@@ -332,7 +342,7 @@ export const useSheetStore = create<SheetState>()(
         }),
 
       addEntry: () => {
-        const { customEntries } = get()
+        const { customEntries, cells, pick } = get()
         set({
           customEntries: [
             ...customEntries,
@@ -341,6 +351,10 @@ export const useSheetStore = create<SheetState>()(
               label: i18n.t('tools.scoreSheet.defaultEntry', { n: customEntries.length + 1 }),
             },
           ],
+          // 从「直接填总分」长出第一个条目时，总分格作废 —— 规矩同 removeEntry 删格子，
+          // 留着只会在 cells 里攒看不见的 key
+          cells: dropCells(cells, (k) => k.endsWith(`|${TOTAL_ENTRY_ID}`)),
+          pick: pick?.entryId === TOTAL_ENTRY_ID ? null : pick,
         })
       },
 
@@ -434,8 +448,11 @@ export function entriesOf(
 ): Entry[] {
   const tpl = findTemplate(templateId)
   const raw: { id: string; nameKey?: I18nKey; label?: string; base: Scoring }[] = tpl.editable
-    ? // 自定义条目没有模板默认值，base 恒为「直接填分」
-      customEntries.map((e) => ({ id: e.id, label: e.label, base: DIRECT }))
+    ? customEntries.length === 0
+      ? // 零条目 = 「直接填总分」：合成一条顶替，下游（合计 / 归档 / 导出 / 历史）无分叉
+        [{ id: TOTAL_ENTRY_ID, nameKey: 'tools.scoreSheet.total' as I18nKey, base: DIRECT }]
+      : // 自定义条目没有模板默认值，base 恒为「直接填分」
+        customEntries.map((e) => ({ id: e.id, label: e.label, base: DIRECT }))
     : tpl.entries.map((e: SheetEntry) => ({ id: e.id, nameKey: e.nameKey, base: e.scoring ?? DIRECT }))
   return raw.map((e) => {
     /*
@@ -446,6 +463,11 @@ export function entriesOf(
     const fixed = e.nameKey !== undefined && e.base.kind === 'direct'
     return { ...e, scoring: fixed ? e.base : (overrides[e.id] ?? e.base) }
   })
+}
+
+/** 「直接填总分」模式：唯一的一条是合成条目，总分行就是输入格（见 [TOTAL_ENTRY_ID]） */
+export function isDirectTotal(entries: Entry[]): boolean {
+  return entries.length === 1 && entries[0].id === TOTAL_ENTRY_ID
 }
 
 /**

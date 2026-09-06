@@ -1,13 +1,11 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { canRotate, useOrientation, type Orientation } from '../../shared/hooks/useOrientation'
 import { SUPPORTED } from '../../shared/i18n'
-import { IconCheck } from '../../shared/icons'
-import {
-  useThemeStore,
-  type EinkChoice,
-  type ThemeChoice,
-} from '../../shared/theme/store'
+import { IconCheck, IconEnter } from '../../shared/icons'
+import { useThemeStore, type ThemeChoice } from '../../shared/theme/store'
 import type { I18nKey } from '../../shared/i18n/types'
+import { IntegrationsView } from './IntegrationsView'
 
 /**
  * 全局设置。语言 / 主题 / 墨水屏 / 朝向，将来是震动 / 唤醒锁 / 清空数据这类全局开关的落点。
@@ -62,13 +60,8 @@ const THEME_OPTIONS = [
   { value: 'system', labelKey: 'quick.settings.themeSystem' },
   { value: 'light', labelKey: 'quick.settings.themeLight' },
   { value: 'dark', labelKey: 'quick.settings.themeDark' },
+  { value: 'eink', labelKey: 'quick.settings.themeEink' },
 ] as const satisfies readonly { value: ThemeChoice; labelKey: I18nKey }[]
-
-const EINK_OPTIONS = [
-  { value: 'auto', labelKey: 'quick.settings.einkAuto' },
-  { value: 'on', labelKey: 'quick.settings.einkOn' },
-  { value: 'off', labelKey: 'quick.settings.einkOff' },
-] as const satisfies readonly { value: EinkChoice; labelKey: I18nKey }[]
 
 const ORIENTATION_OPTIONS = [
   { value: 'portrait', labelKey: 'quick.settings.orientPortrait' },
@@ -78,13 +71,18 @@ const ORIENTATION_OPTIONS = [
 export function QuickSettings() {
   const { t, i18n } = useTranslation()
   const theme = useThemeStore((s) => s.theme)
-  const eink = useThemeStore((s) => s.eink)
   const setTheme = useThemeStore((s) => s.setTheme)
-  const setEink = useThemeStore((s) => s.setEink)
   const { landscape, set: setOrientation } = useOrientation()
+  // 凭据输入框直接堆进主视图会撑破 short 档的预算,收进一层子视图
+  const [view, setView] = useState<'main' | 'integrations'>('main')
 
+  if (view === 'integrations') {
+    return <IntegrationsView />
+  }
+
+  // dialog 是 wide(给子视图的横屏双栏),主视图只有单选排,自己限回窄列免得控件被拉散
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-4">
       <div className="flex flex-col gap-2">
         <span className="section-label">{t('quick.settings.language')}</span>
         <div className="grid grid-cols-2 gap-2">
@@ -115,11 +113,6 @@ export function QuickSettings() {
         <OptionRow options={THEME_OPTIONS} value={theme} onChange={setTheme} />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="section-label">{t('quick.settings.eink')}</span>
-        <OptionRow options={EINK_OPTIONS} value={eink} onChange={setEink} />
-      </div>
-
       {/* 锁朝向需要全屏或 PWA，桌面浏览器 / iOS 上两条路都没有时整行不显示 */}
       {canRotate && (
         <div className="flex flex-col gap-2">
@@ -131,6 +124,16 @@ export function QuickSettings() {
           />
         </div>
       )}
+
+      {/* 凭据配置是低频动作，收进一层子视图；整行按钮与上面的选项块同一视觉重量 */}
+      <button
+        type="button"
+        onClick={() => setView('integrations')}
+        className="btn-base w-full justify-between gap-2 bg-surface-2 px-4 text-text-muted short:!min-h-11"
+      >
+        {t('quick.settings.integrations')}
+        <IconEnter className="size-5 short:size-4" aria-hidden />
+      </button>
     </div>
   )
 }

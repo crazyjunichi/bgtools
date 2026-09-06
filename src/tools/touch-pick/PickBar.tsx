@@ -43,7 +43,7 @@ export function PickBar({ mode, groups, onMode, onCycleGroups }: Props) {
             type="button"
             aria-pressed={active}
             onClick={() => onMode(m)}
-            className={`${BTN} ${active ? 'bg-emerald-400 font-bold text-ink' : 'bg-surface-2 text-text'}`}
+            className={`${BTN} ${active ? 'bg-emerald-400 font-bold text-ink eink-solid' : 'bg-surface-2 text-text'}`}
           >
             <Icon className="size-6 short:size-5" aria-hidden />
             {t(nameKey)}

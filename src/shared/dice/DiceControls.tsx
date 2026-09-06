@@ -61,7 +61,7 @@ export function DiceControls({ setId }: { setId: string }) {
               // 未勾选除了压暗还加删除线：颜色不许是唯一编码。
               // 用删除线而不是加个勾图标，切换时不会让整格内容跳位
               className={`btn-base flex-col gap-0 leading-tight short:!min-h-11 ${
-                picked ? 'bg-amber-400 text-ink' : 'bg-surface-2 text-text-muted line-through'
+                picked ? 'bg-amber-400 text-ink eink-solid' : 'bg-surface-2 text-text-muted line-through'
               }`}
             >
               <span className="text-base font-bold">{name}</span>
@@ -76,7 +76,7 @@ export function DiceControls({ setId }: { setId: string }) {
           type="button"
           onClick={handleRoll}
           disabled={rolled ? loose === 0 : selected.length === 0}
-          className="btn-base min-h-16 w-full bg-amber-400 text-xl font-bold text-ink disabled:bg-surface-2 disabled:text-text-dim short:!min-h-12 short:text-base"
+          className="btn-base min-h-16 w-full bg-amber-400 text-xl font-bold text-ink eink-solid disabled:bg-surface-2 disabled:text-text-dim short:!min-h-12 short:text-base"
         >
           {rolled
             ? t('dice.pool.reroll', { n: loose })

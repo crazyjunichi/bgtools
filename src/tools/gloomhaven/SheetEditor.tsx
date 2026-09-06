@@ -113,7 +113,7 @@ export function SheetEditor({ sheet, onClose }: Props) {
                           }}
                           className={`flex size-12 items-center justify-center rounded-lg border short:size-11 ${
                             on
-                              ? 'border-sky-500/60 bg-sky-500/15 text-sky-300 light:text-sky-700 eink:border-black eink:bg-white eink:text-black'
+                              ? 'border-sky-500/60 bg-sky-500/15 text-sky-300 light:text-sky-700 eink-wash eink:text-black'
                               : 'border-line bg-surface-2 text-transparent'
                           }`}
                         >
@@ -147,7 +147,7 @@ export function SheetEditor({ sheet, onClose }: Props) {
                 }}
                 className={`btn-base w-12 shrink-0 !min-h-12 border ${
                   item.equipped
-                    ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-300 light:text-emerald-700 eink:border-black eink:bg-white eink:text-black'
+                    ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-300 light:text-emerald-700 eink-wash eink:text-black'
                     : 'border-transparent bg-surface-2 text-text-dim'
                 }`}
               >

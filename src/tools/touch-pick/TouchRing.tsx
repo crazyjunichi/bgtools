@@ -34,13 +34,13 @@ type Props = {
 
 const RING: Record<RingKind, string> = {
   waiting: 'border-line bg-surface-2/70',
-  pending: 'border-emerald-400/70 bg-emerald-500/15 eink:border-black eink:bg-white',
+  pending: 'border-emerald-400/70 bg-emerald-500/15 eink-wash',
   // 辉光在墨水屏上只是一圈灰晕，收掉
   winner:
-    'border-emerald-300 bg-emerald-500/35 shadow-[0_0_40px_-4px] shadow-emerald-400/70 eink:border-black eink:bg-white eink:shadow-none',
+    'border-emerald-300 bg-emerald-500/35 shadow-[0_0_40px_-4px] shadow-emerald-400/70 eink-wash eink:shadow-none',
   // 落选压得很透：屏幕上同时有 emerald 实心亮环，反差要够大才在斜视时一眼分出来
   loser: 'border-line bg-surface-2/50 opacity-30',
-  rank: 'border-sky-400/80 bg-sky-500/20 eink:border-black eink:bg-white',
+  rank: 'border-sky-400/80 bg-sky-500/20 eink-wash',
   group: '',
   bystander: 'border-dashed border-line opacity-25',
 }
@@ -49,9 +49,9 @@ const RING: Record<RingKind, string> = {
 const TAG: Record<RingKind, string> = {
   waiting: '',
   pending: '',
-  winner: 'bg-emerald-400 text-ink',
+  winner: 'bg-emerald-400 text-ink eink-solid',
   loser: '',
-  rank: 'bg-sky-400 text-ink',
+  rank: 'bg-sky-400 text-ink eink-solid',
   group: '',
   bystander: '',
 }

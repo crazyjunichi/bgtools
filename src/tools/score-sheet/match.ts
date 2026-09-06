@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next'
 import { IconCsv, IconImage } from '../../shared/icons'
 import type { MatchExport, MatchTool } from '../../shared/match/detail'
 import { durationText } from '../../shared/match/format'
+import { gameLabel } from '../../shared/match/label'
 import type { MatchDraft } from '../../shared/match/types'
 import { readSheetPayload } from './payload'
 import { renderMatrix, renderTransposed } from './png/matrix'
@@ -22,8 +23,18 @@ function snapshotOf(m: MatchDraft, t: TFunction) {
   if (payload === null) throw new Error('sheet payload unreadable')
   // 时长从 Match 上取（玩家可能在结算面板用滑杆报过真实时长），不从 payload 的摊表时刻算
   const spent = m.endAt - m.startedAt
+  const snap = buildSnapshot(payload, m.endAt, t)
+  /*
+   * 结算时指定过游戏就以它为准：模板身份说的只是这张纸长什么样（通用空白），
+   * 游戏名才是这一局是什么。手填的名字没有图标可配，emoji 槽留空
+   */
+  if (m.gameId !== null || m.gameName !== undefined) {
+    const g = gameLabel(t, m.gameId, m.gameName)
+    snap.title = g.name
+    snap.icon = g.icon ?? ''
+  }
   return {
-    ...buildSnapshot(payload, m.endAt, t),
+    ...snap,
     durationText: spent > 0 ? durationText(t, spent) : undefined,
   }
 }

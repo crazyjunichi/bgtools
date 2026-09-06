@@ -5,6 +5,7 @@ import { Overlay } from '../../shared/components/Overlay'
 import { IconBack, IconDelete, IconShare } from '../../shared/icons'
 import { useArchiveStore } from '../../shared/match/archive'
 import { dateTimeText, durationText } from '../../shared/match/format'
+import { gameLabel } from '../../shared/match/label'
 import { MatchNote } from '../../shared/match/MatchNote'
 import { MatchRow } from '../../shared/match/MatchRow'
 import type { Match } from '../../shared/match/types'
@@ -50,8 +51,8 @@ export function SheetHistory({ onLoad, onShare, onClose }: Props) {
    * 单表混着所有工具的记录，这里只要计分纸的；payload 反解不出来的直接跳过
    * （别的版本写下的东西，与其显示半条不如不显示）。
    *
-   * 标题按**模板**取而不是按 `gameId`：「通用空白」那种局没有对应的盒，
-   * 走游戏目录只会显示「不指定」，对不上桌上那张纸
+   * 标题优先取结算时指定的游戏（含手填的名字）；没指定才回退到**模板**身份 ——
+   * 「通用空白」那种局按游戏目录只会显示「不指定」，对不上桌上那张纸
    */
   const games = useMemo(
     () =>
@@ -61,7 +62,11 @@ export function SheetHistory({ onLoad, onShare, onClose }: Props) {
           const payload = readSheetPayload(m.payload)
           if (payload === null) return []
           const id = templateIdentity(findTemplate(payload.templateId))
-          return [{ match: m, payload, identity: { name: t(id.nameKey), icon: id.icon } }]
+          const identity =
+            m.gameId !== null || m.gameName !== undefined
+              ? gameLabel(t, m.gameId, m.gameName)
+              : { name: t(id.nameKey), icon: id.icon }
+          return [{ match: m, payload, identity }]
         }),
     [matches, t],
   )

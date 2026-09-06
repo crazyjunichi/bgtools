@@ -244,6 +244,9 @@ export const zh = {
     durationShort: '不到 1 分钟',
     note: '备注',
     notePlaceholder: '随便记一句（可留空）',
+    /** 结算面板顶部的游戏名输入框（纯手填；BGG 关键词查询等 token 功能落地后接） */
+    gameName: '游戏名',
+    gameNamePlaceholder: '这局玩的是哪盒（可留空）',
     unavailable: '这台设备禁用了本地数据库，本局记不下来，但可以直接开新局',
     /** 结算面板副标题里的落盘状态：跟「时长 · X」同行，必须短 */
     saved: '已记录',
@@ -380,13 +383,18 @@ export const zh = {
       themeSystem: '跟随系统',
       themeLight: '浅色',
       themeDark: '深色',
-      eink: '墨水屏',
-      einkAuto: '自动',
-      einkOn: '开',
-      einkOff: '关',
+      themeEink: '墨水屏',
       orientation: '屏幕朝向',
       orientPortrait: '竖屏',
       orientLandscape: '横屏',
+      /** 「第三方配置」子视图。凭据类配置是低频动作,收进设置页的一层里 */
+      integrations: '第三方配置',
+      integrationsHint: '外部服务的凭据,只存在这台设备上。',
+      bggTokenLabel: 'BGG Token',
+      bggTokenPlaceholder: '在 BGG 申请的应用令牌',
+      bggInvalid: 'BGG 不认这个 Token,核对一下是否复制完整。',
+      bggUnreachable: '连不上 BGG,检查网络后重试。',
+      saved: '已保存',
     },
   },
 
@@ -1054,6 +1062,8 @@ export const zh = {
       bar: {
         template: '模板',
         more: '更多',
+        /** 填得差不多时出现的结算直达钮（[isFilledUp](../../../tools/score-sheet/store.ts)），省得再开「更多」 */
+        finish: '结算',
       },
       /** 移除键在共用的席位面板里，文案留在这儿：这个工具删的是各项分数 */
       seat: {

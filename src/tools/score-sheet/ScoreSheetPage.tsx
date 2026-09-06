@@ -25,6 +25,7 @@ import {
   entriesOf,
   hasRow,
   isComplete,
+  isFilledUp,
   rawOf,
   sheetMatchDraft,
   useSheetStore,
@@ -146,6 +147,9 @@ export default function ScoreSheetPage() {
     [templateId, customEntries, overrides],
   )
   const editable = findTemplate(templateId).editable === true
+  // 通用空白一旦填了分，「模板」钮就收起：换模板是开局动作，局中它只是误触陷阱。
+  // 填过的局面仍留在 store 的 sheets 档里，清空分数后按钮回来、随时可换
+  const hasCells = Object.keys(cells).length > 0
   const views = seats.map((s) => resolveSeat(s, players))
   const taken = takenPlayerIds(seats)
 
@@ -228,9 +232,11 @@ export default function ScoreSheetPage() {
           if (pick) setCell(pick.seatId, pick.entryId, raw)
         }}
         onNext={next}
-        showTemplate={!locked}
+        showTemplate={!locked && (templateId !== BLANK_ID || !hasCells)}
         onOpenTemplate={() => setPanel({ kind: 'template' })}
         onOpenMore={() => setPanel({ kind: 'more' })}
+        showFinish={isFilledUp(entries, seats, cells)}
+        onFinish={() => setFinish(sheetMatchDraft())}
       />
 
       {panel?.kind === 'template' && (
@@ -244,7 +250,7 @@ export default function ScoreSheetPage() {
 
       {panel?.kind === 'more' && (
         <SheetMore
-          canShare={Object.keys(cells).length > 0}
+          canShare={hasCells}
           canFinish={isComplete(seats, cells)}
           onAddSeat={() => {
             addSeat()

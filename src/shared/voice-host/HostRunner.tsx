@@ -140,7 +140,7 @@ export function HostRunner({ flow }: { flow: HostFlow }) {
               restart()
               buzz(20)
             }}
-            className="btn-base min-h-16 gap-2 bg-emerald-400 px-6 text-xl font-bold text-ink short:!min-h-12 short:text-base"
+            className="btn-base min-h-16 gap-2 bg-emerald-400 px-6 text-xl font-bold text-ink eink-solid short:!min-h-12 short:text-base"
           >
             <IconPlay className="size-6 short:size-5" aria-hidden />
             {t('voiceHost.again')}
@@ -167,7 +167,7 @@ export function HostRunner({ flow }: { flow: HostFlow }) {
               next()
               buzz(20)
             }}
-            className="btn-base min-h-16 gap-2 bg-sky-400 px-6 text-xl font-bold text-ink short:!min-h-12 short:text-base"
+            className="btn-base min-h-16 gap-2 bg-sky-400 px-6 text-xl font-bold text-ink eink-solid short:!min-h-12 short:text-base"
           >
             <IconCheck className="size-6 short:size-5" aria-hidden />
             {t(step.kind === 'reveal' ? 'voiceHost.memorized' : 'voiceHost.spoken')}

@@ -38,6 +38,8 @@ export {
   Trash2 as IconDelete,
   Dices as IconDice,
   Pencil as IconEdit,
+  /** 进入下一层页面（设置里的「第三方配置 ›」）。与 IconNext（翻候选）/ IconExpand（行内展开）同字形不同语义 */
+  ChevronRight as IconEnter,
   /** 「整格清空」，与退格区分：退格删一位，橡皮擦整格 */
   Eraser as IconEraser,
   /** 看密件（主持流程的 reveal 步）：睁眼正是「现在可以看」的字形 */

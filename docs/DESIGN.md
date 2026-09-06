@@ -60,7 +60,7 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 
 ### 主题：深色默认 + 浅色 + 墨水屏
 
-机制与切换见 [shared/theme/store.ts](../src/shared/theme/store.ts)：深色是 CSS 默认值（无 `data-theme` 属性），浅色 / 墨水屏是 `:root[data-theme='light' | 'eink']` 上的**变量重映射**（[index.css](../src/index.css)）。设置页两个开关：主题三态（跟随系统 / 浅色 / 深色）、墨水屏三态（自动 = `(update: slow)` 命中 / 开 / 关），墨水屏生效时无视主题设置。
+机制与切换见 [shared/theme/store.ts](../src/shared/theme/store.ts)：深色是 CSS 默认值（无 `data-theme` 属性），浅色 / 墨水屏是 `:root[data-theme='light' | 'eink']` 上的**变量重映射**（[index.css](../src/index.css)）。设置页主题四选一：跟随系统 / 浅色 / 深色 / 墨水屏（曾带 `(update: slow)` 自动检测，支持面窄且会抢手动设置，已收成纯手动）。
 
 **核心约定：类名档位 ≠ 实际明度。** 浅色块把 `-300` 文字档重映射到各色相的 `-700`，所以 `text-emerald-300` 在深底下是亮绿、浅底下是深绿 —— 写新代码时照抄现有档位语法即可，两个主题自动各自成立。`-400` 实心（+ `text-ink`）与 `-500/15` 淡底在白底下天然成立，不重映射。
 
@@ -69,14 +69,14 @@ rose 语义的一处已登记例外：计时器到时提醒 [TimerAlarm](../src/
 1. **中性色**（zinc）：同一档在不同处要的东西相反（黑玩家的软标签底仍是近黑、上面的文字必须保持亮；白玩家则要在白卡上补灰描边）。例外全部收在 [colors.ts](../src/shared/players/colors.ts) 几张映射表里
 2. **`-50` / `-100` / `-200` 低档位文字**：深底专属的亮文字（`text-sky-200` 之类），白底上要补 `light:text-<c>-700`。除非它压在自包含的深色面板上（[WireGrid](../src/tools/bomb-busters/WireGrid.tsx) 整张导线网在所有主题下保持深色，其内部文字不动）
 
-墨水屏档是**浅色族的一员，不是第三个平行主题**：`light:` 变体同时命中 `[data-theme='light']` 与 `[data-theme='eink']`，类名级例外只写一遍；`eink:` 只留给只有墨水屏要的情况。它在浅色值上收口：表面阶梯压平成纯白、文字与描边纯黑、语义色的 `-300` 文字档与 `-500` 档（淡底/描边）都归零黑 —— 灰阶屏把彩色文字渲染成中间灰、把彩色面板洗成色相不明的灰，索性全收；`-400` 实心块保留色相（彩色墨水屏能用，灰阶上是中灰块+黑字）。CSS 动效 / 过渡 / 毛玻璃全关，WebGL 骰子不转（[DiceCanvas](../src/shared/dice/dice3d/DiceCanvas.tsx)）。状态区分此时完全依赖 §6 的非颜色第二编码。
+墨水屏档是**浅色族的一员，不是第三个平行主题**：`light:` 变体同时命中 `[data-theme='light']` 与 `[data-theme='eink']`，类名级例外只写一遍；`eink:` 只留给只有墨水屏要的情况。它在浅色值上收口：表面阶梯压平成纯白、文字与描边纯黑、语义色的 `-300` 文字档与 `-500` 档（淡底/描边）都归零黑 —— 灰阶屏把彩色文字渲染成中间灰、把彩色面板洗成色相不明的灰，索性全收。**功能性 `-400` 实心块（主操作按钮、选中态）per-spot 反转成黑底白字**（`eink-solid`，定义在 [index.css](../src/index.css)）：实测灰阶屏上 -400 洗成的中灰块+黑字糊成一片，保留色相的教训换来这条收口；「展示颜色本身」的 `-400`（玩家选色板，[colors.ts](../src/shared/players/colors.ts)）不动。CSS 动效 / 过渡 / 毛玻璃全关，WebGL 骰子不转（[DiceCanvas](../src/shared/dice/dice3d/DiceCanvas.tsx)）。状态区分此时完全依赖 §6 的非颜色第二编码。
 
 淡底 tint（`bg-*-500/15` 这类）在 eink 下的处理分两种，**不做全局规则**（按类名子串匹配的中央规则试过，会误伤「只是带了 -500/ 描边」的元素）：
 
 - **选中态小色块保留 15% 灰**：eink 下选中/未选中的边框同为黑色，那层灰是唯一的底色区分
-- **大面积装饰性淡底 per-spot 收白**（`eink:bg-white`，边框顺手 `eink:border-black`），集中在 [colors.ts](../src/shared/players/colors.ts) / [dice/types.ts](../src/shared/dice/types.ts) / [accent.ts](../src/shared/deal-roles/accent.ts) 这类映射表和少数面板。新写的装饰性淡底若在 eink 下显灰，照这个模式补
+- **大面积装饰性淡底 per-spot 收白**（`eink:bg-white`；需要连边框一起收的用 `eink-wash`），集中在 [colors.ts](../src/shared/players/colors.ts) / [dice/types.ts](../src/shared/dice/types.ts) / [accent.ts](../src/shared/deal-roles/accent.ts) 这类映射表和少数面板。新写的装饰性淡底若在 eink 下显灰，照这个模式补
 
-**新页面不需要为主题写任何东西**：遵守上面的档位语法（`-300` 文字 / `-400` 实心 / `-500/15` 淡底）就在三个主题下同时成立。只有撞上「中性色」或「低档位文字」这两种已知模式时才写 `light:` 例外。
+**新页面不需要为主题写任何东西**：遵守上面的档位语法（`-300` 文字 / `-400` 实心 / `-500/15` 淡底）就在三个主题下同时成立。只有撞上「中性色」或「低档位文字」这两种已知模式时才写 `light:` 例外；写功能性 `-400` 实心块时顺手补 `eink-solid`。
 
 **导出图不跟主题**（印刷 / 深色两种外观由分享面板独立选择），`PLAYER_HEX` 等静态 hex 因此不需要主题感知。
 

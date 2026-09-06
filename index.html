@@ -10,9 +10,9 @@
     <script>
       try {
         var s = JSON.parse(localStorage.getItem('bgtools:theme') || '{}').state || {}
-        var eink = s.eink || 'auto'
-        var theme = s.theme || 'system'
-        if (eink === 'on' || (eink === 'auto' && matchMedia('(update: slow)').matches)) {
+        // v0 落盘格式里墨水屏是独立的 eink 开关，读取时兼容（store 侧靠 persist migrate 转正）
+        var theme = s.eink === 'on' ? 'eink' : s.theme || 'system'
+        if (theme === 'eink') {
           document.documentElement.dataset.theme = 'eink'
         } else if (
           theme === 'light' ||

@@ -3,7 +3,7 @@ import { dateTimeText } from '../../shared/match/format'
 import { toCsv as joinCsv } from '../../shared/match/share/csv'
 import type { PlayerColor } from '../../shared/players/colors'
 import type { SheetPayload } from './payload'
-import { entriesOf, entryLabel, rawOf, scoreOf, totalOf } from './store'
+import { entriesOf, entryLabel, isDirectTotal, rawOf, scoreOf, totalOf } from './store'
 import { findTemplate, templateIdentity } from './templates'
 
 /** 一条计分细则一行。`undefined` = 那一格没填过（**不是 0**，两者在纸上必须看得出区别） */
@@ -68,15 +68,18 @@ export function buildSnapshot(g: SheetPayload, at: number, t: TFunction): SheetS
     seats: g.seats.map((s) => ({ name: s.name, color: s.color })),
     /*
      * **全部条目都出行**，包括一格没填的。导出的是「桌上那张纸」，
-     * 少几行反而对不上屏幕；空行本身也是信息（这项谁都没拿到）
+     * 少几行反而对不上屏幕；空行本身也是信息（这项谁都没拿到）。
+     * 例外是「直接填总分」：那一条合成行与合计行是同一个数，出两遍只会像画错了
      */
-    rows: entries.map((e) => ({
-      name: entryLabel(e, t),
-      cells: g.seats.map((s) => {
-        const raw = rawOf(g.cells, s.id, e.id)
-        return raw === undefined ? undefined : scoreOf(e, raw)
-      }),
-    })),
+    rows: isDirectTotal(entries)
+      ? []
+      : entries.map((e) => ({
+          name: entryLabel(e, t),
+          cells: g.seats.map((s) => {
+            const raw = rawOf(g.cells, s.id, e.id)
+            return raw === undefined ? undefined : scoreOf(e, raw)
+          }),
+        })),
     totals,
     bestTotal: totals.some((v) => v !== best) && g.seats.length > 1 ? best : null,
   }

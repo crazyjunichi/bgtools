@@ -13,7 +13,7 @@ import type { MatchDraft } from '../types'
  * 对齐的努力在对面看起来只会是散开的。
  */
 export function matchSummary(m: MatchDraft, t: TFunction): string {
-  const identity = gameLabel(t, m.gameId)
+  const identity = gameLabel(t, m.gameId, m.gameName)
   const spent = m.endAt - m.startedAt
 
   const lines = [

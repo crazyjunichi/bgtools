@@ -49,7 +49,7 @@ export function QuickDice() {
                 type="button"
                 onClick={() => setSides(s)}
                 className={`btn-base short:!min-h-11 short:text-sm ${
-                  s === sides ? 'bg-amber-400 text-ink' : 'bg-surface-2 text-text-muted'
+                  s === sides ? 'bg-amber-400 text-ink eink-solid' : 'bg-surface-2 text-text-muted'
                 }`}
               >
                 d{s}
@@ -69,7 +69,7 @@ export function QuickDice() {
         <button
           type="button"
           onClick={handleRoll}
-          className="btn-base mt-auto min-h-16 w-full bg-amber-400 text-xl font-bold text-ink short:min-h-12 short:text-base"
+          className="btn-base mt-auto min-h-16 w-full bg-amber-400 text-xl font-bold text-ink eink-solid short:min-h-12 short:text-base"
         >
           {t('dice.roll', { n: count, sides })}
         </button>

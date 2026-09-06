@@ -5,42 +5,44 @@ import { persist } from 'zustand/middleware'
  * 主题设置。深色是默认（无 data-theme 属性时的 CSS 值），浅色/墨水屏靠
  * `<html data-theme>` 上的变量覆盖块（见 index.css）。
  *
- * 墨水屏是**独立于主题**的一档：eink 生效时无视 theme 直接落到纯黑白高对比。
- * auto 档跟随 `(update: slow)` —— 这媒体特性支持面窄，只是自动提示，可靠入口是手动开。
+ * 墨水屏是主题四选一里的一档。它曾是独立于主题的开关、带 auto=(update: slow)
+ * 自动检测 —— 那媒体特性支持面窄，检测错了反而抢用户的手动设置，已收成纯手动。
  *
- * ⚠️ persist 的落盘格式（`{state:{theme,eink}}`）被 index.html 的启动脚本同步读，
+ * ⚠️ persist 的落盘格式被 index.html 的启动脚本同步读，
  * 改 name / 字段名 / 解析逻辑时两边要一起改 —— 那个脚本必须在首帧前跑，等不到 bundle。
  */
 
-export type ThemeChoice = 'system' | 'light' | 'dark'
-export type EinkChoice = 'auto' | 'on' | 'off'
+export type ThemeChoice = 'system' | 'light' | 'dark' | 'eink'
 export type ResolvedTheme = 'dark' | 'light' | 'eink'
 
 const systemLight = () => matchMedia('(prefers-color-scheme: light)').matches
-const slowUpdate = () => matchMedia('(update: slow)').matches
 
-export function resolveTheme(theme: ThemeChoice, eink: EinkChoice): ResolvedTheme {
-  if (eink === 'on' || (eink === 'auto' && slowUpdate())) return 'eink'
+export function resolveTheme(theme: ThemeChoice): ResolvedTheme {
+  if (theme === 'eink') return 'eink'
   if (theme === 'light' || (theme === 'system' && systemLight())) return 'light'
   return 'dark'
 }
 
 type ThemeState = {
   theme: ThemeChoice
-  eink: EinkChoice
   setTheme: (theme: ThemeChoice) => void
-  setEink: (eink: EinkChoice) => void
 }
 
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
       theme: 'system',
-      eink: 'auto',
       setTheme: (theme) => set({ theme }),
-      setEink: (eink) => set({ eink }),
     }),
-    { name: 'bgtools:theme' },
+    {
+      name: 'bgtools:theme',
+      // v0 → v1：墨水屏从独立开关并进 theme（旧格式 {theme, eink:'on'} → theme:'eink'）
+      version: 1,
+      migrate: (persisted) => {
+        const s = persisted as { theme?: ThemeChoice; eink?: string } | undefined
+        return { theme: s?.eink === 'on' ? 'eink' : (s?.theme ?? 'system') }
+      },
+    },
   ),
 )
 
@@ -52,7 +54,7 @@ const THEME_COLORS: Record<ResolvedTheme, string> = {
 }
 
 function apply() {
-  const resolved = resolveTheme(useThemeStore.getState().theme, useThemeStore.getState().eink)
+  const resolved = resolveTheme(useThemeStore.getState().theme)
   const root = document.documentElement
   if (resolved === 'dark') delete root.dataset.theme
   else root.dataset.theme = resolved
@@ -69,6 +71,5 @@ export const isEink = () => document.documentElement.dataset.theme === 'eink'
 apply()
 useThemeStore.subscribe(apply)
 
-// 系统档/自动档的外部信号变化时重算
+// 跟随系统档的外部信号变化时重算
 matchMedia('(prefers-color-scheme: light)').addEventListener('change', apply)
-matchMedia('(update: slow)').addEventListener('change', apply)

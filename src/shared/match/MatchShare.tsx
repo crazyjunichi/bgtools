@@ -168,7 +168,7 @@ export function MatchShare({ match, exports, onClose }: Props) {
       .catch((e) => console.warn('[share] file export failed', e))
   }
 
-  const { name: gameName } = gameLabel(t, match.gameId)
+  const { name: gameName } = gameLabel(t, match.gameId, match.gameName)
 
   // null = 这局推不了（旧存档、没指定游戏），按钮整个不渲染 —— 详情见 bgstats.ts
   const pushUrl = bgStatsUrl(match)
@@ -245,7 +245,7 @@ export function MatchShare({ match, exports, onClose }: Props) {
                   aria-pressed={on}
                   onClick={() => setForm(f.id)}
                   className={`btn-base !min-h-12 min-w-0 flex-1 gap-1.5 !rounded-lg px-2 text-sm short:!min-h-11 ${
-                    on ? 'bg-sky-400 font-bold text-ink' : 'text-text-muted'
+                    on ? 'bg-sky-400 font-bold text-ink eink-solid' : 'text-text-muted'
                   }`}
                 >
                   {/* 选中态是实心块对纯文字，形态差已够强 —— 不再叠勾，把宽度让给名字 */}
@@ -305,7 +305,7 @@ export function MatchShare({ match, exports, onClose }: Props) {
               <button
                 type="button"
                 onClick={() => void shareBlob(done.blob, done.filename, t('match.share.title'))}
-                className="btn-base min-w-0 flex-1 gap-2 bg-sky-400 text-base font-bold text-ink short:!min-h-11"
+                className="btn-base min-w-0 flex-1 gap-2 bg-sky-400 text-base font-bold text-ink eink-solid short:!min-h-11"
               >
                 <IconShare className="size-6 shrink-0 short:size-5" aria-hidden />
                 <span className="truncate">{t('match.share.shareBtn')}</span>
@@ -326,7 +326,7 @@ export function MatchShare({ match, exports, onClose }: Props) {
               onClick={() => {
                 if (done) saveBlob(done.blob, done.filename)
               }}
-              className="btn-base min-w-0 flex-1 gap-2 bg-sky-400 text-base font-bold text-ink short:!min-h-11"
+              className="btn-base min-w-0 flex-1 gap-2 bg-sky-400 text-base font-bold text-ink eink-solid short:!min-h-11"
             >
               <IconSave className="size-6 shrink-0 short:size-5" aria-hidden />
               <span className="truncate">{t('match.share.save')}</span>

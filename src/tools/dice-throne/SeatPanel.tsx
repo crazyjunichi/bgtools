@@ -139,8 +139,8 @@ export function SeatPanel({ seat, onEditSeat, onRemove, onClose }: Props) {
                   onClick={() => bump(delta)}
                   className={`btn-base border font-mono text-xl font-bold tabular-nums short:!min-h-12 ${
                     delta < 0
-                      ? 'border-rose-500/60 bg-rose-500/15 text-rose-300 light:text-rose-700 eink:border-black eink:bg-white eink:text-black'
-                      : 'border-emerald-500/60 bg-emerald-500/15 text-emerald-300 light:text-emerald-700 eink:border-black eink:bg-white eink:text-black'
+                      ? 'border-rose-500/60 bg-rose-500/15 text-rose-300 light:text-rose-700 eink-wash eink:text-black'
+                      : 'border-emerald-500/60 bg-emerald-500/15 text-emerald-300 light:text-emerald-700 eink-wash eink:text-black'
                   }`}
                 >
                   {delta > 0 ? `+${delta}` : `−${-delta}`}
@@ -180,7 +180,7 @@ export function SeatPanel({ seat, onEditSeat, onRemove, onClose }: Props) {
                   key={s.id}
                   className={`flex flex-col gap-0.5 rounded-xl border p-1.5 ${
                     active
-                      ? 'border-violet-500/60 bg-violet-500/15 eink:border-black eink:bg-white'
+                      ? 'border-violet-500/60 bg-violet-500/15 eink-wash'
                       : 'border-transparent bg-surface-2'
                   }`}
                 >

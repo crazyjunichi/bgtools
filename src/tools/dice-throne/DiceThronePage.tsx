@@ -68,7 +68,7 @@ export default function DiceThronePage() {
             type="button"
             disabled={views.length === 0}
             onClick={() => setFinish(throneMatchDraft())}
-            className="btn-base flex-1 gap-2 bg-emerald-400 text-base font-bold text-ink disabled:bg-surface-2 disabled:text-text-dim"
+            className="btn-base flex-1 gap-2 bg-emerald-400 text-base font-bold text-ink eink-solid disabled:bg-surface-2 disabled:text-text-dim"
           >
             <IconCheck className="size-6 short:size-5" aria-hidden />
             {t('tools.diceThrone.finish')}

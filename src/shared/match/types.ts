@@ -45,13 +45,19 @@ export type Match = {
   endAt: number
   /** `null` = 未指定（通用计分随手开的一局，用户也没在结算面板里选） */
   gameId: string | null
+  /**
+   * 目录里没有的游戏，在结算面板里手填的名字。**与 `gameId` 互斥**：
+   * 选了目录里的游戏它就该是 undefined，两边都有以 `gameId` 为准
+   */
+  gameName?: string
   /** 哪个工具记的。同一盒游戏可能被不同工具记（计分纸 vs 专用工具） */
   toolId: string
   mode: ResultMode
   players: MatchPlayer[]
   /**
-   * 用户自己填的一句话。**`Match` 上唯一允许事后修改的字段** ——
-   * 结算那一刻常顾不上填，回看时才想补一句。其余字段一律只增删不改
+   * 用户自己填的一句话。结算那一刻常顾不上填，回看时才想补一句。
+   * 它与时长、游戏是**仅允许在结算窗口内修改**的字段（结算面板 / 历史详情的备注框），
+   * 其余字段一律只增删不改
    */
   note?: string
   /**

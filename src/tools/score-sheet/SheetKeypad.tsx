@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { buzz } from '../../shared/haptics'
 import {
   IconBackspace,
+  IconCheck,
   IconEraser,
   IconMore,
   IconMoveDown,
@@ -32,6 +33,9 @@ type Props = {
   showTemplate?: boolean
   onOpenTemplate: () => void
   onOpenMore: () => void
+  /** 填得差不多了（见 [isFilledUp](store.ts)）就亮出结算直达钮，省得再开「更多」 */
+  showFinish?: boolean
+  onFinish: () => void
 }
 
 const INT = /^-?\d+$/
@@ -54,6 +58,8 @@ export function SheetKeypad({
   showTemplate = true,
   onOpenTemplate,
   onOpenMore,
+  showFinish = false,
+  onFinish,
 }: Props) {
   const { t } = useTranslation()
   const [buf, setBuf] = useState('')
@@ -180,8 +186,12 @@ export function SheetKeypad({
       </div>
 
       {/* 只留这两个：模板是开局要选的，其余出口全在「更多」里 —— 加人已挪到矩阵列头。
-          固定游戏的表收起模板钮，「更多」独占整行 */}
-      <div className={`grid shrink-0 gap-2 ${showTemplate ? 'grid-cols-2' : ''}`}>
+          固定游戏的表收起模板钮；填得差不多时再长出结算直达钮（最右主操作位） */}
+      <div
+        className={`grid shrink-0 gap-2 ${
+          showTemplate && showFinish ? 'grid-cols-3' : showTemplate || showFinish ? 'grid-cols-2' : ''
+        }`}
+      >
         {showTemplate && (
           <button
             type="button"
@@ -200,6 +210,16 @@ export function SheetKeypad({
           <IconMore className="size-5" aria-hidden />
           {t('tools.scoreSheet.bar.more')}
         </button>
+        {showFinish && (
+          <button
+            type="button"
+            onClick={onFinish}
+            className="btn-base gap-2 bg-emerald-400 text-sm font-bold text-ink eink-solid short:!min-h-11"
+          >
+            <IconCheck className="size-5" aria-hidden />
+            {t('tools.scoreSheet.bar.finish')}
+          </button>
+        )}
       </div>
     </div>
   )

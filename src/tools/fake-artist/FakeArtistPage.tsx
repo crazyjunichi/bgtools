@@ -124,7 +124,7 @@ export default function FakeArtistPage() {
               <button
                 type="button"
                 onClick={openDeal}
-                className="btn-base min-h-16 shrink-0 gap-2 bg-emerald-400 text-xl font-bold text-ink short:!min-h-12 short:text-base"
+                className="btn-base min-h-16 shrink-0 gap-2 bg-emerald-400 text-xl font-bold text-ink eink-solid short:!min-h-12 short:text-base"
               >
                 <IconDeal className="size-6 short:size-5" aria-hidden />
                 {t('dealRoles.open')}
@@ -256,7 +256,7 @@ export default function FakeArtistPage() {
                         reveal()
                         buzz(20)
                       }}
-                      className="btn-base min-h-16 gap-2 bg-emerald-400 text-xl font-bold text-ink short:!min-h-12 short:text-base"
+                      className="btn-base min-h-16 gap-2 bg-emerald-400 text-xl font-bold text-ink eink-solid short:!min-h-12 short:text-base"
                     >
                       <IconEye className="size-6 short:size-5" aria-hidden />
                       {t('tools.fakeArtist.board.reveal')}
@@ -277,7 +277,7 @@ export default function FakeArtistPage() {
                       type="button"
                       disabled={draft === null}
                       onClick={() => setSharing(true)}
-                      className="btn-base min-h-16 gap-2 bg-emerald-400 text-xl font-bold text-ink short:!min-h-12 short:text-base"
+                      className="btn-base min-h-16 gap-2 bg-emerald-400 text-xl font-bold text-ink eink-solid short:!min-h-12 short:text-base"
                     >
                       <IconShare className="size-6 short:size-5" aria-hidden />
                       {t('tools.fakeArtist.board.share')}

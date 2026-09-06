@@ -5,13 +5,14 @@
  */
 export type DealAccent = 'amber' | 'emerald' | 'sky' | 'violet' | 'rose'
 
-/** 实心档：主操作与选中态。显式映射表，Tailwind 扫不到拼接出来的类名 */
+/** 实心档：主操作与选中态。显式映射表，Tailwind 扫不到拼接出来的类名。
+    eink 反转成黑底白字：-400 在灰阶屏上是中灰块，黑字压上去糊 */
 export const ACCENT_SOLID: Record<DealAccent, string> = {
-  amber: 'bg-amber-400 text-ink',
-  emerald: 'bg-emerald-400 text-ink',
-  sky: 'bg-sky-400 text-ink',
-  violet: 'bg-violet-400 text-ink',
-  rose: 'bg-rose-400 text-ink',
+  amber: 'bg-amber-400 text-ink eink-solid',
+  emerald: 'bg-emerald-400 text-ink eink-solid',
+  sky: 'bg-sky-400 text-ink eink-solid',
+  violet: 'bg-violet-400 text-ink eink-solid',
+  rose: 'bg-rose-400 text-ink eink-solid',
 }
 
 /** 淡底档：已加了张数的身份格、揭示卡的边框。eink 收白：灰阶屏上 15% 灰只是装饰 */

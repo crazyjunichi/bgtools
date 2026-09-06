@@ -44,7 +44,7 @@ export function QuickTimer() {
                 else resume()
                 buzz()
               }}
-              className="btn-base min-h-16 w-full gap-2 bg-sky-400 text-xl font-bold text-ink short:min-h-12 short:text-base"
+              className="btn-base min-h-16 w-full gap-2 bg-sky-400 text-xl font-bold text-ink eink-solid short:min-h-12 short:text-base"
             >
               {running ? (
                 <IconPause className="size-6 short:size-5" aria-hidden />
@@ -97,7 +97,7 @@ export function QuickTimer() {
                 start()
                 buzz(20)
               }}
-              className="btn-base mt-auto min-h-16 w-full bg-sky-400 text-xl font-bold text-ink short:min-h-12 short:text-base"
+              className="btn-base mt-auto min-h-16 w-full bg-sky-400 text-xl font-bold text-ink eink-solid short:min-h-12 short:text-base"
             >
               {t('quick.timer.start', { time: formatMS(durationSec * 1000) })}
             </button>

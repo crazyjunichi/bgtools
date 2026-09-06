@@ -22,10 +22,10 @@ const levelOf = (lives: number): Level =>
  */
 const CARD: Record<Level, string> = {
   // 墨水屏下淡底收白、边框收黑：15% 灰只是装饰，-400 档保留色相（灰阶屏上是浅灰，卡界会糊）
-  dead: 'border-rose-400 bg-rose-600/45 animate-pulse eink:border-black eink:bg-white',
-  critical: 'border-rose-400 bg-rose-500/30 eink:border-black eink:bg-white',
-  low: 'border-amber-400 bg-amber-500/20 eink:border-black eink:bg-white',
-  ok: 'border-emerald-400/70 bg-emerald-500/15 eink:border-black eink:bg-white',
+  dead: 'border-rose-400 bg-rose-600/45 animate-pulse eink-wash',
+  critical: 'border-rose-400 bg-rose-500/30 eink-wash',
+  low: 'border-amber-400 bg-amber-500/20 eink-wash',
+  ok: 'border-emerald-400/70 bg-emerald-500/15 eink-wash',
 }
 
 const TONE: Record<Level, string> = {
@@ -88,7 +88,7 @@ export function LifeBar({ lives, onChange }: Props) {
           aria-label={t('tools.bombBusters.lives.minus')}
           disabled={lives <= 0}
           onClick={() => bump(-1)}
-          className="btn-base border-2 border-rose-400/70 bg-rose-500/25 text-rose-100 light:text-rose-700 eink:border-black eink:bg-white"
+          className="btn-base border-2 border-rose-400/70 bg-rose-500/25 text-rose-100 light:text-rose-700 eink-wash eink:text-black"
         >
           <IconMinus className="size-8" aria-hidden />
         </button>
@@ -97,7 +97,7 @@ export function LifeBar({ lives, onChange }: Props) {
           aria-label={t('tools.bombBusters.lives.plus')}
           disabled={lives >= MAX_LIVES}
           onClick={() => bump(1)}
-          className="btn-base border-2 border-emerald-400/70 bg-emerald-500/20 text-emerald-100 light:text-emerald-700 eink:border-black eink:bg-white"
+          className="btn-base border-2 border-emerald-400/70 bg-emerald-500/20 text-emerald-100 light:text-emerald-700 eink-wash eink:text-black"
         >
           <IconPlus className="size-8" aria-hidden />
         </button>

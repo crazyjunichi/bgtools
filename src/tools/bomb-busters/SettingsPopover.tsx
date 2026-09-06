@@ -102,7 +102,7 @@ export function SettingsPopover({ players, started, onSetPlayers }: Props) {
                     onClick={() => pickPlayers(n)}
                     // 选中态用 sky 而非 rose：同屏里 rose 专属危险语义（生命、重开）
                     className={`btn-base size-14 font-mono text-2xl tabular-nums ${
-                      n === players ? 'bg-sky-400 text-ink' : 'bg-surface-2 text-text-muted'
+                      n === players ? 'bg-sky-400 text-ink eink-solid' : 'bg-surface-2 text-text-muted'
                     }`}
                   >
                     {n}

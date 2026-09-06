@@ -28,7 +28,7 @@ type Props = {
  * 可用则是全卡里唯一的实心块，隔着桌子第一眼就该落在它上面。
  */
 const TONE: Record<EquipState, string> = {
-  0: 'border-violet-400/50 bg-violet-500/15 eink:border-black eink:bg-white',
+  0: 'border-violet-400/50 bg-violet-500/15 eink-wash',
   // 光环不能再粗：它是往外长的，加宽会把相邻两张卡挤到几乎贴一起
   1: 'border-violet-200 bg-violet-600 ring-2 ring-violet-300/60 light:border-violet-400',
   2: 'border-dashed border-violet-500/25 opacity-40',

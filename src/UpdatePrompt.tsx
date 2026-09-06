@@ -34,7 +34,7 @@ export function UpdatePrompt() {
         <button
           type="button"
           onClick={() => void updateServiceWorker()}
-          className="btn-base shrink-0 bg-sky-400 px-5 text-ink short:!min-h-12"
+          className="btn-base shrink-0 bg-sky-400 px-5 text-ink eink-solid short:!min-h-12"
         >
           {t('update.action')}
         </button>

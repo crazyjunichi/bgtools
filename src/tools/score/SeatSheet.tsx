@@ -137,7 +137,7 @@ export function SeatSheet({
             key={`plus-${n}`}
             type="button"
             onClick={() => bump(n)}
-            className="btn-base bg-sky-400 font-mono text-2xl font-bold tabular-nums text-ink short:!min-h-11 short:text-xl"
+            className="btn-base bg-sky-400 font-mono text-2xl font-bold tabular-nums text-ink eink-solid short:!min-h-11 short:text-xl"
           >
             +{n}
           </button>

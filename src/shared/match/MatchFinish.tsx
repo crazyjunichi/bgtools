@@ -7,6 +7,7 @@ import { PLAYER_LINE } from '../players/colors'
 import { useArchiveStore } from './archive'
 import type { MatchExport } from './detail'
 import { durationText, fmtScore } from './format'
+import { gameLabel } from './label'
 import { NOTE_MAX } from './MatchNote'
 import { MatchShare } from './MatchShare'
 import type { MatchDraft } from './types'
@@ -69,22 +70,56 @@ export function MatchFinish({ draft, editableDuration = false, exports, onArchiv
   const [note, setNote] = useState(draft.note ?? '')
   /** 滑杆档位索引；null = 没动过，沿用测得的时长 */
   const [stepIdx, setStepIdx] = useState<number | null>(null)
+  /**
+   * 这局玩的是哪盒（纯手填）。工具钉死了 gameId 的（专用工具、游戏模板）不给改，输入框不出现。
+   * `gameText` 是输入框的原文，`game` 是写进存档的那对字段
+   */
+  const [gameText, setGameText] = useState(draft.gameName ?? '')
+  const [game, setGame] = useState<{ gameId: string | null; gameName?: string }>({
+    gameId: draft.gameId,
+    gameName: draft.gameName,
+  })
   const [sharing, setSharing] = useState(false)
   // StrictMode 与重渲染都不能让归档跑第二遍，否则同一局记两条
   const once = useRef(false)
+  /** 打开那一刻的游戏选择，写回去重结算时的预填值也在这算（见下面的打开即归档） */
+  const baseGame = useRef<{ gameId: string | null; gameName?: string }>({
+    gameId: draft.gameId,
+    gameName: draft.gameName,
+  })
 
   useEffect(() => {
     if (once.current) return
     once.current = true
     void (async () => {
       await load()
-      const id = await archive(draft)
+      /*
+       * 重复结算同一局（读回历史再结算、一局结两次）：上次在面板里填的游戏带回来。
+       * 不预填的话，这次打开即归档会用 draft 里的 null 把上次的选择抹掉
+       */
+      const prev = draft.id
+        ? useArchiveStore.getState().matches.find((m) => m.id === draft.id)
+        : undefined
+      if (draft.gameId === null && prev && (prev.gameId !== null || prev.gameName !== undefined)) {
+        baseGame.current = { gameId: prev.gameId, gameName: prev.gameName }
+        setGame(baseGame.current)
+        // 目录 id 的显示名就地变成输入框文本：用户接着改就是在改这个名字本身
+        setGameText(prev.gameName ?? gameLabel(t, prev.gameId).name)
+      }
+      const id = await archive({ ...draft, ...baseGame.current })
       if (id !== null) {
         setSavedId(id)
         onArchived(id)
       }
     })()
-  }, [archive, draft, load, onArchived])
+  }, [archive, draft, load, onArchived, t])
+
+  // 手填即落为自由文本：清掉预填带进来的目录 id —— 契约上 gameId 优先，留着它填的名字显示不出来
+  const onGameInput = (v: string) => {
+    setGameText(v)
+    const name = v.trim()
+    setGame({ gameId: null, gameName: name === '' ? undefined : name })
+  }
 
   // IDB 打不开不算崩点：分享照用，只是明确说这局记不下来
   const unavailable = savedId === null && status === 'unavailable'
@@ -94,23 +129,30 @@ export function MatchFinish({ draft, editableDuration = false, exports, onArchiv
   const shownMs = stepIdx === null ? measuredMs : DURATION_STEPS_MIN[stepIdx] * 60_000
 
   /*
-   * 备注与时长是这局面板里唯二能改的东西，共用一条防抖覆盖写回：
+   * 备注、时长、游戏是这局面板里能改的三样东西，共用一条防抖覆盖写回：
    * 打字和拖滑杆都会连着出一串值，停下来才落盘。改时长是以 endAt 为锚倒推
    * startedAt 写回 —— Match 没有单独的时长字段，startedAt/endAt 的差就是它
    */
   useEffect(() => {
     if (savedId === null) return
-    if (stepIdx === null && note.trim() === (draft.note ?? '')) return
+    const unchanged =
+      stepIdx === null &&
+      note.trim() === (draft.note ?? '') &&
+      game.gameId === baseGame.current.gameId &&
+      game.gameName === baseGame.current.gameName
+    if (unchanged) return
     const timer = setTimeout(() => {
       void archive({
         ...draft,
         id: savedId,
         startedAt: stepIdx === null ? draft.startedAt : draft.endAt - shownMs,
         note: note.trim() === '' ? undefined : note.trim(),
+        gameId: game.gameId,
+        gameName: game.gameName,
       })
     }, 400)
     return () => clearTimeout(timer)
-  }, [archive, draft, note, savedId, shownMs, stepIdx])
+  }, [archive, draft, game, note, savedId, shownMs, stepIdx])
 
   const header = (
     <span className="flex min-w-0 flex-col">
@@ -138,6 +180,17 @@ export function MatchFinish({ draft, editableDuration = false, exports, onArchiv
     <Overlay maxWidth="max-w-lg wide:max-w-2xl" title={header} onClose={onClose}>
       {unavailable && (
         <p className="text-sm leading-relaxed text-amber-300">{t('match.unavailable')}</p>
+      )}
+
+      {/* 游戏名钉在面板最上面：它是这局「是什么」，比结果榜更先被问到。工具钉死了 gameId 时不出现 */}
+      {draft.gameId === null && (
+        <input
+          value={gameText}
+          onChange={(e) => onGameInput(e.target.value)}
+          placeholder={t('match.gameNamePlaceholder')}
+          aria-label={t('match.gameName')}
+          className={FIELD}
+        />
       )}
 
       {/*
@@ -228,7 +281,7 @@ export function MatchFinish({ draft, editableDuration = false, exports, onArchiv
           <button
             type="button"
             onClick={onDone}
-            className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink short:!min-h-11"
+            className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink eink-solid short:!min-h-11"
           >
             <IconRepeat className="size-6 short:size-5" aria-hidden />
             {t('match.newGame')}
@@ -242,6 +295,8 @@ export function MatchFinish({ draft, editableDuration = false, exports, onArchiv
             ...draft,
             startedAt: draft.endAt - shownMs,
             note: note.trim() === '' ? undefined : note.trim(),
+            gameId: game.gameId,
+            gameName: game.gameName,
           }}
           exports={exports}
           onClose={() => setSharing(false)}

@@ -88,7 +88,7 @@ export default function CodenamesPage() {
           <button
             type="button"
             onClick={() => s.newGame()}
-            className="btn-base bg-amber-400 px-8 text-lg text-ink"
+            className="btn-base bg-amber-400 px-8 text-lg text-ink eink-solid"
           >
             {t('tools.codenames.start')}
           </button>

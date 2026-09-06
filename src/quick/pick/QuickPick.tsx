@@ -97,7 +97,7 @@ export function QuickPick() {
           type="button"
           onClick={handlePick}
           disabled={spinning}
-          className="btn-base mt-auto min-h-16 w-full bg-fuchsia-400 text-xl font-bold text-ink short:min-h-12 short:text-base"
+          className="btn-base mt-auto min-h-16 w-full bg-fuchsia-400 text-xl font-bold text-ink eink-solid short:min-h-12 short:text-base"
         >
           {t(landed ? 'quick.pick.again' : 'quick.pick.spin')}
         </button>

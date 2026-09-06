@@ -9,7 +9,7 @@ React 19 · TypeScript 6 · Vite 8 · Tailwind CSS 4 · Zustand 5 · React Route
 - **Tailwind 4 无配置文件**：主题在 [src/index.css](src/index.css) 的 `@theme` 里，不要创建 `tailwind.config.js` 或 `postcss.config.js`
 - **hash 路由**（`createHashRouter`）：为了静态托管免配 rewrite，不要改成 BrowserRouter
 - **`base: './'`**：产物路径必须保持相对，新增静态资源引用不要写绝对路径 `/xxx`
-- **纯本地、无后端**：不引入网络请求。存储分两级，见下方「持久化」一节。**仅有一处出网**：扫码发牌（[deal-roles/online](src/shared/deal-roles/online)，约束见「扫码发牌」一节）—— 别把它当成"可以出网了"的口子。**实时联机不做**：曾有过主机权威 + WebRTC P2P 的联机会话模块，因双流程维护成本与定位原因拆除，迁往独立联机项目；架构与坑位清单封存在 [docs/SESSION-ARCHIVE.md](docs/SESSION-ARCHIVE.md)。私密信息分发优先用二维码静态承载，其次轮传
+- **纯本地、无后端**：不引入网络请求。存储分两级，见下方「持久化」一节。**出网只有两处**：扫码发牌（[deal-roles/online](src/shared/deal-roles/online)，约束见「扫码发牌」一节）和设置页保存 BGG token 时的一次性校验请求（[integrations/bgg.ts](src/shared/integrations/bgg.ts)，用户主动触发）—— 别把它们当成"可以出网了"的口子。**实时联机不做**：曾有过主机权威 + WebRTC P2P 的联机会话模块，因双流程维护成本与定位原因拆除，迁往独立联机项目；架构与坑位清单封存在 [docs/SESSION-ARCHIVE.md](docs/SESSION-ARCHIVE.md)。私密信息分发优先用二维码静态承载，其次轮传
 - **PWA 更新走 `prompt`**：不要改回 `registerType: 'autoUpdate'` —— GH Pages 是整站全量替换，autoUpdate 的 skipWaiting 会在旧页面还开着时清掉它正在用的 chunk，懒加载的工具页当场 404。新版本由 [UpdatePrompt](src/UpdatePrompt.tsx) 交给用户择时更新，SW 还没接管时的兜底重载见 [shared/staleChunk.ts](src/shared/staleChunk.ts)
 
 ## 新增工具的机械流程
@@ -102,7 +102,7 @@ quick 的形态无法预设（现有五个里四个恰好是「窄栏 + 主区�
 不许违反的：
 
 - **必须能完整降级到轮传**。没配后端、断网、后端报错，都只让「扫码发牌」这一个按钮走不通，其余功能与轮传**一个字不受影响**。不许因为它引入任何全局的在线判断
-- **后端地址不进仓库、不进构建产物、不进 CI**。它由组织者运行时粘贴，只存在他自己的浏览器（`bgtools:deal-online`），通过二维码的 fragment 传给玩家。代码里出现任何具体地址、API Key、token 都是错的
+- **后端地址不进仓库、不进构建产物、不进 CI**。它由组织者运行时粘贴（设置页「第三方配置」或发牌现场的配置引导），只存在他自己的浏览器（`bgtools:integrations`，[integrations/store.ts](src/shared/integrations/store.ts)），通过二维码的 fragment 传给玩家。代码里出现任何具体地址、API Key、token 都是错的
 - **组织者的设备不是服务器**：举完码就可能被拿去干别的。所以排队只能靠一个大家都能写的外部端点，见 [backend.ts](src/shared/deal-roles/online/backend.ts) 的契约
 - **数据库里不许出现"谁是什么"**：只有排队记录（rid → 服务端时间）和内容型游戏的内容池。牌堆配方（配比 + 种子）走二维码 —— 这样只拿到数据库地址的人看到的是一堆时间戳，要对上必须在场扫到码
 - **排队序号必须按 `(时间戳, rid)` 双键排**。同毫秒罕见但会发生，各设备排序不一致就会有两人拿到同一张牌

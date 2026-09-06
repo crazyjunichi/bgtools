@@ -71,7 +71,7 @@ export function SheetPicker() {
                 setCreating(true)
                 buzz(20)
               }}
-              className="btn-base min-w-0 flex-1 gap-2 bg-emerald-400 px-2 text-base font-bold text-ink"
+              className="btn-base min-w-0 flex-1 gap-2 bg-emerald-400 px-2 text-base font-bold text-ink eink-solid"
             >
               <IconPlus className="size-6 shrink-0 short:size-5" aria-hidden />
               <span className="truncate">{t('tools.gloomhaven.create')}</span>
@@ -144,7 +144,7 @@ export function SheetPicker() {
                   }}
                   className={`btn-base gap-2 border px-3 text-base ${
                     selected
-                      ? 'border-sky-500/60 bg-sky-500/15 text-sky-300 light:text-sky-700 eink:border-black eink:bg-white eink:text-black'
+                      ? 'border-sky-500/60 bg-sky-500/15 text-sky-300 light:text-sky-700 eink-wash eink:text-black'
                       : 'border-transparent bg-surface-2 text-text'
                   }`}
                 >
@@ -167,7 +167,7 @@ export function SheetPicker() {
             <button
               type="button"
               onClick={submitCreate}
-              className="btn-base flex-1 gap-2 bg-emerald-400 text-base font-bold text-ink"
+              className="btn-base flex-1 gap-2 bg-emerald-400 text-base font-bold text-ink eink-solid"
             >
               <IconCheck className="size-6 short:size-5" aria-hidden />
               {t('tools.gloomhaven.create')}

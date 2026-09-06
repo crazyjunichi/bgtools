@@ -136,7 +136,7 @@ export default function WerewordsPage() {
               start(WEREWORDS_FLOW, drawWord())
               buzz(20)
             }}
-            className="btn-base min-h-16 shrink-0 gap-2 bg-sky-400 text-xl font-bold text-ink short:!min-h-12 short:text-base"
+            className="btn-base min-h-16 shrink-0 gap-2 bg-sky-400 text-xl font-bold text-ink eink-solid short:!min-h-12 short:text-base"
           >
             <IconPlay className="size-6 short:size-5" aria-hidden />
             {t('voiceHost.start')}

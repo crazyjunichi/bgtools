@@ -41,7 +41,7 @@ export function ScoreBar({
         type="button"
         onClick={onNextRound}
         disabled={!canNextRound}
-        className="btn-base flex-1 flex-col gap-1 bg-emerald-400 px-1 text-base font-bold text-ink !min-h-16 short:!min-h-11 short:gap-0.5 short:py-1 short:text-sm"
+        className="btn-base flex-1 flex-col gap-1 bg-emerald-400 px-1 text-base font-bold text-ink eink-solid !min-h-16 short:!min-h-11 short:gap-0.5 short:py-1 short:text-sm"
       >
         <IconCheck className="size-7 short:size-5" aria-hidden />
         {t('tools.score.bar.nextRound')}

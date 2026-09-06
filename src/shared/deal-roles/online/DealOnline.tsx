@@ -19,7 +19,7 @@ import { Qr } from '../../components/Qr'
 import { backendFor } from './resolve'
 import { RoleCard } from './RoleCard'
 import { newSeed } from './seeded'
-import { useDealOnlineStore } from './store'
+import { useIntegrationsStore } from '../../integrations/store'
 
 /** 「已领 X 人」的刷新间隔。一次 GET 只有几百字节，但也没必要比人扫码的节奏更快 */
 const POLL_MS = 3000
@@ -74,8 +74,8 @@ type Props = {
  */
 export function DealOnline({ set, counts, accent, pool, onClose }: Props) {
   const { t } = useTranslation()
-  const target = useDealOnlineStore((s) => s.target)
-  const setTarget = useDealOnlineStore((s) => s.setTarget)
+  const target = useIntegrationsStore((s) => s.dealTarget)
+  const setTarget = useIntegrationsStore((s) => s.setDealTarget)
 
   const [stage, setStage] = useState<Stage>(target ? { k: 'opening' } : { k: 'setup' })
   const [game, setGame] = useState<Opened | null>(null)

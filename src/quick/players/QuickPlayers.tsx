@@ -80,7 +80,7 @@ export function QuickPlayers() {
           <button
             type="button"
             onClick={handleAdd}
-            className="btn-base ml-auto min-h-12 shrink-0 gap-2 bg-teal-400 px-3 text-sm font-bold text-ink short:!min-h-11"
+            className="btn-base ml-auto min-h-12 shrink-0 gap-2 bg-teal-400 px-3 text-sm font-bold text-ink eink-solid short:!min-h-11"
           >
             <IconPlayerAdd className="size-5 short:size-4" aria-hidden />
             {t('quick.players.add')}

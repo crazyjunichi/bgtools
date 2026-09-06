@@ -35,7 +35,7 @@ export type RankBoard = {
  * 榜单退化成一份带色条的名单 —— 比直接不给图有用。
  */
 export function boardFromMatch(m: MatchDraft, t: TFunction): RankBoard {
-  const identity = gameLabel(t, m.gameId)
+  const identity = gameLabel(t, m.gameId, m.gameName)
   const totals = m.players.map((p) => p.score ?? 0)
   const best = Math.max(...totals, 0)
   const spent = m.endAt - m.startedAt

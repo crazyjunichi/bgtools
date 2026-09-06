@@ -21,7 +21,7 @@ type Props = {
  */
 export function MatchRow({ match, identity, onOpen }: Props) {
   const { t } = useTranslation()
-  const { name, icon } = identity ?? gameLabel(t, match.gameId)
+  const { name, icon } = identity ?? gameLabel(t, match.gameId, match.gameName)
   const date = dateTimeText(match.endAt)
 
   return (

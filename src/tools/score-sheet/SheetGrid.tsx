@@ -9,8 +9,10 @@ import {
   entryLabel,
   fmtCell,
   isAdjustable,
+  isDirectTotal,
   rawOf,
   scoreOf,
+  TOTAL_ENTRY_ID,
   totalOf,
   type Entry,
   type Pick,
@@ -98,6 +100,8 @@ export function SheetGrid({
   const best = Math.max(...totals)
   // 全场同分不戴王冠：人人有等于没有，只会让合计行更花
   const hasLeader = totals.some((v) => v !== best) && seats.length > 1
+  // 「直接填总分」：不渲染条目行（那唯一一行就是合计本身），合计格改成输入格
+  const directTotal = isDirectTotal(entries)
 
   // 没有外框与纸面底色：表格直接铺在页面上，分隔只靠行线（sticky 行列头的底因此要与页面同色）
   return (
@@ -146,7 +150,7 @@ export function SheetGrid({
         </thead>
 
         <tbody>
-          {entries.map((e) => {
+          {(directTotal ? [] : entries).map((e) => {
             const name = entryLabel(e, t)
             return (
               <tr key={e.id} className="border-t border-line">
@@ -268,21 +272,45 @@ export function SheetGrid({
             >
               <span className="section-label">{t('tools.scoreSheet.total')}</span>
             </td>
-            {seats.map((s, i) => (
-              <td
-                key={s.id}
-                className={`sticky bottom-0 z-10 bg-surface p-1 text-center ${COL}`}
-              >
+            {seats.map((s, i) => {
+              // 直接填总分：合计格就是输入格，复用格子的选中环与键盘路径
+              const editableTotal = directTotal && !readOnly
+              const raw = editableTotal ? rawOf(cells, s.id, TOTAL_ENTRY_ID) : undefined
+              const selected = editableTotal && pick?.seatId === s.id && pick?.entryId === TOTAL_ENTRY_ID
+              const inner = (
                 <span className="flex items-center justify-center gap-1">
                   {hasLeader && totals[i] === best && (
                     <IconCrown className="size-4 shrink-0 text-amber-300" aria-hidden />
                   )}
                   <span className="font-mono text-data-sm font-bold leading-none tabular-nums">
-                    {fmtScore(totals[i])}
+                    {editableTotal ? fmtCell(raw) : fmtScore(totals[i])}
                   </span>
                 </span>
-              </td>
-            ))}
+              )
+              return (
+                <td
+                  key={s.id}
+                  className={`sticky bottom-0 z-10 bg-surface p-1 text-center ${COL}`}
+                >
+                  {editableTotal ? (
+                    <button
+                      type="button"
+                      ref={selected ? revealPicked : undefined}
+                      onClick={() => onPickCell?.(s.id, TOTAL_ENTRY_ID)}
+                      aria-label={t(
+                        raw === undefined ? 'tools.scoreSheet.cellEmpty' : 'tools.scoreSheet.cell',
+                        { name: s.name, entry: t('tools.scoreSheet.total'), score: fmtScore(raw ?? 0) },
+                      )}
+                      className={`${CELL} ${selected ? 'bg-violet-500/15 ring-2 ring-violet-400' : ''}`}
+                    >
+                      {inner}
+                    </button>
+                  ) : (
+                    inner
+                  )}
+                </td>
+              )
+            })}
           </tr>
         </tfoot>
       </table>

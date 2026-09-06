@@ -19,7 +19,7 @@ export type DealBackendKind = 'firebase' | 'cloudbase'
  * 后端地址。**只有这三个字段进二维码**，所以任何后端都得把地址压进这个形状 ——
  * Firebase 是"实例名 + region"，CloudBase 是"环境 id + 服务域名段"。
  *
- * 它只存在组织者的浏览器本地（[store.ts](store.ts)）和二维码的 fragment 里，
+ * 它只存在组织者的浏览器本地（[integrations/store.ts](../../integrations/store.ts)）和二维码的 fragment 里，
  * 不进仓库、不进构建产物：这是"部署者自己准备后端"的前提。
  */
 export type DealTarget = {

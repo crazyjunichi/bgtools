@@ -33,7 +33,7 @@ export function DiceButton({ setId, className }: Props) {
         onClick={() => setOpen(true)}
         // 带上骰组名：同一页上可能有两个骰子入口，图标本身分不出是哪套
         aria-label={t('dice.pool.open', { name: t(set.nameKey) })}
-        className={`btn-base bg-amber-400 text-ink ${className ?? ''}`}
+        className={`btn-base bg-amber-400 text-ink eink-solid ${className ?? ''}`}
       >
         <IconDice className="size-6 short:size-5" aria-hidden />
       </button>

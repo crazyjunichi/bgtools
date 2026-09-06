@@ -137,6 +137,7 @@ export const quickTools: QuickTool[] = [
     Component: QuickShare,
   },
   // 全局设置排最后：不是"用一下"的工具，而是改完就走的配置项
+  // wide 给「第三方配置」子视图的横屏双栏用；主视图内部自己限窄
   {
     id: 'settings',
     nameKey: 'quick.settings.name',
@@ -145,5 +146,6 @@ export const quickTools: QuickTool[] = [
     icon: IconSettings,
     accent: 'neutral',
     Component: QuickSettings,
+    wide: true,
   },
 ]

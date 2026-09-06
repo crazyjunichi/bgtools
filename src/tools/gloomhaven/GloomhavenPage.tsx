@@ -113,7 +113,7 @@ function StatusGrid() {
                 key={s.id}
                 className={`flex flex-1 items-center gap-1 rounded-xl border px-1.5 ${
                   active
-                    ? 'border-sky-500/60 bg-sky-500/15 eink:border-black eink:bg-white'
+                    ? 'border-sky-500/60 bg-sky-500/15 eink-wash'
                     : 'border-transparent bg-surface-2'
                 }`}
               >
@@ -177,7 +177,7 @@ function StatusGrid() {
                 }}
                 className={`flex min-h-[4.5rem] items-center justify-center rounded-xl border short:min-h-16 ${
                   active
-                    ? 'border-sky-500/60 bg-sky-500/15 eink:border-black eink:bg-white'
+                    ? 'border-sky-500/60 bg-sky-500/15 eink-wash'
                     : 'border-transparent bg-surface-2'
                 }`}
               >
@@ -285,7 +285,7 @@ export default function GloomhavenPage() {
                   panel.clearLoot()
                   setEditing(true)
                 }}
-                className="btn-base min-w-0 flex-1 gap-2 bg-emerald-400 px-2 text-base font-bold text-ink"
+                className="btn-base min-w-0 flex-1 gap-2 bg-emerald-400 px-2 text-base font-bold text-ink eink-solid"
               >
                 <IconCheck className="size-6 shrink-0 short:size-5" aria-hidden />
                 <span className="truncate">{t('tools.gloomhaven.settle')}</span>

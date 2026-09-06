@@ -64,7 +64,7 @@ export function ScoreSettings({
             onClose()
             onFinish()
           }}
-          className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink short:!min-h-11"
+          className="btn-base gap-2 bg-emerald-400 px-5 text-base font-bold text-ink eink-solid short:!min-h-11"
         >
           <IconCheck className="size-6 short:size-5" aria-hidden />
           {t('tools.score.settings.finish')}
